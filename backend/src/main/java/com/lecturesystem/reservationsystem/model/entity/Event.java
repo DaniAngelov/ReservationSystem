@@ -1,4 +1,4 @@
-package com.lecturesystem.reservationsystem.model.entity;
-
-public class Event {
-}
+//package com.lecturesystem.reservationsystem.model.entity;
+//
+//public class Event {
+//}
