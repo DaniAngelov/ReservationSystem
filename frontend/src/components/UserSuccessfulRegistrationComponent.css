@@ -1,0 +1,26 @@
+html,body{
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  background: url('../assets/work-desk-schedule.jpg') no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover
+}
+
+.mx-6 {
+  margin-left: -25rem; 
+}
+
+.modal-content-test{
+  width: 100%;
+  border-radius: 20%;
+}
+
+.mt-6 {
+  margin-top: 4rem; 
+}
+
+.btn-success {
+  color: black;
+}

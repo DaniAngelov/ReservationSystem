@@ -1,5 +1,6 @@
 backend/HELP.md
 target/
+node_modules/
 !backend/.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
