@@ -17,7 +17,7 @@ const UserLoginComponent = () => {
     
     loginUser(user).then((response) => {
       console.log(response.data);
-      navigator('/users');
+      navigator('/welcome');
     });
   }
 

@@ -1,8 +1,10 @@
 package com.lecturesystem.reservationsystem.controller;
 
+import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.UserDTO;
 import com.lecturesystem.reservationsystem.model.dto.UserLoginDTO;
+import com.lecturesystem.reservationsystem.model.dto.UserReserveSpotDTO;
 import com.lecturesystem.reservationsystem.model.entity.User;
 import com.lecturesystem.reservationsystem.service.UserService;
 import org.modelmapper.ModelMapper;
@@ -32,6 +34,12 @@ public class UserController {
     @PutMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserLoginDTO userLoginDTO) throws CustomUserException {
         userService.loginUser(userLoginDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/reserve")
+    public ResponseEntity<?> reserveSpot(@RequestBody UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException {
+        userService.reserveSpot(userReserveSpotDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

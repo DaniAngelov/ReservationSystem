@@ -1,0 +1,120 @@
+@import url(https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css);
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap");
+
+body {
+  background-color: #e0e3e8;
+  overflow-y: hidden;
+}
+
+/* ---Sidebar css */
+.text-primary {
+  color: #5a8dee !important;
+}
+
+.shadow-md {
+  box-shadow: 0px 5px 10px rgba(90, 116, 148, 0.3);
+}
+
+
+.sidebar {
+  width: 280px;
+  min-height: 100vh;
+  box-shadow: 0px 4px 8px rgb(0 0 0 / 16%);
+  background-color: #212529;
+  position: fixed;
+  top: 0;
+  right: -20%;
+  z-index: 1;
+  transition: 0.5s;
+}
+
+.sidebar.active {
+  right: 0;
+}
+
+.sidebar-left{
+  width: 280px;
+  min-height: 100vh;
+  box-shadow: 0px 4px 8px rgb(0 0 0 / 16%);
+  background-color: #212529;
+  position: fixed;
+  top: 0;
+  left: 0%;
+  z-index: 1;
+  transition: 0.5s;
+}
+.sidebar-left.active{
+  right: -1.5%;
+}
+
+.logoImage{
+  margin-left: 23%;
+}
+
+.sd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  transition: 0.5s;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sd-body {
+  padding: 15px;
+  max-height: calc(100vh - 67px);
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.sd-body ul {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.sd-body ul li {
+  list-style: none;
+  margin-bottom: 8px;
+}
+
+.card-body{
+  width: 30%;
+  text-align: center;
+  border-radius: 10%;
+}
+
+.sd-body ul li .sd-link {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 16px;
+  color: #475f7b;
+  background-color: #e5e8ec;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.submitButton {
+  margin-top: 192%;
+}
+
+.submitButton-left{
+  margin-top: 190%;
+}
