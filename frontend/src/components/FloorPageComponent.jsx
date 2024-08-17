@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
-import { getFloors } from '../services/FloorService';
+import { getFloors, uploadFile } from '../services/FloorService';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -114,11 +114,36 @@ const FloorPageComponent = () => {
     )
   }
 
+  const UploadFile = () => {
+
+
+    const handleFileSelected = (e) => {
+      const newFormData = new FormData();
+      const file = e.target.files[0];
+      newFormData.append('file',file,file.name);
+      uploadFile(newFormData).then((response) => {
+        console.log("Response" + response.data)
+      })
+        .catch((error) => {
+          console.log("error: " + error);
+        })
+    }
+
+    return (<>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="validatedCustomFile"  onChange={handleFileSelected} required />
+        <label class="custom-file-label col-md-2 ml-1" for="validatedCustomFile">Choose file...</label>
+      </div>
+    </>)
+  }
+
   return (
-    <div>
+    <>
+    
       <SidebarLeftComponent />
       <SeatsComponent />
-    </div>
+      <UploadFile/>
+    </>
   )
 }
 

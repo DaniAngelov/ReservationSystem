@@ -18,8 +18,8 @@ public class Seat {
     private String seatNumber;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn(name = "event_id")
+    private Event event;
 
     @Column(name = "seat_taken")
     private boolean seatTaken;

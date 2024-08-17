@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity(name = "rooms")
 @NoArgsConstructor
 @Getter
 @Setter
-public class Room {
+public class Room implements Serializable {
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +24,6 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "floor_id")
     private Floor floor;
-
-    @Column
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "room_id", referencedColumnName = "id")
-    private List<Seat> seats;
 
     @Column
     @OneToMany(cascade = CascadeType.ALL)

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity(name = "events")
 @NoArgsConstructor
@@ -43,9 +44,17 @@ public class Event {
     @JoinColumn(name = "room_id")
     private Room room;
 
+    @Column
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "event_id", referencedColumnName = "id")
+    private List<Seat> seats;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column
+    private int roomNumber;
 
     public String getEventType() {
         return eventType.toString();

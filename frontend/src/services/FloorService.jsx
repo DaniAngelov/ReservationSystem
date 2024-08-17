@@ -11,3 +11,5 @@ export const getEvents = (value) => axios.get(REST_API_BASE_URL + '/events', {
 });
 
 export const addEvent = (event) => axios.post(REST_API_BASE_URL + '/events',event,{headers: {'Content-Type': 'application/json'}});
+
+export const uploadFile = (formData) => axios.post(REST_API_BASE_URL + '/upload',formData,{headers: {'Content-Type': 'multipart/form-data'}});

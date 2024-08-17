@@ -64,20 +64,29 @@ public class UserServiceImpl implements UserService {
         if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
-        Seat seat = seatRepository.getSeatBySeatNumber(userReserveSpotDTO.getSeat().getSeatNumber());
-        if(seat == null){
+
+        Seat chosenSeat = userReserveSpotDTO.getSeat();
+        boolean seatFound = false;
+        for(Seat seat: event.getSeats()){
+            if(seat.getSeatNumber().equals(chosenSeat.getSeatNumber())){
+                chosenSeat = seat;
+                seatFound = true;
+                break;
+            }
+        }
+        if(!seatFound){
             throw new CustomUserException("There is no such seat!");
         }
-        if (!checkIfUserCanReserveSeat(user, seat)) {
+        if (!checkIfUserCanReserveSeat(user, chosenSeat)) {
             throw new CustomUserException("You have already reserved seat in this room!");
         }
-        if (seat.isSeatTaken()) {
+        if (chosenSeat.isSeatTaken()) {
             throw new CustomUserException("Seat is already taken by another user!");
         }
-        seat.setSeatTaken(true);
-        seat.setUserThatOccupiedSeat(user.getUsername());
-        user.getSeats().add(seatRepository.save(seat));
-//        user.setEvents(addEvent(user.getEvents(), event));
+        chosenSeat.setSeatTaken(true);
+        chosenSeat.setUserThatOccupiedSeat(user.getUsername());
+        user.getSeats().add(seatRepository.save(chosenSeat));
+        user.setEvents(addEvent(user.getEvents(), event));
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
     }
@@ -102,7 +111,8 @@ public class UserServiceImpl implements UserService {
 
     private boolean checkIfUserCanReserveSeat(User user, Seat newSeat) {
         for (Seat seat : user.getSeats()) {
-            if (newSeat.getRoom().getRoomNumber() == seat.getRoom().getRoomNumber()) {
+
+            if (seat.getEvent() != null && newSeat.getEvent().getRoom().getRoomNumber() == seat.getEvent().getRoom().getRoomNumber()) {
                 return false;
             }
         }

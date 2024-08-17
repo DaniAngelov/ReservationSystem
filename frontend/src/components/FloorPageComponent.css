@@ -130,6 +130,13 @@ h1 {
   color: white;
 }
 
+.custom-file{
+  position: absolute !important;
+  bottom: 7% !important;
+  left: 0.5% !important;
+  
+}
+
 .grid td:hover {
   opacity: .7;
   cursor: pointer;

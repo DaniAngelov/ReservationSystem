@@ -1,19 +1,20 @@
 package com.lecturesystem.reservationsystem.service.impl;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
+import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
 import com.lecturesystem.reservationsystem.model.dto.EventDTO;
-import com.lecturesystem.reservationsystem.model.entity.Duration;
-import com.lecturesystem.reservationsystem.model.entity.Event;
-import com.lecturesystem.reservationsystem.model.entity.Floor;
-import com.lecturesystem.reservationsystem.model.entity.Room;
+import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.repository.EventRepository;
 import com.lecturesystem.reservationsystem.repository.FloorRepository;
 import com.lecturesystem.reservationsystem.repository.RoomRepository;
+import com.lecturesystem.reservationsystem.repository.SeatRepository;
 import com.lecturesystem.reservationsystem.service.EventService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,8 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
     private final RoomRepository roomRepository;
+
+    private final SeatRepository seatRepository;
 
     private final FloorRepository floorRepository;
 
@@ -47,20 +50,32 @@ public class EventServiceImpl implements EventService {
                 event.setDescription(eventDTO.getDescription());
                 event.setEventType(eventDTO.getEventType());
                 event.setDuration(getDuration(eventDTO.getDuration()));
-                event.setRoom(room);
+                event.setSeats(getSeats(eventDTO.getSeats(), new ArrayList<>()));
                 event.setFloorNumber(eventDTO.getFloorNumber());
-                Event eventResult = this.eventRepository.save(event);
-                room.getEvents().add(eventResult);
-                this.roomRepository.save(room);
-                return eventResult;
+                event.setRoomNumber(eventDTO.getRoomNumber());
+                Event newEvent = this.eventRepository.save(event);
+                room.getEvents().add(newEvent);
+                roomRepository.save(room);
+                return newEvent;
             }
         }
         throw new CustomEventException("There is no such room!");
     }
 
+
+
     @Override
     public List<Event> getAllEvents(String sortField) {
         return sortValues(eventRepository.findAll(), sortField);
+    }
+
+    @Override
+    public void deleteEvent(DeleteEventDTO deleteEventDTO) throws CustomEventException {
+        Event event = eventRepository.findEventByName(deleteEventDTO.getName());
+        if(event == null){
+            throw new CustomEventException("There is no such event!");
+        }
+        eventRepository.deleteById(event.getId());
     }
 
     private List<Event> sortValues(List<Event> eventList, String sortField) {
@@ -84,5 +99,27 @@ public class EventServiceImpl implements EventService {
         duration.setStartDate(durationDTO.getStartDate());
         duration.setEndDate(durationDTO.getEndDate());
         return duration;
+    }
+
+    private List<Seat> getSeats(List<SeatDTO> seatDTOS, List<Seat> seats) {
+        for (SeatDTO seatDTO : seatDTOS) {
+            boolean seatFound = false;
+            for (Seat seat : seats) {
+                if (seat.getSeatNumber().equals(seatDTO.getSeatNumber())) {
+                    seatFound = true;
+                    break;
+                }
+            }
+            if (!seatFound) {
+                Seat newSeat = new Seat();
+                newSeat.setSeatNumber(seatDTO.getSeatNumber());
+                newSeat.setSeatTaken(false);
+                newSeat.setUserThatOccupiedSeat("");
+                seats.add(seatRepository.save(newSeat));
+            }
+        }
+        return seats.stream()
+                .sorted(Comparator.comparing(Seat::getSeatNumber))
+                .collect(Collectors.toList());
     }
 }

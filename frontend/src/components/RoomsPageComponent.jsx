@@ -11,9 +11,6 @@ const RoomsPageComponent = () => {
   const [events, setEvents] = useState([]);
   const eventSortFieldOptions = ['name', 'eventType', 'date', 'duration']
   const [isOpen, setIsopen] = useState(false);
-  const ToggleSidebarAlways = () => {
-    setIsopen(true);
-  }
 
   const { floorId, roomId } = useParams();
 
@@ -22,6 +19,28 @@ const RoomsPageComponent = () => {
   const [eventType, setEventType] = useState('');
   const [date, setDate] = useState('');
   const [duration, setDuration] = useState('');
+
+
+
+  // Seats
+  const [event, setEvent] = useState([]);
+
+  const [seatColor, setSeatColor] = useState('green');
+
+  const [chosenSeat, setChosenSeat] = useState('');
+
+  const [chosenEvent, setChosenEvent] = useState('');
+
+  const [updateSeatsToggle, setUpdateSeatsToggle] = useState(false)
+
+  const toggleUpdateSeats = () => {
+    setUpdateSeatsToggle(!updateSeatsToggle);
+  }
+
+
+  const ToggleSidebar = () => {
+    return isOpen === true ? setIsopen(false) : setIsopen(true);
+  }
 
   useEffect(() => {
     getEvents(['name'])
@@ -34,6 +53,7 @@ const RoomsPageComponent = () => {
       }).catch(error => {
         console.error(error);
       })
+    console.log("KOFA S BOKLUCI BE")
   }, []);
 
   const [showForm, setShowForm] = useState(false);
@@ -108,11 +128,39 @@ const RoomsPageComponent = () => {
       </>)
   };
 
+
+
   const SidebarRightComponent = () => {
 
-    const ToggleSidebar = () => {
-      isOpen === true ? setIsopen(false) : setIsopen(true);
+    const [color, setColor] = useState('white');
+    const [backgroundColor, setBackgroundColor] = useState('black');
+    const [text, setText] = useState('Reserve your spot now!');
+
+    const takeSpot = (e) => {
+
+      e.preventDefault();
+
+      const userReserveSpotDTO = {
+        "username": "topki2",
+        "seat": chosenSeat,
+        "floorNumber": floorId,
+        "eventName": chosenEvent,
+        "roomNumber": roomId,
+
+      }
+      console.log(JSON.stringify(userReserveSpotDTO));
+      reserveSpot(JSON.stringify(userReserveSpotDTO)).then((response) => {
+        console.log(response.data);
+        console.log("status: " + response.status)
+        setColor('black');
+        setBackgroundColor('white');
+        setText('Spot reserved!')
+      }).catch((error) => {
+        console.log(error);
+      });
+
     }
+
 
     return (
       <>
@@ -125,30 +173,26 @@ const RoomsPageComponent = () => {
               <ul>
                 <li><a className="sd-link">Menu Item 1</a></li>
                 <li><a className="sd-link">Menu Item 2</a></li>
-                <li><button className="btn btn-primary 
-                                  submitButton
-                                  sd-link text-light">Reserve your spot now!</button></li>
+                <li><button className="btn  
+                        submitButton
+                        sd-link" style={{ color: color, backgroundColor: backgroundColor, content: text }} onClick={takeSpot} >{text}</button></li>
               </ul>
             </div>
           </div>
+
           <div className={`sidebar-overlay ${isOpen == true ? 'active' : ''}`} onClick={ToggleSidebar}></div>
         </div>
-
       </>
     )
+
   }
 
   const SidebarLeftComponent = () => {
 
     const [updateEventsToggle, setUpdateEventsToggle] = useState(false);
-    const [toggleSeats, setToggleSeats] = useState(false);
 
     const toggleUpdateEvents = () => {
       setUpdateEventsToggle(!updateEventsToggle);
-    }
-
-    const updateToggleSeats = () => {
-      setToggleSeats(!toggleSeats);
     }
 
     const updateEvents = (filterOption) => {
@@ -170,41 +214,25 @@ const RoomsPageComponent = () => {
       console.log(events);
     }
 
-    // const openSeats = () => {
-    //   getFloors().then((response) => {
-    //     console.log(response.data)
-    //     const newSeats = [];
-    //     response.data.map(floor => {
-    //       floor.rooms.map(room => {
-    //         if (roomId == room.roomNumber) {
-    //           room.seats.map(seat => {
-    //             newSeats.push(seat.seatNumber);
-    //           });
-    //         }
-    //       })
-    //     });
-    //     setSeats(newSeats);
-    //   }).catch(error => {
-    //     console.error(error);
-    //   });
-    // }
-
-    const showEvent = (event,idx) => {
-      return <button className="list-group-item list-group-item-success" key={idx} onClick={() => updateToggleSeats()}>
-        <a className="list-group-item list-group-item-action active p-4">
-          <div class="d-flex justify-content-between">
-            <h5 class="mb-1">{event.name}</h5>
-            <small>{event.eventType}</small>
-          </div>
-          <br />
-          <p class="mb-1">{event.description}</p>
-          <small>{event.data}</small>
-        </a>
+    const showEvent = (event, idx) => {
+      return <button className="list-group-item list-group-item-action active p-1 mt-5 bg-success" key={idx} onClick={() => {
+        setEvent(event);
+        toggleUpdateSeats();
+      }
+      }>
+        <div class="d-flex justify-content-between">
+          <h5 class="mb-1">{event.name}</h5>
+          <small>{event.eventType}</small>
+        </div>
+        <br />
+        <p class="mb-1">{event.description}</p>
+        <small>{event.date}</small>
       </button>
     }
 
     return (
       <>
+        <h1 className='header text-center display-2 text-light font-weight-bold position-absolute top-0 start-50 translate-middle mt-5'>FMI DeskSpot</h1>
         <div className="container-fluid mt-3">
           <div className="sidebar-left">
             <div className="sd-header">
@@ -217,10 +245,10 @@ const RoomsPageComponent = () => {
                                   sd-link text-light p-2 w-75 text-center position-absolute top-75 start-50 translate-middle" onClick={updateShowForm}>
                   Add event
                 </button>
-                <a class="btn btn-secondary dropdown-toggle sd-link text-light p-2 w-75 mt-5 text-center position-absolute top-75 start-50 translate-middle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-secondary dropdown-toggle sd-link text-light p-2 w-75 mt-5 text-center position-absolute top-75 start-50 translate-middle" id="dropdownMenuButton" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
                   Sort Events
-                </a>
-                <ul class="dropdown-menu">
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   {eventSortFieldOptions.map((option, idx) => {
                     return <li key={idx}><a className="dropdown-item sd-link" onClick={() => {
                       toggleUpdateEvents();
@@ -231,13 +259,11 @@ const RoomsPageComponent = () => {
                   })}
 
                 </ul>
-
                 <ul className='position-absolute mt-6 top-50 start-50 translate-middle p-5'>
+
                   {events.map((event, idx) => {
-                    
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
-                      console.log(event.name);
-                      return showEvent(event,idx);
+                      return showEvent(event, idx);
                     }
 
                   })}
@@ -251,87 +277,87 @@ const RoomsPageComponent = () => {
     )
   }
 
-  const SeatsComponent = () => {
-    const [seats, setSeats] = useState([]);
-    const [seatAvailable, setSeatAvailable] = useState([]);
-    const [seatReserved, setSeatReserved] = useState([]);
+  const [modalState, setModalState] = useState(false);
 
-    useEffect(() => {
-      getFloors().then((response) => {
-        const newSeats = [];
-        response.data.map(floor => {
-          floor.rooms.map(room => {
-            if (floorId == floor.floorNumber && roomId == room.roomNumber) {
-              room.seats.map(seat => {
-                newSeats.push(seat.seatNumber);
-              });
-            }
-          })
-        });
-        setSeats(newSeats);
-        setSeatAvailable(newSeats);
-      }).catch(error => {
-        console.error(error);
-      })
-    }, []);
+  const ModalComponent = (show) => {
 
-
-    const onClickData = (seat) => {
-
-      if (seatReserved.indexOf(seat) > -1) {
-        setSeatAvailable(seatAvailable.concat(seat));
-        setSeatReserved(seatReserved.filter(res => res != seat));
-      } else {
-        ToggleSidebarAlways();
-        const userDTO = {
-          "username": "asd",
-          "seat": { "seatNumber": seat }
-        }
-        console.log(JSON.stringify(userDTO));
-        reserveSpot(JSON.stringify(userDTO)).then((response) => {
-          console.log(response.data);
-        });
-
-        setSeatReserved(seatReserved.concat(seat));
-        setSeatAvailable(seatAvailable.filter(res => res != seat));
-      }
-    }
-
-    const DrawGrid = () => {
-      return (
-        <div className="container">
-          <table className="grid position-absolute top-50 start-50 translate-middle">
-            <tbody>
-              <tr>
-                {seats.map((seat, idx) =>
-                  <td
-                    className='seat-button fa fa-times'
-                    key={idx} onClick={e => onClickData(seat)}>{seat}
-                    <i className="fa fa-bars"></i> </td>)}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )
-    }
+    const showModalState = show ? 'display' : 'display-none';
 
     return (
-      <div>
-        <h1 class='header-title'
-          className='text-center display-2  text-light font-weight-bold position-absolute top-0 start-50 translate-middle mt-5'>FMI DeskSpot</h1>
-        <DrawGrid />
-      </div>
+      <>
+        <div class={`modal-body ${showModalState} text-center position-absolute top-50 start-50 translate-middle bg-success`} tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                ...
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     )
   }
 
+  const SeatComponent = () => {
 
+
+    const updateSeatStatus = (eventName, seat) => {
+      if (!seat.seatTaken) {
+        ToggleSidebar()
+        setChosenSeat(seat);
+        setChosenEvent(eventName);
+      } else {
+        alert('This seat has already been taken!');
+      }
+    }
+
+
+    return (
+      <>
+
+        <div className="container-fluid">
+          <div className='position-absolute top-50 start-50 translate-middle'>
+            {event.seats.map((seat, idx) =>
+              <button
+
+                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-success'} m-4 p-3 btn-lg active`}
+                key={idx} onClick={() => {
+                  {
+                    updateSeatStatus(event.name, seat);
+                  }
+                }}>
+                {seat.seatNumber}
+              </button>
+
+            )
+            }
+          </div>
+
+          {console.log("Chosen seat: " + chosenSeat)}
+          {console.log("Chosen event: " + chosenEvent)}
+          {console.log("Toggle side bar: " + isOpen)}
+
+        </div>
+      </>
+    )
+  }
+  
   return (
-    <div>
-      <SidebarRightComponent />
+    <>
       <SidebarLeftComponent />
-      <SeatsComponent />
+      <SidebarRightComponent />
+      {updateSeatsToggle && <SeatComponent />}
       {showForm && callEventForm()}
-    </div>
+      
+    </>
   )
 }
 

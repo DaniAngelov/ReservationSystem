@@ -1,10 +1,14 @@
 package com.lecturesystem.reservationsystem.controller;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
+import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.EventDTO;
 import com.lecturesystem.reservationsystem.model.dto.FloorDTO;
+import com.lecturesystem.reservationsystem.model.dto.WrapperDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
 import com.lecturesystem.reservationsystem.model.entity.Floor;
 import com.lecturesystem.reservationsystem.service.EventService;
@@ -14,7 +18,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +36,8 @@ public class DeskSpotController {
 
     private final ModelMapper modelMapper = new ModelMapper();
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @PostMapping
     public ResponseEntity<FloorDTO> addFloor(@RequestBody FloorDTO floorDTO) throws CustomUserException {
@@ -41,6 +49,12 @@ public class DeskSpotController {
     public ResponseEntity<EventDTO> addEvent(@RequestBody EventDTO EventDTO) throws CustomEventException {
         Event event = eventService.addEvent(EventDTO);
         return new ResponseEntity<>(modelMapper.map(event, EventDTO.class), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/events")
+    public ResponseEntity<?> deleteEvent(@RequestBody DeleteEventDTO deleteEventDTO) throws CustomEventException {
+        eventService.deleteEvent(deleteEventDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/events")
@@ -56,4 +70,20 @@ public class DeskSpotController {
         List<FloorDTO> floorDTOS = floors.stream().map(floor -> modelMapper.map(floor, FloorDTO.class)).collect(Collectors.toList());
         return new ResponseEntity<>(floorDTOS, HttpStatus.OK);
     }
+
+    @PostMapping("/upload")
+    public ResponseEntity<WrapperDTO> readDataFromFile(@ModelAttribute MultipartFile file) throws IOException, CustomUserException, CustomEventException {
+        objectMapper.registerModule(new JavaTimeModule());
+        System.out.println(file);
+        WrapperDTO wrapperDTO = objectMapper.readValue(file.getInputStream(), WrapperDTO.class);
+        for (FloorDTO floorDTO : wrapperDTO.getFloors()) {
+            addFloor(floorDTO);
+        }
+        for (EventDTO eventDTO : wrapperDTO.getEvents()) {
+            addEvent(eventDTO);
+        }
+        return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
+    }
+
+
 }

@@ -15,7 +15,6 @@ body {
   box-shadow: 0px 5px 10px rgba(90, 116, 148, 0.3);
 }
 
-
 .sidebar {
   width: 280px;
   min-height: 100vh;
@@ -32,7 +31,7 @@ body {
   right: 0;
 }
 
-.sidebar-left{
+.sidebar-left {
   width: 280px;
   min-height: 100vh;
   box-shadow: 0px 4px 8px rgb(0 0 0 / 16%);
@@ -43,11 +42,21 @@ body {
   z-index: 1;
   transition: 0.5s;
 }
-.sidebar-left.active{
+
+.sidebar-left.active {
   right: -1.5%;
 }
 
-.logoImage{
+.btn-2:hover,
+.btn-2:focus,
+.btn-2:hover,
+.btn-2:focus {
+transition: background-color 0.3s;
+background-color: #12a987 !important;
+
+}
+
+.logoImage {
   margin-left: 23%;
 }
 
@@ -94,7 +103,7 @@ body {
   margin-bottom: 8px;
 }
 
-.card-body{
+.card-body {
   width: 30%;
   text-align: center;
   border-radius: 10%;
@@ -115,6 +124,6 @@ body {
   margin-top: 192%;
 }
 
-.submitButton-left{
+.submitButton-left {
   margin-top: 190%;
 }
