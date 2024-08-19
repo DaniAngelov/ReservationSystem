@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity(name = "events")
@@ -33,9 +32,6 @@ public class Event {
     @Column
     @Enumerated(EnumType.STRING)
     private EventType eventType;
-
-    @Column
-    private LocalDateTime date;
 
     @OneToOne(cascade = CascadeType.ALL)
     private Duration duration;

@@ -8,6 +8,10 @@ html,body{
   background-size: cover
 }
 
+.custom-img{
+  right: 80%;
+}
+
 .mx-6 {
   margin-left: 3rem; 
 }

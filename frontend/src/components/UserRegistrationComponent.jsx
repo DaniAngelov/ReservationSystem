@@ -26,14 +26,14 @@ const UserRegistrationComponent = () => {
   return (
     <div className='container'>
       <div>
-         <img src={logo} width={135} height={135} alt='Responsive image'className='img-fluid position-absolute mx-6 mt-4'/>
+         <img src={logo} width={135} height={135} alt='Responsive image'className='custom-img img-fluid position-absolute mx-6 mt-4'/>
          <br/>
         <h1 className='text-center display-1 fw-bold text-light font-weight-bold mt-3'>FMI DeskSpot</h1>
       </div>
       <div className='card mt-5 bg-transparent border-0 position-absolute top-50 start-50 translate-middle'>
         <h2 className='display-4 fw-normal text-center text-light mb-4'>Sign up</h2>
 
-        <div className='card-body text-center'>
+        <div className='card-body text-center col-md-12'>
           <form>
               <div className='form-group text-start mb-2'>
                 <label className='form-label text-light'>Username:</label>
@@ -44,7 +44,7 @@ const UserRegistrationComponent = () => {
                 
               <div className='form-group text-start mb-2'>
                 <label className='form-label text-light'>Password:</label>
-                <input type='text' placeholder='Enter Password' name='password' value={password} className='form-control'
+                <input type='password' placeholder='Enter Password' name='password' value={password} className='form-control'
                 onChange={(e) => setPassword(e.target.value)}
                 >
                 </input>
@@ -52,7 +52,7 @@ const UserRegistrationComponent = () => {
 
               <div className='form-group text-start'>
                 <label className='form-label text-light'>Email:</label>
-                <input type='text' placeholder='Enter Email Address' name='email' value={email} className='form-control'
+                <input type='email' placeholder='Enter Email Address' name='email' value={email} className='form-control'
                 onChange={(e) => setEmail(e.target.value)}>
                 </input>
               </div>

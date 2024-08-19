@@ -1,4 +1,4 @@
-package com.lecturesystem.reservationsystem.model.dto;
+package com.lecturesystem.reservationsystem.model.dto.users;
 
 import com.lecturesystem.reservationsystem.model.entity.Event;
 import com.lecturesystem.reservationsystem.model.entity.Seat;

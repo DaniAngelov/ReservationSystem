@@ -1,6 +1,6 @@
-package com.lecturesystem.reservationsystem.model.dto;
+package com.lecturesystem.reservationsystem.model.dto.users;
 
-import com.lecturesystem.reservationsystem.model.entity.Seat;
+import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,10 +8,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserReserveSpotDTO {
+public class UserReleaseSpotDTO {
     private String username;
     private String eventName;
-    private Seat seat;
+    private SeatDTO seat;
     private int floorNumber;
     private int roomNumber;
 }

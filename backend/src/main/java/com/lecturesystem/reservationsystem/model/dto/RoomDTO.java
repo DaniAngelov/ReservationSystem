@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.model.dto;
 
+import com.lecturesystem.reservationsystem.model.entity.RoomType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,4 +13,5 @@ import java.util.List;
 public class RoomDTO {
     private Integer roomNumber;
     private List<EventDTO> events;
+    private RoomType roomType;
 }

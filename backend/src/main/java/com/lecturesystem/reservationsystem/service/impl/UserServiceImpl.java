@@ -2,13 +2,17 @@ package com.lecturesystem.reservationsystem.service.impl;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.UserDTO;
-import com.lecturesystem.reservationsystem.model.dto.UserLoginDTO;
-import com.lecturesystem.reservationsystem.model.dto.UserReserveSpotDTO;
+import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserLoginDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserReleaseSpotDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserReserveSpotDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
+import com.lecturesystem.reservationsystem.model.entity.RoomType;
 import com.lecturesystem.reservationsystem.model.entity.Seat;
 import com.lecturesystem.reservationsystem.model.entity.User;
 import com.lecturesystem.reservationsystem.repository.EventRepository;
+import com.lecturesystem.reservationsystem.repository.RoomRepository;
 import com.lecturesystem.reservationsystem.repository.SeatRepository;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.UserService;
@@ -24,6 +28,8 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final SeatRepository seatRepository;
+
+    private final RoomRepository roomRepository;
 
     private final EventRepository eventRepository;
 
@@ -64,17 +70,17 @@ public class UserServiceImpl implements UserService {
         if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
-
-        Seat chosenSeat = userReserveSpotDTO.getSeat();
+        SeatDTO seatDTO = userReserveSpotDTO.getSeat();
+        Seat chosenSeat = new Seat();
         boolean seatFound = false;
-        for(Seat seat: event.getSeats()){
-            if(seat.getSeatNumber().equals(chosenSeat.getSeatNumber())){
+        for (Seat seat : event.getSeats()) {
+            if (seat.getSeatNumber().equals(seatDTO.getSeatNumber())) {
                 chosenSeat = seat;
                 seatFound = true;
                 break;
             }
         }
-        if(!seatFound){
+        if (!seatFound) {
             throw new CustomUserException("There is no such seat!");
         }
         if (!checkIfUserCanReserveSeat(user, chosenSeat)) {
@@ -83,10 +89,53 @@ public class UserServiceImpl implements UserService {
         if (chosenSeat.isSeatTaken()) {
             throw new CustomUserException("Seat is already taken by another user!");
         }
+        if (event.getRoom().getRoomType().equals(RoomType.COMPUTER)) {
+            chosenSeat.setOccupiesCharger(userReserveSpotDTO.isOccupiesCharger());
+            chosenSeat.setOccupiesComputer(userReserveSpotDTO.isOccupiesComputer());
+        }
         chosenSeat.setSeatTaken(true);
         chosenSeat.setUserThatOccupiedSeat(user.getUsername());
-        user.getSeats().add(seatRepository.save(chosenSeat));
+        Seat savedSeat = seatRepository.save(chosenSeat);
+        user.getSeats().add(savedSeat);
+        user.setSeats(user.getSeats());
         user.setEvents(addEvent(user.getEvents(), event));
+        user.setLastActive(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    @Override
+    public void releaseSpot(UserReleaseSpotDTO userReleaseSpotDTO) throws CustomUserException, CustomEventException {
+        User user = userRepository.getUserByUsername(userReleaseSpotDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        Event event = eventRepository.findEventByName(userReleaseSpotDTO.getEventName());
+        if (event == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        SeatDTO seatDTO = userReleaseSpotDTO.getSeat();
+        Seat chosenSeat = new Seat();
+        boolean seatFound = false;
+        for (Seat seat : event.getSeats()) {
+            if (seat.getSeatNumber().equals(seatDTO.getSeatNumber())) {
+                chosenSeat = seat;
+                seatFound = true;
+                break;
+            }
+        }
+        if (!seatFound) {
+            throw new CustomUserException("There is no such seat!");
+        }
+
+        if (event.getRoom().getRoomType().equals(RoomType.COMPUTER)) {
+            chosenSeat.setOccupiesCharger(false);
+            chosenSeat.setOccupiesComputer(false);
+        }
+        chosenSeat.setSeatTaken(false);
+        user.getSeats().remove(chosenSeat);
+        chosenSeat.setUserThatOccupiedSeat("");
+        seatRepository.save(chosenSeat);
+        user.getEvents().remove(event);
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
     }
@@ -112,7 +161,9 @@ public class UserServiceImpl implements UserService {
     private boolean checkIfUserCanReserveSeat(User user, Seat newSeat) {
         for (Seat seat : user.getSeats()) {
 
-            if (seat.getEvent() != null && newSeat.getEvent().getRoom().getRoomNumber() == seat.getEvent().getRoom().getRoomNumber()) {
+            if (seat.getEvent() != null
+                    && newSeat.getEvent().getName().equals(seat.getEvent().getName())
+                    && newSeat.getEvent().getRoom().getRoomNumber() == seat.getEvent().getRoom().getRoomNumber()) {
                 return false;
             }
         }

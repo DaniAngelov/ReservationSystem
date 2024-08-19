@@ -26,4 +26,10 @@ public class Seat {
 
     @Column(name = "user_that_occupied_seat")
     private String userThatOccupiedSeat;
+
+    @Column(name = "occupied_computer")
+    private boolean occupiesComputer;
+
+    @Column(name = "occupied_charger")
+    private boolean occupiesCharger;
 }

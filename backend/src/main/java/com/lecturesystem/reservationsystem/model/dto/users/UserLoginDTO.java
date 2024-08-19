@@ -1,4 +1,4 @@
-package com.lecturesystem.reservationsystem.model.dto;
+package com.lecturesystem.reservationsystem.model.dto.users;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

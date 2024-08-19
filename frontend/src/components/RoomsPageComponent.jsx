@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { reserveSpot } from '../services/UserService'
-import { addEvent, getEvents, getFloors } from '../services/FloorService';
+import { releaseSpot, reserveSpot } from '../services/UserService'
+import { addEvent, getEvents } from '../services/FloorService';
 import { useParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
+import one from '../assets/one.jpg';
+import two from '../assets/two.png';
+import three from '../assets/three.jpg';
 import axios from 'axios';
+import { Button } from "react-bootstrap";
+import { HiDesktopComputer } from "react-icons/hi"
+import { LuCable } from "react-icons/lu";
+import { PiOfficeChairFill } from "react-icons/pi";
+import { MdEventAvailable } from "react-icons/md";
 
-const RoomsPageComponent = () => {
+const RoomsPageComponent = (parentRoom) => {
   const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
   const [events, setEvents] = useState([]);
   const eventSortFieldOptions = ['name', 'eventType', 'date', 'duration']
@@ -17,21 +25,27 @@ const RoomsPageComponent = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('');
-  const [date, setDate] = useState('');
-  const [duration, setDuration] = useState('');
-
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [seatsNumber, setSeatsNumber] = useState('');
 
 
   // Seats
   const [event, setEvent] = useState([]);
 
-  const [seatColor, setSeatColor] = useState('green');
-
   const [chosenSeat, setChosenSeat] = useState('');
 
   const [chosenEvent, setChosenEvent] = useState('');
 
+  const [chosenUser, setChosenUser] = useState('');
+
   const [updateSeatsToggle, setUpdateSeatsToggle] = useState(false)
+
+  const [releaseSeat, setReleaseSeat] = useState(false);
+
+  const ToggleReleaseSeats = () => {
+    return setReleaseSeat(!releaseSeat);
+  }
 
   const toggleUpdateSeats = () => {
     setUpdateSeatsToggle(!updateSeatsToggle);
@@ -53,7 +67,6 @@ const RoomsPageComponent = () => {
       }).catch(error => {
         console.error(error);
       })
-    console.log("KOFA S BOKLUCI BE")
   }, []);
 
   const [showForm, setShowForm] = useState(false);
@@ -62,10 +75,15 @@ const RoomsPageComponent = () => {
     setShowForm(!showForm);
   }
 
-  const addNewEvent = (e, name, description, eventType, date, duration) => {
+  const addNewEvent = (e, name, description, eventType, startDate, endDate, numberOfSeats) => {
     e.preventDefault();
     const floorNumber = floorId;
     const roomNumber = roomId;
+    const seats = [];
+
+    for (let i = 1; i <= numberOfSeats; i++) {
+      seats.push({ seatNumber: `T${i}`, seatTaken: false });
+    }
 
     const eventDTO = {
       "name": name,
@@ -73,6 +91,11 @@ const RoomsPageComponent = () => {
       "eventType": eventType,
       "floorNumber": floorNumber,
       "roomNumber": roomNumber,
+      "seats": seats,
+      "duration": {
+        "startDate": startDate,
+        "endDate": endDate
+      }
     }
     console.log(JSON.stringify(eventDTO));
     addEvent(JSON.stringify(eventDTO)).then((response) => {
@@ -89,14 +112,14 @@ const RoomsPageComponent = () => {
           <form>
             <div className='form-group text-start mb-2'>
               <label className='form-label text-light'>Name</label>
-              <input type='text' placeholder='Enter Event name' class='form-control' value={name}
+              <input type='text' placeholder='Enter Event name' autoComplete='random-name' class='form-control' value={name}
                 onChange={(e) => setName(e.target.value)}>
               </input>
             </div>
 
             <div className='form-group text-start mb-2'>
               <label className='form-label text-light'>Description</label>
-              <textarea className='form-control' placeholder='Enter Event Description' name='description' value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
+              <textarea className='form-control' autoComplete='random-description' placeholder='Enter Event Description' name='description' value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
             </div>
 
             <div className='form-group text-start mb-2'>
@@ -110,19 +133,23 @@ const RoomsPageComponent = () => {
             </div>
 
             <div className='form-group text-start mb-2'>
-              <label className='form-label text-light'>Date</label>
-              <input type='date' placeholder='Enter Event date' name='date' value={date} className='form-control'
-                onChange={(e) => setDate(e.target.value)}>
+              <label className='form-label text-light'>Event Start Time</label>
+              <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control'
+                onChange={(e) => setStartDate(e.target.value)}>
+              </input>
+              <label className='form-label text-light'>Event End time</label>
+              <input type='datetime-local' placeholder='Enter Event End Time' name='endDate' value={endDate} className='form-control'
+                onChange={(e) => setEndDate(e.target.value)}>
               </input>
             </div>
 
             <div className='form-group text-start mb-2'>
-              <label className='form-label text-light'>Duration</label>
-              <input type='text' placeholder='Enter Event duration' name='duration' value={duration} className='form-control'
-                onChange={(e) => setDuration(e.target.value)}>
+              <label className='form-label text-light'>Seats Number</label>
+              <input type='number' placeholder='Enter Number of seats' name='seatsNumber' value={seatsNumber} className='form-control'
+                onChange={(e) => setSeatsNumber(e.target.value)}>
               </input>
             </div>
-            <button className='btn btn-success mt-2' onClick={(event) => addNewEvent(event, name, description, eventType, date, duration)}>Add event!</button>
+            <button className='btn btn-success mt-2' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate, seatsNumber)}>Add event!</button>
           </form>
         </div>
       </>)
@@ -136,29 +163,93 @@ const RoomsPageComponent = () => {
     const [backgroundColor, setBackgroundColor] = useState('black');
     const [text, setText] = useState('Reserve your spot now!');
 
+    const [occupiesComputer, setOccupiesComputer] = useState(false);
+    const [occupiesCharger, setOccupiesCharger] = useState(false);
+
+    const [computerColor, setComputerColor] = useState('white');
+    const [chargerColor, setChargerColor] = useState('white');
+
+    const toggleOccupiesComputer = () => {
+      return setOccupiesComputer(!occupiesComputer);
+    }
+
+    const toggleOccupiesCharger = () => {
+      return setOccupiesCharger(!occupiesCharger);
+    }
+
+    const updateComputerColor = () => {
+      if (computerColor == 'white') {
+        setComputerColor('yellow');
+      } else {
+        setComputerColor('white');
+      }
+    }
+
+    const updateChargerColor = () => {
+      if (chargerColor == 'white') {
+        setChargerColor('yellow');
+      } else {
+        setChargerColor('white');
+      }
+    }
+
     const takeSpot = (e) => {
 
       e.preventDefault();
 
+      // setChosenUser('topki3');
+
       const userReserveSpotDTO = {
-        "username": "topki2",
+        "username": "topki3",
         "seat": chosenSeat,
         "floorNumber": floorId,
         "eventName": chosenEvent,
         "roomNumber": roomId,
-
+        "occupiesComputer": occupiesComputer,
+        "occupiesCharger": occupiesCharger,
       }
       console.log(JSON.stringify(userReserveSpotDTO));
+
       reserveSpot(JSON.stringify(userReserveSpotDTO)).then((response) => {
         console.log(response.data);
         console.log("status: " + response.status)
         setColor('black');
         setBackgroundColor('white');
         setText('Spot reserved!')
+        console.log("color" + color)
+        console.log("background color:" + backgroundColor)
       }).catch((error) => {
         console.log(error);
+        alert(error.response.data);
       });
 
+    }
+
+    const openComputerRoomSpecs = (roomType) => {
+      if (roomType == 'COMPUTER') {
+        return <ul>
+          <li>
+            <h2 className='text-light mb-3'>Computer</h2>
+            <Button className='computer-button mb-2' onClick={() => {
+              { toggleOccupiesComputer() }
+              { updateComputerColor() }
+            }}>
+              <HiDesktopComputer size={45} color={computerColor} />
+            </Button>
+          </li>
+          <li>
+            <h2 className='text-light mb-3'>Charger</h2>
+            <Button className='computer-button mb-1' onClick={() => {
+              { toggleOccupiesCharger() }
+              { updateChargerColor() }
+            }}>
+              <LuCable size={45} color={chargerColor} />
+            </Button>
+          </li>
+        </ul>
+      } else {
+        return '';
+      }
     }
 
 
@@ -167,15 +258,26 @@ const RoomsPageComponent = () => {
         <div className="container-fluid mt-3">
           <div className={`sidebar ${isOpen == true ? 'active' : ''}`}>
             <div className="sd-header">
-              <h4 className="mb-0">Sidebar Header</h4>
+              <h4 className="event-headline mb-0  display-6">Event booking</h4>
             </div>
-            <div className="sd-body">
+            <div className="sd-body text-center">
               <ul>
-                <li><a className="sd-link">Menu Item 1</a></li>
-                <li><a className="sd-link">Menu Item 2</a></li>
-                <li><button className="btn  
-                        submitButton
-                        sd-link" style={{ color: color, backgroundColor: backgroundColor, content: text }} onClick={takeSpot} >{text}</button></li>
+                <li>
+                  <Button className='mt-2'>
+                    <MdEventAvailable size={30} />
+                    <h5 className=' mb-3 mt-3 text-light'>{`Event chosen: ${chosenEvent}`}</h5>
+                  </Button>
+                </li>
+                <li>
+                  <Button className='mt-2 mb-2'>
+                    <PiOfficeChairFill size={30} />
+                    <h5 className='mt-3 text-light'>{`Seat chosen: ${chosenSeat.seatNumber}`}</h5>
+                  </Button>
+                </li>
+                {console.log("room Type: " + parentRoom.room.roomType)};
+                {openComputerRoomSpecs(parentRoom.room.roomType)}
+
+                <li><button className="btn btn-custom sd-link" style={{ color: color, backgroundColor: backgroundColor, content: text }} onClick={takeSpot} >{text}</button></li>
               </ul>
             </div>
           </div>
@@ -215,13 +317,13 @@ const RoomsPageComponent = () => {
     }
 
     const showEvent = (event, idx) => {
-      return <button className="list-group-item list-group-item-action active p-1 mt-5 bg-success" key={idx} onClick={() => {
+      return <button className="list-group-item list-group-item-action active p-5 mt-5 bg-success" key={idx} onClick={() => {
         setEvent(event);
         toggleUpdateSeats();
       }
       }>
-        <div class="d-flex justify-content-between">
-          <h5 class="mb-1">{event.name}</h5>
+        <div class="d-flex justify-content-between ">
+          <h5 class="m3-1">{event.name}</h5>
           <small>{event.eventType}</small>
         </div>
         <br />
@@ -277,45 +379,78 @@ const RoomsPageComponent = () => {
     )
   }
 
-  const [modalState, setModalState] = useState(false);
+  // const [modalState, setModalState] = useState(false);
 
-  const ModalComponent = (show) => {
+  // const ModalComponent = (show) => {
 
-    const showModalState = show ? 'display' : 'display-none';
+  //   const showModalState = show ? 'display' : 'display-none';
+
+  //   return (
+  //     <>
+  //       <div class={`modal-body ${showModalState} text-center position-absolute top-50 start-50 translate-middle bg-success`} tabindex="-1">
+  //         <div class="modal-dialog">
+  //           <div class="modal-content">
+  //             <div class="modal-header">
+  //               <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+  //               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  //             </div>
+  //             <div class="modal-body">
+  //               ...
+  //             </div>
+  //             <div class="modal-footer">
+  //               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  //               <button type="button" class="btn btn-primary">Save changes</button>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </>
+  //   )
+  // }
+
+  const ReleaseSeats = () => {
+
+    const releaseUserSpot = (e, seat, eventName) => {
+      e.preventDefault();
+      const userReleaseSpotDTO = {
+        "username": "topki3",
+        "seat": seat,
+        "floorNumber": floorId,
+        "eventName": eventName,
+        "roomNumber": roomId
+      }
+      console.log("User release DTO:");
+      console.log(JSON.stringify(userReleaseSpotDTO));
+      releaseSpot(JSON.stringify(userReleaseSpotDTO)).then((response) => {
+        console.log(response.data);
+        console.log("status: " + response.status);
+        alert('Spot successfully released!');
+      }).catch((error) => {
+        console.log(error);
+        alert(error.response.data);
+      });
+    }
 
     return (
       <>
-        <div class={`modal-body ${showModalState} text-center position-absolute top-50 start-50 translate-middle bg-success`} tabindex="-1">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                ...
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    )
+        <button className='btn btn-release bg-success' onClick={(e) => { releaseUserSpot(e, chosenSeat, chosenEvent) }}>
+          Release your spot ?
+        </button>
+      </>)
   }
 
   const SeatComponent = () => {
 
-
     const updateSeatStatus = (eventName, seat) => {
+      console.log(chosenUser);
+      setChosenSeat(seat);
+      setChosenEvent(eventName);
       if (!seat.seatTaken) {
         ToggleSidebar()
-        setChosenSeat(seat);
-        setChosenEvent(eventName);
       } else {
-        alert('This seat has already been taken!');
+        console.log()
+        ToggleReleaseSeats();
+        // alert('This seat has already been taken!');
       }
     }
 
@@ -324,39 +459,39 @@ const RoomsPageComponent = () => {
       <>
 
         <div className="container-fluid">
-          <div className='position-absolute top-50 start-50 translate-middle'>
+          <div className='position-absolute top-50 start-50 translate-middle border border-primary'>
             {event.seats.map((seat, idx) =>
               <button
-
-                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-success'} m-4 p-3 btn-lg active`}
+                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} m-4 p-3 btn-lg active`}
                 key={idx} onClick={() => {
                   {
                     updateSeatStatus(event.name, seat);
                   }
                 }}>
-                {seat.seatNumber}
+                <PiOfficeChairFill size={30} />
               </button>
 
             )
             }
           </div>
-
+          {/* 
           {console.log("Chosen seat: " + chosenSeat)}
           {console.log("Chosen event: " + chosenEvent)}
-          {console.log("Toggle side bar: " + isOpen)}
+          {console.log("Toggle side bar: " + isOpen)} */}
 
         </div>
       </>
     )
   }
-  
+
   return (
     <>
+
       <SidebarLeftComponent />
       <SidebarRightComponent />
       {updateSeatsToggle && <SeatComponent />}
       {showForm && callEventForm()}
-      
+      {releaseSeat && <ReleaseSeats />}
     </>
   )
 }

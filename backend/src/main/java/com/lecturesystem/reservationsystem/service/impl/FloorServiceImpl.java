@@ -61,6 +61,7 @@ public class FloorServiceImpl implements FloorService {
                 Room newRoom = new Room();
                 newRoom.setRoomNumber(roomDTO.getRoomNumber());
                 newRoom.setEvents(new ArrayList<>());
+                newRoom.setRoomType(roomDTO.getRoomType());
                 rooms.add(roomRepository.save(newRoom));
             }
         }

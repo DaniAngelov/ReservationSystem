@@ -5,7 +5,7 @@ import { getFloors, uploadFile } from '../services/FloorService';
 
 import { useNavigate } from 'react-router-dom';
 
-const FloorPageComponent = () => {
+const FloorPageComponent = ({setRoom}) => {
 
   const [newRooms, setNewRooms] = useState([]);
   const [floors, setFloors] = useState([]);
@@ -16,14 +16,12 @@ const FloorPageComponent = () => {
 
   useEffect(() => {
     getFloors().then((response) => {
-      const newRooms = [];
       const newFloors = [];
       const newMap = [];
       response.data.map(floor => {
         newFloors.push(floor.floorNumber);
         floor.rooms.map(room => {
-          newMap.push({ floorNumber: floor.floorNumber, roomNumber:room.roomNumber});
-          newRooms.push(room.roomNumber);
+          newMap.push({ floorNumber: floor.floorNumber, room:room});
         })
       });
       setFloors(response.data);
@@ -40,7 +38,7 @@ const FloorPageComponent = () => {
     floors.map(floor => {
       if(floor.floorNumber === floorNumber){
         floor.rooms.map(room => {
-          newMap.push({ floorNumber: floor.floorNumber, roomNumber:room.roomNumber});
+          newMap.push({ floorNumber: floor.floorNumber, room:room});
         })
       }
     })
@@ -54,8 +52,9 @@ const FloorPageComponent = () => {
 
     const onClickOpenRoom = (floor,room) => {
       console.log(floor);
-      console.log(room);
-      navigator(`/welcome/floors/${floor}/rooms/${room}`);
+      console.log(room.roomNumber);
+      setRoom(room);
+      navigator(`/welcome/floors/${floor}/rooms/${room.roomNumber}`);
     }
 
     const DrawGrid = () => {
@@ -66,9 +65,8 @@ const FloorPageComponent = () => {
               <tr>
                 {isOpen && newRooms.map((floorAndRoom,idx) =>
                   <td
-                    className='room'
-                    key={idx} onClick={e => onClickOpenRoom(floorAndRoom.floorNumber,floorAndRoom.roomNumber)}>
-                    {floorAndRoom.roomNumber} </td>)}
+                    key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber,floorAndRoom.room)}>
+                    {floorAndRoom.room.roomNumber}</td>)}
               </tr>
             </tbody>
           </table>
@@ -139,7 +137,6 @@ const FloorPageComponent = () => {
 
   return (
     <>
-    
       <SidebarLeftComponent />
       <SeatsComponent />
       <UploadFile/>

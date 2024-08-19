@@ -29,4 +29,8 @@ public class Room implements Serializable {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "room_id", referencedColumnName = "id")
     private List<Event> events;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private RoomType roomType;
 }

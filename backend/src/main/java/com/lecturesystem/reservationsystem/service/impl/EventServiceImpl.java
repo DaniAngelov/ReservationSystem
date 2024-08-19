@@ -14,6 +14,8 @@ import com.lecturesystem.reservationsystem.service.EventService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +33,8 @@ public class EventServiceImpl implements EventService {
 
     private final FloorRepository floorRepository;
 
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     @Override
     public Event addEvent(EventDTO eventDTO) throws CustomEventException {
         Event eventByName = eventRepository.findEventByName(eventDTO.getName());
@@ -46,7 +50,6 @@ public class EventServiceImpl implements EventService {
             if (room.getRoomNumber() == eventDTO.getRoomNumber()) {
                 Event event = new Event();
                 event.setName(eventDTO.getName());
-                event.setDate(eventDTO.getDate());
                 event.setDescription(eventDTO.getDescription());
                 event.setEventType(eventDTO.getEventType());
                 event.setDuration(getDuration(eventDTO.getDuration()));
@@ -63,7 +66,6 @@ public class EventServiceImpl implements EventService {
     }
 
 
-
     @Override
     public List<Event> getAllEvents(String sortField) {
         return sortValues(eventRepository.findAll(), sortField);
@@ -72,7 +74,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public void deleteEvent(DeleteEventDTO deleteEventDTO) throws CustomEventException {
         Event event = eventRepository.findEventByName(deleteEventDTO.getName());
-        if(event == null){
+        if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
         eventRepository.deleteById(event.getId());
@@ -83,7 +85,7 @@ public class EventServiceImpl implements EventService {
         switch (sortField) {
             case "name" -> comparing = Comparator.comparing(Event::getName);
             case "eventType" -> comparing = Comparator.comparing(Event::getEventType);
-            case "date" -> comparing = Comparator.comparing(Event::getDate);
+//            case "date" -> comparing = Comparator.comparing(Event::getDuration);
             case "duration" ->
                     comparing = Comparator.comparing(Event::getDuration, Comparator.comparing(Duration::getStartDate));
         }
@@ -96,9 +98,17 @@ public class EventServiceImpl implements EventService {
 
     private Duration getDuration(DurationDTO durationDTO) {
         Duration duration = new Duration();
-        duration.setStartDate(durationDTO.getStartDate());
-        duration.setEndDate(durationDTO.getEndDate());
+
+        LocalDateTime startDate = LocalDateTime.parse(durationDTO.getStartDate().replace('T', ' '), formatter);
+        LocalDateTime endDate = LocalDateTime.parse(durationDTO.getEndDate().replace('T', ' '), formatter);
+        duration.setStartDate(startDate);
+        duration.setEndDate(endDate);
         return duration;
+    }
+
+    private LocalDateTime convertToLocalDateTime(String date) {
+        String newDate = date.replace('T', ' ');
+        return LocalDateTime.parse(newDate, formatter);
     }
 
     private List<Seat> getSeats(List<SeatDTO> seatDTOS, List<Seat> seats) {

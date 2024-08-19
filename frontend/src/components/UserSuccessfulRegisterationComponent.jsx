@@ -16,7 +16,7 @@ const UserSuccessfulRegisterationComponent = () => {
   return (
     <div className='container text-center'>
       <div>
-         <img src={logo} width={135} height={135} alt='Responsive image ' className='img-fluid position-absolute mx-6 mt-4'/>
+         <img src={logo} width={135} height={135} alt='Responsive image ' className='custom-img img-fluid position-absolute mx-6 mt-4'/>
          <br/>
         <h1 className='text-center display-1 fw-bold text-light font-weight-bold mt-3'>FMI DeskSpot</h1>
       </div>

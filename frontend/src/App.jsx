@@ -5,8 +5,12 @@ import UserSuccessfulRegisterationComponent from './components/UserSuccessfulReg
 import UserLoginComponent from './components/UserLoginComponent'
 import FloorPageComponent from './components/FloorPageComponent'
 import RoomsPageComponent from './components/RoomsPageComponent'
+import { useState } from 'react'
 
 function App() {
+
+  const [room,setRoom] = useState([]);
+
   return (
     <>
       <BrowserRouter>
@@ -15,8 +19,8 @@ function App() {
           <Route path='/register' element={<UserRegistrationComponent />}></Route>
           <Route path='/successful-register' element={<UserSuccessfulRegisterationComponent />}></Route>
           <Route path='/welcome'>
-            <Route index={true} element={<FloorPageComponent />} />
-            <Route index={false} path="/welcome/floors/:floorId/rooms/:roomId" element={<RoomsPageComponent />} />
+            <Route index={true} element={<FloorPageComponent setRoom={setRoom}/>} />
+            <Route index={false} path="/welcome/floors/:floorId/rooms/:roomId" element={<RoomsPageComponent room={room}/>} />
           </Route>
 
         </Routes>

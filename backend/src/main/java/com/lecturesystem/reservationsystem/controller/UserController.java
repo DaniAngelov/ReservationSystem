@@ -2,9 +2,10 @@ package com.lecturesystem.reservationsystem.controller;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.UserDTO;
-import com.lecturesystem.reservationsystem.model.dto.UserLoginDTO;
-import com.lecturesystem.reservationsystem.model.dto.UserReserveSpotDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserLoginDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserReleaseSpotDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserReserveSpotDTO;
 import com.lecturesystem.reservationsystem.model.entity.User;
 import com.lecturesystem.reservationsystem.service.UserService;
 import org.modelmapper.ModelMapper;
@@ -42,4 +43,17 @@ public class UserController {
         userService.reserveSpot(userReserveSpotDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PutMapping("/release")
+    public ResponseEntity<?> releaseSpot(@RequestBody UserReleaseSpotDTO userReleaseSpotDTO) throws CustomUserException, CustomEventException {
+        userService.releaseSpot(userReleaseSpotDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+//
+//    @PutMapping("/forgotten-password")
+//    public ResponseEntity<?> pa(@RequestBody UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException {
+//        userService.reserveSpot(userReserveSpotDTO);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 }
