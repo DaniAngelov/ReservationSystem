@@ -15,12 +15,12 @@ body {
   box-shadow: 0px 5px 10px rgba(90, 116, 148, 0.3);
 }
 
-.computer-button{
+.computer-button {
   bottom: 0 !important;
 }
 
-.event-headline{
-  color:white;
+.event-headline {
+  color: white;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   text-align: center;
@@ -63,8 +63,8 @@ body {
 .btn-2:focus,
 .btn-2:hover,
 .btn-2:focus {
-transition: background-color 0.3s;
-background-color: #12a987 !important;
+  transition: background-color 0.3s;
+  background-color: #12a987 !important;
 
 }
 
@@ -116,12 +116,30 @@ background-color: #12a987 !important;
 }
 
 .card-body {
-  width: 30%;
-  text-align: center;
+  width: 40%;
   border-radius: 10%;
+  position: absolute;
+  left:33%;
+  bottom: 3%;
+  height: 95%;
 }
 
-.sd-body ul li .sd-link {
+.btn-filter-events{
+  position: absolute;
+  bottom: 10%;
+  left: 40%;
+}
+
+.card-body-filter{
+  width: 40%;
+  border-radius: 10%;
+  position: absolute;
+  left:33%;
+  bottom: 3%;
+  height: 95%;
+}
+
+.sd-body .sd-link {
   display: inline-block;
   width: 100%;
   padding: 10px 16px;
@@ -130,19 +148,63 @@ background-color: #12a987 !important;
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
-  
+
 }
 
-.btn-release{
-    position: absolute;
-    right: 30%;
-    top: 50%;
+.btn-release {
+  position: absolute;
+  right: 30%;
+  top: 50%;
+}
+
+.btn-events-filter {
+  position: absolute;
+  top: 30%;
+  left: 15%;
+}
+
+.btn-events-add {
+  position: absolute;
+  left: 15%;
+  top: 23%
+}
+
+.btn-events-sort {
+  position: absolute;
+  left: 15%;
+  top: 31%
 }
 
 .btn-custom {
   right: 0;
   bottom: 2%;
   position: absolute;
+}
+
+.btn-user-settings-2 {
+  position: absolute;
+  left: 2%;
+  bottom: 2%;
+  width: 30vh;
+  text-align: start;
+  z-index: 1;
+}
+
+.header-user-icon{
+  position: absolute;
+  left:50%;
+  bottom: 20%;
+}
+
+.img-fluid-user-icon{
+  position: absolute;
+  left:0;
+}
+
+.events {
+  position: absolute;
+  left: 0;
+  bottom: 0;
 }
 
 .submitButton-left {

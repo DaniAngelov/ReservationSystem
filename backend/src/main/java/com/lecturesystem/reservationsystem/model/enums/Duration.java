@@ -1,4 +1,4 @@
-package com.lecturesystem.reservationsystem.model.entity;
+package com.lecturesystem.reservationsystem.model.enums;
 
 import jakarta.persistence.*;
 import lombok.Getter;

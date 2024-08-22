@@ -5,6 +5,7 @@ import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
 import com.lecturesystem.reservationsystem.model.dto.EventDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.enums.Duration;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.repository.EventRepository;
 import com.lecturesystem.reservationsystem.repository.FloorRepository;

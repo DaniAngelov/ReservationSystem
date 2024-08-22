@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
+import userIcon from '../assets/user-icon.png';
 import { getFloors, uploadFile } from '../services/FloorService';
 
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode'
 
 const FloorPageComponent = ({setRoom}) => {
 
@@ -11,11 +13,16 @@ const FloorPageComponent = ({setRoom}) => {
   const [floors, setFloors] = useState([]);
   const [floorNumbers, setFloorNumbers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const token = localStorage.getItem('token');
+  const decodedToken = jwtDecode(token);
+
+  const user = decodedToken.sub;
+  
 
   const navigator = useNavigate();
 
   useEffect(() => {
-    getFloors().then((response) => {
+    getFloors(token).then((response) => {
       const newFloors = [];
       const newMap = [];
       response.data.map(floor => {
@@ -32,6 +39,19 @@ const FloorPageComponent = ({setRoom}) => {
       console.error(error);
     })
   }, []);
+
+  const navigateToUserSettings = () => {
+    navigator('/settings');
+  }
+
+  const OpenUserSettings = () => {
+    return (<><div className='container'>
+      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={navigateToUserSettings}>
+        <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
+        <h4 className='header-user-icon'>{user}</h4>
+      </button>
+    </div></>)
+  }
 
   const showRooms = (floorNumber) => {
     const newMap = [];
@@ -101,9 +121,6 @@ const FloorPageComponent = ({setRoom}) => {
                  return <li key ={idx}><a  className="dropdown-item" onClick={() => showRooms(floor)}>{floor}</a></li>
                 })}
               </ul>
-              <ul>
-                <li><button className="btn btn-primary submitButton sd-link text-light">Reserve your spot now!</button></li>
-              </ul>
             </div>
           </div>
         </div>
@@ -119,7 +136,7 @@ const FloorPageComponent = ({setRoom}) => {
       const newFormData = new FormData();
       const file = e.target.files[0];
       newFormData.append('file',file,file.name);
-      uploadFile(newFormData).then((response) => {
+      uploadFile(newFormData,token).then((response) => {
         console.log("Response" + response.data)
       })
         .catch((error) => {
@@ -128,9 +145,9 @@ const FloorPageComponent = ({setRoom}) => {
     }
 
     return (<>
-      <div class="custom-file">
+      <div class="custom-file-3">
         <input type="file" class="custom-file-input" id="validatedCustomFile"  onChange={handleFileSelected} required />
-        <label class="custom-file-label col-md-2 ml-1" for="validatedCustomFile">Choose file...</label>
+        <label class="custom-file-label col-md-2" for="validatedCustomFile">Choose file...</label>
       </div>
     </>)
   }
@@ -140,6 +157,7 @@ const FloorPageComponent = ({setRoom}) => {
       <SidebarLeftComponent />
       <SeatsComponent />
       <UploadFile/>
+      <OpenUserSettings />
     </>
   )
 }

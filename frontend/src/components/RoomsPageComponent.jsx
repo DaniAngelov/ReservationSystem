@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import { releaseSpot, reserveSpot } from '../services/UserService'
 import { addEvent, getEvents } from '../services/FloorService';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import one from '../assets/one.jpg';
 import two from '../assets/two.png';
 import three from '../assets/three.jpg';
+import userIcon from '../assets/user-icon.png';
 import axios from 'axios';
 import { Button } from "react-bootstrap";
 import { HiDesktopComputer } from "react-icons/hi"
 import { LuCable } from "react-icons/lu";
 import { PiOfficeChairFill } from "react-icons/pi";
 import { MdEventAvailable } from "react-icons/md";
+import { jwtDecode } from 'jwt-decode'
 
 const RoomsPageComponent = (parentRoom) => {
   const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
@@ -29,6 +31,15 @@ const RoomsPageComponent = (parentRoom) => {
   const [endDate, setEndDate] = useState('');
   const [seatsNumber, setSeatsNumber] = useState('');
 
+  const [dateOption, setDateOption] = useState('');
+
+  const token = localStorage.getItem('token');
+
+  const decodedToken = jwtDecode(token);
+
+  const user = decodedToken.sub;
+
+  const role = decodedToken.role;
 
   // Seats
   const [event, setEvent] = useState([]);
@@ -37,11 +48,21 @@ const RoomsPageComponent = (parentRoom) => {
 
   const [chosenEvent, setChosenEvent] = useState('');
 
-  const [chosenUser, setChosenUser] = useState('');
-
   const [updateSeatsToggle, setUpdateSeatsToggle] = useState(false)
 
   const [releaseSeat, setReleaseSeat] = useState(false);
+
+  const [showSortEvents, setShowSortEvents] = useState(false);
+
+  const [filteredEvents, setFilteredEvents] = useState([])
+
+  const navigator = useNavigate();
+
+
+
+  const toggleShowSortEvents = () => {
+    return setShowSortEvents(!showSortEvents);
+  }
 
   const ToggleReleaseSeats = () => {
     return setReleaseSeat(!releaseSeat);
@@ -57,22 +78,41 @@ const RoomsPageComponent = (parentRoom) => {
   }
 
   useEffect(() => {
-    getEvents(['name'])
+    getEvents(token)
       .then((response) => {
         const newEvents = [];
         response.data.map(event => {
           newEvents.push(event);
         });
         setEvents(newEvents);
+        setFilteredEvents(newEvents);
       }).catch(error => {
         console.error(error);
       })
   }, []);
 
   const [showForm, setShowForm] = useState(false);
+  const [filterForm, setFilterForm] = useState(false);
 
   const updateShowForm = () => {
     setShowForm(!showForm);
+  }
+
+  const updateFilterForm = () => {
+    setFilterForm(!filterForm);
+  }
+
+  const OpenDatePicker = () => {
+    return (<div className='form-group text-start mb-2'>
+      <label className='form-label text-light'>Event Start Time</label>
+      <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control'
+        onChange={(e) => setStartDate(e.target.value)}>
+      </input>
+      <label className='form-label text-light'>Event End time</label>
+      <input type='datetime-local' placeholder='Enter Event End Time' name='endDate' value={endDate} className='form-control'
+        onChange={(e) => setEndDate(e.target.value)}>
+      </input>
+    </div>)
   }
 
   const addNewEvent = (e, name, description, eventType, startDate, endDate, numberOfSeats) => {
@@ -98,7 +138,7 @@ const RoomsPageComponent = (parentRoom) => {
       }
     }
     console.log(JSON.stringify(eventDTO));
-    addEvent(JSON.stringify(eventDTO)).then((response) => {
+    addEvent(JSON.stringify(eventDTO), token).then((response) => {
       console.log(response.data);
     });
   }
@@ -107,12 +147,12 @@ const RoomsPageComponent = (parentRoom) => {
 
     return (
       <>
-        <div className='card-body text-center position-absolute top-50 start-50 translate-middle bg-secondary p-5 mt-5'>
+        <div className='card-body text-center bg-secondary p-5 mt-5'>
           <h1 className='text-center mb-4 text-light font-weight-bold'>Add event</h1>
           <form>
             <div className='form-group text-start mb-2'>
               <label className='form-label text-light'>Name</label>
-              <input type='text' placeholder='Enter Event name' autoComplete='random-name' class='form-control' value={name}
+              <input type='text' placeholder='Enter Event name' autoComplete='random-name' class='form-control text-start' value={name}
                 onChange={(e) => setName(e.target.value)}>
               </input>
             </div>
@@ -134,22 +174,87 @@ const RoomsPageComponent = (parentRoom) => {
 
             <div className='form-group text-start mb-2'>
               <label className='form-label text-light'>Event Start Time</label>
-              <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control'
+              <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control text-start'
                 onChange={(e) => setStartDate(e.target.value)}>
               </input>
               <label className='form-label text-light'>Event End time</label>
-              <input type='datetime-local' placeholder='Enter Event End Time' name='endDate' value={endDate} className='form-control'
+              <input type='datetime-local' placeholder='Enter Event End Time' name='endDate' value={endDate} className='form-control text-start'
                 onChange={(e) => setEndDate(e.target.value)}>
               </input>
             </div>
 
             <div className='form-group text-start mb-2'>
               <label className='form-label text-light'>Seats Number</label>
-              <input type='number' placeholder='Enter Number of seats' name='seatsNumber' value={seatsNumber} className='form-control'
+              <input type='number' placeholder='Enter Number of seats' name='seatsNumber' value={seatsNumber} className='form-control text-start'
                 onChange={(e) => setSeatsNumber(e.target.value)}>
               </input>
             </div>
-            <button className='btn btn-success mt-2' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate, seatsNumber)}>Add event!</button>
+            <button className='btn text-center btn-success mt-2' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate, seatsNumber)}>Add event!</button>
+          </form>
+        </div>
+      </>)
+  };
+
+  const filterNewEvents = (e, eventType, dateOption, startDate, endDate) => {
+    e.preventDefault();
+    let newFilteredEvents = events.filter((event) => event.eventType == eventType);
+    console.log('filtered events Before floor filter and after event type filter:');
+    console.log(newFilteredEvents);
+    newFilteredEvents = events.filter((event) => event.roomNumber == roomId && event.floorNumber == floorId);
+    console.log(events);
+    const newStartDate = Date.parse(startDate);
+    const newEndDate = Date.parse(endDate);
+    const nowTime = new Date(Date.now());
+    console.log('filtered events After floor filter:');
+    console.log(newFilteredEvents);
+
+    if (dateOption == 'Specify date') {
+      newFilteredEvents = newFilteredEvents.filter((event) =>
+        Date.parse(event.duration.startDate) > newStartDate && Date.parse(event.duration.endDate) < newEndDate
+      )
+    } else if (dateOption == 'Today') {
+      newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() == nowTime.getUTCDate()) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() == nowTime.getUTCDate()))
+    } else if (dateOption == 'Tomorrow') {
+      newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() == nowTime.getUTCDate() + 1) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() == nowTime.getUTCDate() + 1))
+    }
+    console.log('filtered events after:');
+    console.log(newFilteredEvents);
+    setFilteredEvents(newFilteredEvents);
+  }
+
+  const callFilterForm = () => {
+
+    return (
+      <>
+        <div className='card-body-filter text-center bg-secondary p-5 mt-5'>
+          <h1 className='text-center mb-4 text-light font-weight-bold'>Filter events</h1>
+          <form>
+            <div className='form-group text-start mb-2'>
+              <label className='form-label text-light'>Event Type</label>
+              <select type='text' placeholder='Enter Event Type' name='eventType' value={eventType} className='form-control'
+                onChange={(e) => { setEventType(e.target.value) }}>
+                <option>LECTURE</option>
+                <option>EXAM</option>
+                <option>SEMINAR</option>
+              </select>
+            </div>
+
+            {eventType == '' && setEventType('LECTURE')}
+
+            <div className='form-group text-start mb-2'>
+              <label className='form-label text-light'>Date</label>
+              <select type='text' placeholder='Enter Date' name='eventType' value={dateOption} className='form-control'
+                onChange={(e) => {
+                  setDateOption(e.target.value)
+                }}>
+                <option>Today</option>
+                <option>Tomorrow</option>
+                <option>Specify date</option>
+              </select>
+            </div>
+            {dateOption == '' && setDateOption('Today')}
+            {dateOption == 'Specify date' && <OpenDatePicker />}
+            <button className='btn btn-filter-events btn-success mt-2 p-3' onClick={(e) => filterNewEvents(e, eventType, dateOption, startDate, endDate)}>Filter events!</button>
           </form>
         </div>
       </>)
@@ -197,10 +302,8 @@ const RoomsPageComponent = (parentRoom) => {
 
       e.preventDefault();
 
-      // setChosenUser('topki3');
-
       const userReserveSpotDTO = {
-        "username": "topki3",
+        "username": user,
         "seat": chosenSeat,
         "floorNumber": floorId,
         "eventName": chosenEvent,
@@ -210,7 +313,7 @@ const RoomsPageComponent = (parentRoom) => {
       }
       console.log(JSON.stringify(userReserveSpotDTO));
 
-      reserveSpot(JSON.stringify(userReserveSpotDTO)).then((response) => {
+      reserveSpot(JSON.stringify(userReserveSpotDTO), token).then((response) => {
         console.log(response.data);
         console.log("status: " + response.status)
         setColor('black');
@@ -291,18 +394,13 @@ const RoomsPageComponent = (parentRoom) => {
 
   const SidebarLeftComponent = () => {
 
-    const [updateEventsToggle, setUpdateEventsToggle] = useState(false);
-
-    const toggleUpdateEvents = () => {
-      setUpdateEventsToggle(!updateEventsToggle);
-    }
-
     const updateEvents = (filterOption) => {
       console.log(filterOption);
       axios.get(REST_API_BASE_URL + '/events', {
         params: {
           sortField: filterOption
-        }
+        },
+        headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` }
       }).then((response) => {
         const newEvents = [];
         response.data.map(event => {
@@ -342,28 +440,35 @@ const RoomsPageComponent = (parentRoom) => {
             </div>
 
             <div className="sd-body drop">
+
               <div className='mt'>
-                <button className="btn btn-primary 
-                                  sd-link text-light p-2 w-75 text-center position-absolute top-75 start-50 translate-middle" onClick={updateShowForm}>
+                {role != 'USER' && <button className="btn btn-events-add btn-primary 
+                                  text-light p-2 w-75 text-center" onClick={updateShowForm}>
                   Add event
+                </button>}
+                <button className="btn btn-events-filter btn-success 
+                                   text-light p-2 w-75 text-center" onClick={updateFilterForm}>
+                  Filter events
                 </button>
-                <button class="btn btn-secondary dropdown-toggle sd-link text-light p-2 w-75 mt-5 text-center position-absolute top-75 start-50 translate-middle" id="dropdownMenuButton" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+                <button class=" btn btn-events-sort btn-secondary text-light p-2 w-75 mt-5 text-center " type="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Sort Events
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <ul class="dropdown-menu">
                   {eventSortFieldOptions.map((option, idx) => {
-                    return <li key={idx}><a className="dropdown-item sd-link" onClick={() => {
-                      toggleUpdateEvents();
+                    return <li key={idx}><a className="dropdown-item" onClick={() => {
+                      { toggleShowSortEvents }
                       { updateEvents(option) }
                     }} >
                       {option}
                     </a></li>
                   })}
-
                 </ul>
-                <ul className='position-absolute mt-6 top-50 start-50 translate-middle p-5'>
 
-                  {events.map((event, idx) => {
+
+
+                <ul className='events p-5 mt-3'>
+
+                  {filteredEvents.map((event, idx) => {
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
                       return showEvent(event, idx);
                     }
@@ -413,7 +518,7 @@ const RoomsPageComponent = (parentRoom) => {
     const releaseUserSpot = (e, seat, eventName) => {
       e.preventDefault();
       const userReleaseSpotDTO = {
-        "username": "topki3",
+        "username": user,
         "seat": seat,
         "floorNumber": floorId,
         "eventName": eventName,
@@ -421,7 +526,7 @@ const RoomsPageComponent = (parentRoom) => {
       }
       console.log("User release DTO:");
       console.log(JSON.stringify(userReleaseSpotDTO));
-      releaseSpot(JSON.stringify(userReleaseSpotDTO)).then((response) => {
+      releaseSpot(JSON.stringify(userReleaseSpotDTO), token).then((response) => {
         console.log(response.data);
         console.log("status: " + response.status);
         alert('Spot successfully released!');
@@ -484,6 +589,19 @@ const RoomsPageComponent = (parentRoom) => {
     )
   }
 
+  const navigateToUserSettings = () => {
+    navigator('/settings');
+  }
+
+  const OpenUserSettings = () => {
+    return (<><div className='container'>
+      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={navigateToUserSettings}>
+        <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
+        <h4 className='header-user-icon'>{user}</h4>
+      </button>
+    </div></>)
+  }
+
   return (
     <>
 
@@ -491,7 +609,9 @@ const RoomsPageComponent = (parentRoom) => {
       <SidebarRightComponent />
       {updateSeatsToggle && <SeatComponent />}
       {showForm && callEventForm()}
+      {filterForm && callFilterForm()}
       {releaseSeat && <ReleaseSeats />}
+      <OpenUserSettings />
     </>
   )
 }

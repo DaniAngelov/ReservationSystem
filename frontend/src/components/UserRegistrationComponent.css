@@ -20,5 +20,13 @@ html,body{
   color: black;
 }
 
+.card-body-register {
+  width: 40%;
+  border-radius: 10%;
+  position: absolute;
+  left:0;
+  bottom: 3%;
+  height: 95%;
+}
 
 

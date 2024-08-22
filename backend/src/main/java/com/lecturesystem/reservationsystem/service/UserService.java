@@ -2,18 +2,20 @@ package com.lecturesystem.reservationsystem.service;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.users.UserDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserLoginDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserReleaseSpotDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserReserveSpotDTO;
-import com.lecturesystem.reservationsystem.model.entity.User;
+import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.*;
+import dev.samstevens.totp.exceptions.QrGenerationException;
 
 public interface UserService {
-    User registerUser(UserDTO userDto) throws CustomUserException;
+    AuthenticationResponseDTO registerUser(UserDTO userDto) throws CustomUserException;
 
-    void loginUser(UserLoginDTO userLoginDTO) throws CustomUserException;
+    AuthenticationResponseDTO loginUser(UserLoginDTO userLoginDTO) throws CustomUserException;
 
     void reserveSpot(UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException;
 
     void releaseSpot(UserReleaseSpotDTO userReleaseSpotDTO) throws CustomUserException, CustomEventException;
+
+    User2FADTO generate2FA(User2FAAuthenticationRequestDTO user2FAAuthenticationRequestDTO) throws CustomUserException, QrGenerationException;
+
+    void verifyCode(VerificationRequestDTO verificationRequestDTO) throws CustomUserException;
 }

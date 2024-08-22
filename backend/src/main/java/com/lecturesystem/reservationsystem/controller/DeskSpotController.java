@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,24 +41,28 @@ public class DeskSpotController {
 
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<FloorDTO> addFloor(@RequestBody FloorDTO floorDTO) throws CustomUserException {
         Floor floor = floorService.addFloor(floorDTO);
         return new ResponseEntity<>(modelMapper.map(floor, FloorDTO.class), HttpStatus.CREATED);
     }
 
     @PostMapping("/events")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
     public ResponseEntity<EventDTO> addEvent(@RequestBody EventDTO EventDTO) throws CustomEventException {
         Event event = eventService.addEvent(EventDTO);
         return new ResponseEntity<>(modelMapper.map(event, EventDTO.class), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/events")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
     public ResponseEntity<?> deleteEvent(@RequestBody DeleteEventDTO deleteEventDTO) throws CustomEventException {
         eventService.deleteEvent(deleteEventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/events")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
     public ResponseEntity<List<EventDTO>> getAllEventsSorted(@RequestParam String sortField) {
         List<Event> events = eventService.getAllEvents(sortField);
         List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(Collectors.toList());
@@ -65,6 +70,7 @@ public class DeskSpotController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('USER', 'LECTOR','ADMIN')")
     public ResponseEntity<List<FloorDTO>> getAllFloorsWithDetailsSorted() {
         List<Floor> floors = floorService.getAllFloors();
         List<FloorDTO> floorDTOS = floors.stream().map(floor -> modelMapper.map(floor, FloorDTO.class)).collect(Collectors.toList());
@@ -72,6 +78,7 @@ public class DeskSpotController {
     }
 
     @PostMapping("/upload")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<WrapperDTO> readDataFromFile(@ModelAttribute MultipartFile file) throws IOException, CustomUserException, CustomEventException {
         objectMapper.registerModule(new JavaTimeModule());
         System.out.println(file);

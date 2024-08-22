@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.model.entity;
 
+import com.lecturesystem.reservationsystem.model.enums.RoomType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

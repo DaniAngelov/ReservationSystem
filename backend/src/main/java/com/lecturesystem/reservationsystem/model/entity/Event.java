@@ -1,5 +1,7 @@
 package com.lecturesystem.reservationsystem.model.entity;
 
+import com.lecturesystem.reservationsystem.model.enums.Duration;
+import com.lecturesystem.reservationsystem.model.enums.EventType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

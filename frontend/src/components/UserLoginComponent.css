@@ -19,3 +19,38 @@ html,body{
 .btn-success {
   color: black;
 }
+
+.card-body-login {
+  width: 40%;
+  border-radius: 10%;
+  position: absolute;
+  left:33%;
+  bottom: 3%;
+  height: 95%;
+}
+
+.custom-form-2{
+  position: absolute;
+  bottom: 20%;
+  right: 20%;
+}
+
+.btn-embossed-2 {
+  position: absolute;
+  bottom: 15%;
+  width: 70%;
+  padding: 6px;
+  right: 15%;
+  background-color: #B85FC6;
+  border: none;
+  text-transform: uppercase;
+}
+
+.custom-card-body-2{
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  height: 60%;
+  border-radius: 10%;
+  width: 40%;
+}

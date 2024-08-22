@@ -33,7 +33,7 @@ const UserRegistrationComponent = () => {
       <div className='card mt-5 bg-transparent border-0 position-absolute top-50 start-50 translate-middle'>
         <h2 className='display-4 fw-normal text-center text-light mb-4'>Sign up</h2>
 
-        <div className='card-body text-center col-md-12'>
+        <div className='card-body-register text-center col-md-12'>
           <form>
               <div className='form-group text-start mb-2'>
                 <label className='form-label text-light'>Username:</label>

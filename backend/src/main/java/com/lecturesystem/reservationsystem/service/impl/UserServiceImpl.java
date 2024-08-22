@@ -1,25 +1,29 @@
 package com.lecturesystem.reservationsystem.service.impl;
 
+import com.lecturesystem.reservationsystem.config.JwtService;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
+import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserLoginDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserReleaseSpotDTO;
-import com.lecturesystem.reservationsystem.model.dto.users.UserReserveSpotDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.*;
 import com.lecturesystem.reservationsystem.model.entity.Event;
-import com.lecturesystem.reservationsystem.model.entity.RoomType;
 import com.lecturesystem.reservationsystem.model.entity.Seat;
 import com.lecturesystem.reservationsystem.model.entity.User;
+import com.lecturesystem.reservationsystem.model.enums.Role;
+import com.lecturesystem.reservationsystem.model.enums.RoomType;
 import com.lecturesystem.reservationsystem.repository.EventRepository;
-import com.lecturesystem.reservationsystem.repository.RoomRepository;
 import com.lecturesystem.reservationsystem.repository.SeatRepository;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.UserService;
+import dev.samstevens.totp.exceptions.QrGenerationException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,13 +32,18 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final SeatRepository seatRepository;
-
-    private final RoomRepository roomRepository;
-
     private final EventRepository eventRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authenticationManager;
+
+    private final TwoFactorAuthenticationService twoFactorAuthenticationService;
+
     @Override
-    public User registerUser(UserDTO userDto) throws CustomUserException {
+    public AuthenticationResponseDTO registerUser(UserDTO userDto) throws CustomUserException {
         User userByUsername = userRepository.getUserByUsername(userDto.getUsername());
 
         if (userByUsername != null) {
@@ -43,21 +52,39 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
+        user.setRole(Role.USER);
         user.setLastActive(LocalDateTime.now());
+        userRepository.save(user);
 
-        return userRepository.save(user);
+        String jwtToken = jwtService.generateToken(new HashMap<>(), user);
+        AuthenticationResponseDTO authenticationResponseDTO = new AuthenticationResponseDTO();
+        authenticationResponseDTO.setToken(jwtToken);
+
+        return authenticationResponseDTO;
     }
 
     @Override
-    public void loginUser(UserLoginDTO userLoginDTO) throws CustomUserException {
+    public AuthenticationResponseDTO loginUser(UserLoginDTO userLoginDTO) throws CustomUserException {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        userLoginDTO.getUsername(),
+                        userLoginDTO.getPassword()
+                )
+        );
         User user = userRepository.getUserByUsername(userLoginDTO.getUsername());
-        if (user == null || !user.getPassword().equals(userLoginDTO.getPassword())) {
+        if (user == null) {
             throw new CustomUserException("Wrong credentials! Please try again!");
         }
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
+
+        String jwtToken = jwtService.generateToken(new HashMap<>(), user);
+        AuthenticationResponseDTO authenticationResponseDTO = new AuthenticationResponseDTO();
+        authenticationResponseDTO.setToken(jwtToken);
+
+        return authenticationResponseDTO;
     }
 
     @Override
@@ -138,6 +165,42 @@ public class UserServiceImpl implements UserService {
         user.getEvents().remove(event);
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    @Override
+    public User2FADTO generate2FA(User2FAAuthenticationRequestDTO user2FAAuthenticationRequestDTO) throws CustomUserException, QrGenerationException {
+        User user = userRepository.getUserByUsername(user2FAAuthenticationRequestDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        String secret;
+        if (!user.isMfaEnabled()) {
+            secret = twoFactorAuthenticationService.generateNewSecret();
+            user.setSecret(secret);
+            userRepository.save(user);
+        }
+
+        User2FADTO user2FADTO = new User2FADTO();
+
+        user2FADTO.setQrCodeUri(twoFactorAuthenticationService.generateQrCodeImageUri(user.getSecret()));
+
+        return user2FADTO;
+    }
+
+    @Override
+    public void verifyCode(VerificationRequestDTO verificationRequestDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(verificationRequestDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+
+        if (!twoFactorAuthenticationService.isOtpValid(user.getSecret(), verificationRequestDTO.getCode())) {
+            throw new CustomUserException("The verification code is not correct!");
+        }
+        if (!user.isMfaEnabled()) {
+            user.setMfaEnabled(true);
+            userRepository.save(user);
+        }
     }
 
     private List<Event> addEvent(List<Event> eventList, Event event) {
