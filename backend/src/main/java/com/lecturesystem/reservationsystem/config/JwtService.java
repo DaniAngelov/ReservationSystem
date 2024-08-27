@@ -52,7 +52,7 @@ public class JwtService {
                 .claim("role", user.getRole().name())
                 .claim("faEnabled", user.isMfaEnabled())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 24)))
+                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
                 .signWith(getSignInKey())
                 .compact();
     }

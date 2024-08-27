@@ -313,6 +313,8 @@ const RoomsPageComponent = (parentRoom) => {
       }
       console.log(JSON.stringify(userReserveSpotDTO));
 
+      console.log("token:" + token)
+
       reserveSpot(JSON.stringify(userReserveSpotDTO), token).then((response) => {
         console.log(response.data);
         console.log("status: " + response.status)
@@ -547,7 +549,7 @@ const RoomsPageComponent = (parentRoom) => {
   const SeatComponent = () => {
 
     const updateSeatStatus = (eventName, seat) => {
-      console.log(chosenUser);
+      
       setChosenSeat(seat);
       setChosenEvent(eventName);
       if (!seat.seatTaken) {
@@ -604,7 +606,6 @@ const RoomsPageComponent = (parentRoom) => {
 
   return (
     <>
-
       <SidebarLeftComponent />
       <SidebarRightComponent />
       {updateSeatsToggle && <SeatComponent />}

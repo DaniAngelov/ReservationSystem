@@ -7,6 +7,9 @@ import FloorPageComponent from './components/FloorPageComponent'
 import RoomsPageComponent from './components/RoomsPageComponent'
 import { useState } from 'react'
 import UserSettingsPageComponent from './components/UserSettingsPageComponent'
+import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import "../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
+import UserPasswordChangeComponent from './components/UserPasswordChangeComponent.jsx'
 
 function App() {
 
@@ -19,8 +22,9 @@ function App() {
           <Route path='/register' element={<UserRegistrationComponent />}></Route>
           <Route path='/login' element={<UserLoginComponent />}></Route>
           <Route path='/successful-register' element={<UserSuccessfulRegisterationComponent />}></Route>
+          <Route path='/change-password' element={<UserPasswordChangeComponent />}></Route>
           <Route path='/welcome'>
-            <Route index={true} element={<FloorPageComponent setRoom={setRoom}/>} />
+            <Route index={true} element={<FloorPageComponent setRoom={setRoom} />} />
             <Route index={false} path="/welcome/floors/:floorId/rooms/:roomId" element={<RoomsPageComponent room={room} />} />
           </Route>
           <Route path='/settings' element={<UserSettingsPageComponent />} />

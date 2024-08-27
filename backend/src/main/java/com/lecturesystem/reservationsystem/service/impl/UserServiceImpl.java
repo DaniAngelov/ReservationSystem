@@ -16,7 +16,12 @@ import com.lecturesystem.reservationsystem.repository.SeatRepository;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.UserService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,12 +47,19 @@ public class UserServiceImpl implements UserService {
 
     private final TwoFactorAuthenticationService twoFactorAuthenticationService;
 
+    @Autowired
+    private JavaMailSenderImpl javaMailSender;
+
     @Override
     public AuthenticationResponseDTO registerUser(UserDTO userDto) throws CustomUserException {
         User userByUsername = userRepository.getUserByUsername(userDto.getUsername());
 
         if (userByUsername != null) {
             throw new CustomUserException("User already registered!");
+        }
+        User userByEmail = userRepository.getUserByEmail(userDto.getEmail());
+        if (userByEmail != null) {
+            throw new CustomUserException("User with such email already exists!");
         }
 
         User user = new User();
@@ -56,6 +68,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userDto.getEmail());
         user.setRole(Role.USER);
         user.setLastActive(LocalDateTime.now());
+        user.setIsPasswordChangeEnabled(false);
         userRepository.save(user);
 
         String jwtToken = jwtService.generateToken(new HashMap<>(), user);
@@ -115,6 +128,9 @@ public class UserServiceImpl implements UserService {
         }
         if (chosenSeat.isSeatTaken()) {
             throw new CustomUserException("Seat is already taken by another user!");
+        }
+        if (event.getRoom() == null) {
+            throw new CustomUserException("There is no such room!");
         }
         if (event.getRoom().getRoomType().equals(RoomType.COMPUTER)) {
             chosenSeat.setOccupiesCharger(userReserveSpotDTO.isOccupiesCharger());
@@ -201,6 +217,45 @@ public class UserServiceImpl implements UserService {
             user.setMfaEnabled(true);
             userRepository.save(user);
         }
+    }
+
+    @Override
+    public void sendMessageToEmail(String email) throws CustomUserException, MessagingException {
+        User user = userRepository.getUserByEmail(email);
+        if (user == null) {
+            throw new CustomUserException("There is no user connected with this email!");
+        }
+        user.setIsPasswordChangeEnabled(true);
+        userRepository.save(user);
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setSubject("Change your password!");
+        helper.setTo(email);
+        helper.setText("You have requested to change your password in FMI DeskSpot! \n \n In order to chnage your password click the link below:" +
+                "\n \n \n http://localhost:5173/change-password");
+        javaMailSender.send(message);
+    }
+
+    @Override
+    public void updatePassword(String password) throws CustomUserException {
+        List<User> users = userRepository.findAll();
+        User newUser = new User();
+        boolean userFound = false;
+        for (User user : users) {
+            if (user.getIsPasswordChangeEnabled() != null && user.getIsPasswordChangeEnabled()) {
+                newUser = user;
+                userFound = true;
+                break;
+            }
+        }
+
+        if (!userFound) {
+            throw new CustomUserException("User with such email not found!");
+        }
+
+        newUser.setPassword(passwordEncoder.encode(password));
+        newUser.setIsPasswordChangeEnabled(false);
+        userRepository.save(newUser);
     }
 
     private List<Event> addEvent(List<Event> eventList, Event event) {

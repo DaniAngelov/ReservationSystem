@@ -1,16 +1,14 @@
 package com.lecturesystem.reservationsystem.service.impl;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
+import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
 import com.lecturesystem.reservationsystem.model.dto.EventDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
-import com.lecturesystem.reservationsystem.model.enums.Duration;
 import com.lecturesystem.reservationsystem.model.entity.*;
-import com.lecturesystem.reservationsystem.repository.EventRepository;
-import com.lecturesystem.reservationsystem.repository.FloorRepository;
-import com.lecturesystem.reservationsystem.repository.RoomRepository;
-import com.lecturesystem.reservationsystem.repository.SeatRepository;
+import com.lecturesystem.reservationsystem.model.enums.Duration;
+import com.lecturesystem.reservationsystem.repository.*;
 import com.lecturesystem.reservationsystem.service.EventService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +31,8 @@ public class EventServiceImpl implements EventService {
     private final SeatRepository seatRepository;
 
     private final FloorRepository floorRepository;
+
+    private final UserRepository userRepository;
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -57,6 +57,7 @@ public class EventServiceImpl implements EventService {
                 event.setSeats(getSeats(eventDTO.getSeats(), new ArrayList<>()));
                 event.setFloorNumber(eventDTO.getFloorNumber());
                 event.setRoomNumber(eventDTO.getRoomNumber());
+                event.setRoom(room);
                 Event newEvent = this.eventRepository.save(event);
                 room.getEvents().add(newEvent);
                 roomRepository.save(room);
@@ -70,6 +71,15 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> getAllEvents(String sortField) {
         return sortValues(eventRepository.findAll(), sortField);
+    }
+
+    @Override
+    public List<Event> getAllEventsForUser(String username) throws CustomUserException {
+        User user = userRepository.getUserByUsername(username);
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        return sortValues(user.getEvents(), "name");
     }
 
     @Override

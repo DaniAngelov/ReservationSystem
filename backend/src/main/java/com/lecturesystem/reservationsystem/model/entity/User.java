@@ -29,7 +29,7 @@ public class User implements Serializable, UserDetails {
     @Column
     private String password;
 
-    @Column
+    @Column(unique = true)
     private String email;
 
     @Column(name = "last_active")
@@ -53,6 +53,9 @@ public class User implements Serializable, UserDetails {
     @Column
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column
+    private Boolean isPasswordChangeEnabled;
 
     @Override
     public String getUsername() {

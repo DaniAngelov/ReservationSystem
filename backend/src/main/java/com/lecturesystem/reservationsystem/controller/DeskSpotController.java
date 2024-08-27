@@ -69,6 +69,14 @@ public class DeskSpotController {
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
+    @GetMapping("/events/user")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    public ResponseEntity<List<EventDTO>> getAllEventsSortedForUser(@RequestParam String username) throws CustomUserException {
+        List<Event> events = eventService.getAllEventsForUser(username);
+        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(Collectors.toList());
+        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'LECTOR','ADMIN')")
     public ResponseEntity<List<FloorDTO>> getAllFloorsWithDetailsSorted() {
@@ -91,6 +99,4 @@ public class DeskSpotController {
         }
         return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
     }
-
-
 }

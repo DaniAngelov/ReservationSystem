@@ -1,19 +1,20 @@
-html,body{
+html,
+body {
   font-family: Arial, Helvetica, sans-serif;
   height: 100%;
-  background: url('../assets/work-desk-schedule.jpg') no-repeat center center fixed; 
+  background: url('../assets/work-desk-schedule.jpg') no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover
 }
 
-.custom-img{
+.custom-img {
   right: 80%;
 }
 
 .mx-6 {
-  margin-left: 3rem; 
+  margin-left: 3rem;
 }
 
 .btn-success {
@@ -24,14 +25,14 @@ html,body{
   width: 40%;
   border-radius: 10%;
   position: absolute;
-  left:33%;
+  left: 0%;
   bottom: 3%;
   height: 95%;
 }
 
-.custom-form-2{
+.custom-form-2 {
   position: absolute;
-  bottom: 20%;
+  bottom: 15%;
   right: 20%;
 }
 
@@ -46,11 +47,37 @@ html,body{
   text-transform: uppercase;
 }
 
-.custom-card-body-2{
+.custom-card-body-2 {
   position: absolute;
   top: 20%;
   left: 30%;
   height: 60%;
   border-radius: 10%;
   width: 40%;
+}
+
+.par-navigator {
+  position: absolute;
+  bottom: 0;
+  left: 40%;
+}
+
+.header-sign-in {
+  position: absolute;
+  top: 25%;
+  left: 44%;
+}
+
+.card-body-forgot-pass {
+  position: absolute;
+  border-radius: 12px;
+  left: 30%;
+  top:23%;
+  width: 40%;
+}
+
+.mail-image {
+  position: absolute;
+  left: 10%;
+  bottom: 32%;
 }

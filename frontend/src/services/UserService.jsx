@@ -13,3 +13,7 @@ export const releaseSpot = (user,token) => axios.put(REST_API_BASE_URL + '/relea
 export const generateTwoFA = (request,token) => axios.put(REST_API_BASE_URL + '/generate-2fa', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const verifyTwoFA = (request,token) => axios.put(REST_API_BASE_URL + '/verify-code', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const sendMessageToEmail = (userEmailDTO) => axios.put(REST_API_BASE_URL + '/forgotten-password', userEmailDTO, { headers: { 'Content-Type': 'application/json'} });
+
+export const updateUserPassword = (userPassDTO) => axios.put(REST_API_BASE_URL + '/update-password', userPassDTO, { headers: { 'Content-Type': 'application/json'} });

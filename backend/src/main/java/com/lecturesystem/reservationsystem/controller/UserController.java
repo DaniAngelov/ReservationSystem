@@ -8,6 +8,7 @@ import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.UserService;
 import com.lecturesystem.reservationsystem.service.impl.TwoFactorAuthenticationService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
+import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +35,18 @@ public class UserController {
     public ResponseEntity<AuthenticationResponseDTO> login(@RequestBody UserLoginDTO userLoginDTO) throws CustomUserException {
         AuthenticationResponseDTO authenticationResponseDTO = userService.loginUser(userLoginDTO);
         return new ResponseEntity<>(authenticationResponseDTO, HttpStatus.OK);
+    }
+
+    @PutMapping("/forgotten-password")
+    public ResponseEntity<?> forgottenPassword(@RequestBody UserForgottenPasswordDTO userForgottenPasswordDTO) throws CustomUserException, MessagingException {
+        userService.sendMessageToEmail(userForgottenPasswordDTO.getEmail());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/update-password")
+    public ResponseEntity<?> updatePassword(@RequestBody UserUpdatePasswordDTO userUpdatePasswordDTO) throws CustomUserException {
+        userService.updatePassword(userUpdatePasswordDTO.getPassword());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/reserve")
