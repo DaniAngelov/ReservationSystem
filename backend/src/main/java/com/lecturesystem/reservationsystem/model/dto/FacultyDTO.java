@@ -4,9 +4,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-public class DeleteEventDTO {
+public class FacultyDTO {
     private String name;
+    private List<FloorDTO> floors;
 }

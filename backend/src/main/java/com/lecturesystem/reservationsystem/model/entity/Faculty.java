@@ -7,25 +7,21 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Entity(name = "floors")
+@Entity(name = "faculties")
 @NoArgsConstructor
 @Getter
 @Setter
-public class Floor {
+public class Faculty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "floor_number")
-    private Integer floorNumber;
+    @Column(name = "faculty_name")
+    private String name;
 
     @Column
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "floor_id", referencedColumnName = "id")
-    private List<Room> rooms;
-
-    @ManyToOne
-    @JoinColumn(name = "faculty_id")
-    private Faculty faculty;
+    @JoinColumn(name = "faculty_id", referencedColumnName = "id")
+    private List<Floor> floors;
 }

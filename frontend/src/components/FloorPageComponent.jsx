@@ -8,10 +8,10 @@ import { BsFillDoorOpenFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'
 
-const FloorPageComponent = ({ setRoom }) => {
+const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const [newRooms, setNewRooms] = useState([]);
-  const [floors, setFloors] = useState([]);
+  const [faculties, setFaculties] = useState([]);
   const [floorNumbers, setFloorNumbers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem('token');
@@ -24,7 +24,6 @@ const FloorPageComponent = ({ setRoom }) => {
 
 
   const setButtonColor = (room) => {
-    console.log("Room type here: " + room.roomType)
     if (room.roomType == 'COMPUTER') {
       return 'primary';
     } else if (room.roomType == 'SEMINAR') {
@@ -38,13 +37,18 @@ const FloorPageComponent = ({ setRoom }) => {
     getFloors(token).then((response) => {
       const newFloors = [];
       const newMap = [];
-      response.data.map(floor => {
-        newFloors.push(floor.floorNumber);
-        floor.rooms.map(room => {
-          newMap.push({ floorNumber: floor.floorNumber, room: room, roomColor: setButtonColor(room) });
-        })
+      console.log(response.data);
+      response.data.map(faculty => {
+        faculty.floors.map(
+          floor => {
+            newFloors.push({ facultyName: faculty.name, floorNumber: floor.floorNumber });
+            floor.rooms.map(room => {
+              newMap.push({ facultyName: faculty.name, floorNumber: floor.floorNumber, room: room, roomColor: setButtonColor(room) });
+            })
+          })
       });
-      setFloors(response.data);
+      console.log()
+      setFaculties(response.data);
       setFloorNumbers(newFloors);
       setNewRooms(newMap);
 
@@ -66,15 +70,21 @@ const FloorPageComponent = ({ setRoom }) => {
     </div></>)
   }
 
-  const showRooms = (floorNumber) => {
+  const showRooms = (floorNumber, facultyName) => {
     const newMap = [];
-    floors.map(floor => {
-      if (floor.floorNumber === floorNumber) {
-        floor.rooms.map(room => {
-          newMap.push({ floorNumber: floor.floorNumber, room: room, roomColor: setButtonColor(room) });
-        })
-      }
+
+    faculties.map(faculty => {
+      faculty.floors.map(floor => {
+        if (faculty.name == facultyName && floor.floorNumber == floorNumber) {
+          floor.rooms.map(room => {
+            newMap.push({ facultyName: faculty.name, floorNumber: floor.floorNumber, room: room, roomColor: setButtonColor(room) });
+          })
+        }
+      })
     })
+
+    console.log("newMap")
+    console.log(newMap)
 
     setNewRooms(newMap);
     setIsOpen(true);
@@ -83,8 +93,9 @@ const FloorPageComponent = ({ setRoom }) => {
 
   const SeatsComponent = () => {
 
-    const onClickOpenRoom = (floor, room) => {
+    const onClickOpenRoom = (floor, room, facultyName) => {
       setRoom(room);
+      setFaculty(facultyName);
       navigator(`/welcome/floors/${floor}/rooms/${room.roomNumber}`);
     }
 
@@ -94,7 +105,7 @@ const FloorPageComponent = ({ setRoom }) => {
           <div className="position-absolute top-50 start-50 translate-middle">
             {isOpen && newRooms.map((floorAndRoom, idx) =>
               <button
-                className={`btn-${floorAndRoom.roomColor} m-4 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room)}>
+                className={`btn-${floorAndRoom.roomColor} m-4 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
                 <BsFillDoorOpenFill size={30} className='mr-2' />
                 {floorAndRoom.room.roomNumber}</button>)}
 
@@ -141,13 +152,15 @@ const FloorPageComponent = ({ setRoom }) => {
 
             <div className="dropdown">
               <a class="btn dropdown-floors btn-secondary dropdown-toggle bt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-theme="dark">
-                Floors
+                Faculty - Floor
               </a>
               <ul class="dropdown-menu dropdown-floors-item dropdown-menu-dark text-center">
-                {floorNumbers.map((floor, idx) => {
-                  return <li key={idx}><a className="dropdown-item" onClick={() => showRooms(floor)}>{floor}</a></li>
-                })}
 
+                {floorNumbers.map((floor, idx) => {
+                  return <li key={idx}><a className="dropdown-item" onClick={() => showRooms(floor.floorNumber, floor.facultyName)}>
+                  {floor.facultyName}- Floor {floor.floorNumber}</a></li>
+                })
+                }
               </ul>
             </div>
           </div>
@@ -166,9 +179,11 @@ const FloorPageComponent = ({ setRoom }) => {
       newFormData.append('file', file, file.name);
       uploadFile(newFormData, token).then((response) => {
         console.log("Response" + response.data)
+        console.log(response.data);
       })
         .catch((error) => {
           console.log("error: " + error);
+          console.log(error);
         })
     }
 

@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.model.dto;
 
+import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
 import com.lecturesystem.reservationsystem.model.enums.RoomType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

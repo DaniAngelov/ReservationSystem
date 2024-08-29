@@ -31,13 +31,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CustomEventException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> customRegisterException(HttpServletResponse response, CustomEventException ex) throws IOException {
+    public ResponseEntity<Object> customEventException(HttpServletResponse response, CustomEventException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CustomDeskSpotException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Object> customDeskSpotException(HttpServletResponse response, CustomDeskSpotException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(CustomUserException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> customRegisterException(HttpServletResponse response, CustomUserException ex) throws IOException {
+    public ResponseEntity<Object> customUserException(HttpServletResponse response, CustomUserException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 

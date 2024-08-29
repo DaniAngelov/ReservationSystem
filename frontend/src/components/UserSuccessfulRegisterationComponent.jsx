@@ -25,7 +25,7 @@ const UserSuccessfulRegisterationComponent = () => {
       </div>
       <br/>
       
-      <div className="modal-content-test bg-success w-25 h-60 text-center position-absolute top-50 start-50 translate-middle mt-6" tabIndex="-1">
+      <div className="modal-content-test bg-success text-center  mt-6 p-3" tabIndex="-1">
       <img src={green_tick} width={80} height={80} alt='Responsive image' className='rounded mx-auto d-block mt-5.bg-success'/>
         <div className="modal-dialog">
           <div className="modal-content">

@@ -2,10 +2,12 @@ package com.lecturesystem.reservationsystem.service.impl;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
-import com.lecturesystem.reservationsystem.model.dto.EventDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.DeleteEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.DisableEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.SearchEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
 import com.lecturesystem.reservationsystem.repository.*;
@@ -34,6 +36,8 @@ public class EventServiceImpl implements EventService {
 
     private final UserRepository userRepository;
 
+    private final FacultyRepository facultyRepository;
+
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
@@ -42,35 +46,63 @@ public class EventServiceImpl implements EventService {
         if (eventByName != null) {
             throw new CustomEventException("There is such event already!");
         }
-        Floor floor = floorRepository.getFloorByFloorNumber(eventDTO.getFloorNumber());
-        if (floor == null) {
-            throw new CustomEventException("There is no such floor!");
+        Faculty faculty = facultyRepository.findFacultyByName(eventDTO.getFacultyName());
+        if (faculty == null) {
+            throw new CustomEventException("There is no such faculty!");
         }
-
-        for (Room room : floor.getRooms()) {
-            if (room.getRoomNumber() == eventDTO.getRoomNumber()) {
-                Event event = new Event();
-                event.setName(eventDTO.getName());
-                event.setDescription(eventDTO.getDescription());
-                event.setEventType(eventDTO.getEventType());
-                event.setDuration(getDuration(eventDTO.getDuration()));
-                event.setSeats(getSeats(eventDTO.getSeats(), new ArrayList<>()));
-                event.setFloorNumber(eventDTO.getFloorNumber());
-                event.setRoomNumber(eventDTO.getRoomNumber());
-                event.setRoom(room);
-                Event newEvent = this.eventRepository.save(event);
-                room.getEvents().add(newEvent);
-                roomRepository.save(room);
-                return newEvent;
+        User organizer = userRepository.getUserByUsername(eventDTO.getUser());
+        if (organizer == null) {
+            throw new CustomEventException("There is no such organizer!");
+        }
+        List<Floor> floors = faculty.getFloors();
+        for (Floor floor : floors) {
+            if (eventDTO.getFloorNumber() == floor.getFloorNumber()) {
+                for (Room room : floor.getRooms()) {
+                    if (room.getRoomNumber() == eventDTO.getRoomNumber()) {
+                        Event event = new Event();
+                        event.setName(eventDTO.getName());
+                        event.setDescription(eventDTO.getDescription());
+                        event.setEventType(eventDTO.getEventType());
+                        event.setDuration(getDuration(eventDTO.getDuration()));
+                        event.setSeats(getSeats(eventDTO.getSeats(), new ArrayList<>()));
+                        event.setFloorNumber(eventDTO.getFloorNumber());
+                        event.setRoomNumber(eventDTO.getRoomNumber());
+                        event.setDisableEventReason(null);
+                        event.setRoom(room);
+                        event.setEnabled(true);
+                        event.setUser(organizer);
+                        event.setFacultyName(eventDTO.getFacultyName());
+                        Event newEvent = this.eventRepository.save(event);
+                        room.getEvents().add(newEvent);
+                        roomRepository.save(room);
+                        return newEvent;
+                    }
+                }
+                throw new CustomEventException("There is no such room!");
             }
         }
-        throw new CustomEventException("There is no such room!");
+        throw new CustomEventException("There is no such floor!");
     }
 
 
     @Override
     public List<Event> getAllEvents(String sortField) {
         return sortValues(eventRepository.findAll(), sortField);
+    }
+
+    @Override
+    public List<Event> searchEvents(SearchEventDTO searchEventDTO) {
+        List<Event> foundEvents = new ArrayList<>();
+        List<Event> events = eventRepository.findAll();
+        for (Event event : events) {
+            if (event.getFloorNumber() == searchEventDTO.getFloorNumber() &&
+                    event.getRoomNumber() == searchEventDTO.getRoomNumber() &&
+                    event.getFacultyName().equals(searchEventDTO.getFacultyName()) &&
+                    event.getName().toUpperCase().contains(searchEventDTO.getSearchField().toUpperCase())) {
+                foundEvents.add(event);
+            }
+        }
+        return foundEvents.stream().sorted(Comparator.comparing(Event::getName)).collect(Collectors.toList());
     }
 
     @Override
@@ -89,6 +121,23 @@ public class EventServiceImpl implements EventService {
             throw new CustomEventException("There is no such event!");
         }
         eventRepository.deleteById(event.getId());
+    }
+
+    @Override
+    public void disableEvent(DisableEventDTO disableEventDTO) throws CustomEventException {
+        User user = userRepository.getUserByUsername(disableEventDTO.getUser());
+        if (user == null) {
+            throw new CustomEventException("There is no such user!");
+        }
+        Event event = eventRepository.findEventByName(disableEventDTO.getName());
+        if (event == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        if (event.getUser().getUsername().equals(user.getUsername())) {
+            event.setDisableEventReason(disableEventDTO.getDisableReason());
+            event.setEnabled(false);
+        }
+
     }
 
     private List<Event> sortValues(List<Event> eventList, String sortField) {
@@ -115,11 +164,6 @@ public class EventServiceImpl implements EventService {
         duration.setStartDate(startDate);
         duration.setEndDate(endDate);
         return duration;
-    }
-
-    private LocalDateTime convertToLocalDateTime(String date) {
-        String newDate = date.replace('T', ' ');
-        return LocalDateTime.parse(newDate, formatter);
     }
 
     private List<Seat> getSeats(List<SeatDTO> seatDTOS, List<Seat> seats) {

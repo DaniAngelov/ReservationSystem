@@ -140,9 +140,22 @@ h1 {
   position: absolute;
   left: 10%;
   width: 80%;
+  top: 20%;
 }
 
 .dropdown-floors-item {
+  width: 150%;
+  top: 20%;
+}
+
+
+.dropdown-faculties {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+}
+
+.dropdown-faculties-item {
   width: 80%;
 }
 

@@ -7,7 +7,8 @@ import { BsShieldLockFill } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom';
 import { getEventsForUser } from '../services/FloorService';
-
+import { Carousel } from "react-bootstrap";
+import { MdEventAvailable } from "react-icons/md";
 
 const UserSettingsPageComponent = () => {
 
@@ -156,15 +157,30 @@ const UserSettingsPageComponent = () => {
   }
 
   const showEvent = (event, idx) => {
-    return <li><div className="list-group-item list-group-item-2 bg-success p-2" key={idx} >
-      <div>
-        <h5 class="mb-3">{event.name}</h5>
-        <small>{event.eventType}</small>
-      </div>
-      <br />
-      <p class="mb-3">{event.description}</p>
-      <small>{event.date}</small>
-    </div></li>
+    let newStartDate = event.duration.startDate.replace('T', ' ');
+    let newEndDate = event.duration.endDate.replace('T', ' ');
+    console.log(event);
+    return <Carousel.Item key={idx} className='carousel-new-item-2'>
+      <button className="d-block custom-event-button-2 text-light bg-primary p-3 mt-5" key={idx} onClick={() => {
+        setEvent(event);
+        toggleUpdateSeats();
+      }
+      }>
+        <MdEventAvailable size={30} />
+        <h5>Event: {event.name}</h5>
+        <small>Event type: {event.eventType}</small>
+        <br />
+        <small class="mb-1 mt-2">Description: {event.description}</small>
+        <br />
+        <small>Start: {newStartDate}</small>
+        <br />
+        <small>End: {newEndDate}</small>
+        <br />
+        <small>Floor: {event.floorNumber}</small>
+        <br />
+        <small>Room: {event.roomNumber}</small>
+
+      </button></Carousel.Item>;
   }
 
   const ShowAllEventsForUser = () => {
@@ -173,12 +189,12 @@ const UserSettingsPageComponent = () => {
     return (
       <>
         <div>
-          <ul className='new-custom-form-2 p-5 mt-3 text-light'>
-            <h1 className='text-center mb-5'>Your Events</h1>
+          <Carousel size={150} width={150} height={200} className='carousel-2 p-5 mt-5'>
             {events.map((event, idx) => {
               return showEvent(event, idx);
             })}
-          </ul>
+
+          </Carousel>
         </div>
       </>
     )

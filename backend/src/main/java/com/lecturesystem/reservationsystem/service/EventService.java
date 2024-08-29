@@ -2,8 +2,10 @@ package com.lecturesystem.reservationsystem.service;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
-import com.lecturesystem.reservationsystem.model.dto.EventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.DeleteEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.DisableEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.SearchEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
 
 import java.util.List;
@@ -13,7 +15,11 @@ public interface EventService {
 
     List<Event> getAllEvents(String sortField);
 
+    List<Event> searchEvents(SearchEventDTO searchEventDTO);
+
     List<Event> getAllEventsForUser(String username) throws CustomUserException;
 
     void deleteEvent(DeleteEventDTO deleteEventDTO) throws CustomEventException;
+
+    void disableEvent(DisableEventDTO disableEventDTO) throws CustomEventException;
 }

@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.model.dto;
 
+import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class WrapperDTO implements Serializable {
-    List<FloorDTO> floors;
+    List<FacultyDTO> faculties;
     List<EventDTO> events;
 }

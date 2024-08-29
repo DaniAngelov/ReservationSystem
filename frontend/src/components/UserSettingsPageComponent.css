@@ -156,4 +156,14 @@ input {
   text-transform: uppercase;
 }
 
+.carousel-2{
+  position: absolute;
+  left: 40%;
+  top: 10%;
+}
+
+.carousel-new-item-2{
+  width: 500px;
+}
+
 

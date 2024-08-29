@@ -15,9 +15,6 @@ body {
   box-shadow: 0px 5px 10px rgba(90, 116, 148, 0.3);
 }
 
-.computer-button {
-  bottom: 0 !important;
-}
 
 .event-headline {
   color: white;
@@ -115,28 +112,28 @@ body {
   margin-bottom: 8px;
 }
 
-.card-body {
-  width: 40%;
+.card-body-5 {
+  width: 50%;
   border-radius: 10%;
   position: absolute;
-  left:33%;
-  bottom: 3%;
-  height: 95%;
+  left:31%;
+  bottom: 15%;
+  height: 70%;
 }
 
 .btn-filter-events{
   position: absolute;
-  bottom: 10%;
-  left: 40%;
+  bottom: 2%;
+  left: 36%;
 }
 
 .card-body-filter{
-  width: 40%;
+  width: 30%;
   border-radius: 10%;
   position: absolute;
-  left:33%;
-  bottom: 3%;
-  height: 95%;
+  left:38%;
+  bottom: 10.5%;
+  height: 75%;
 }
 
 .sd-body .sd-link {
@@ -153,32 +150,42 @@ body {
 
 .btn-release {
   position: absolute;
-  right: 30%;
-  top: 50%;
+  left: 25%;
+  bottom: 2%;
+  z-index: 1;
 }
 
 .btn-events-filter {
   position: absolute;
-  top: 30%;
+  top: 31%;
   left: 15%;
 }
 
 .btn-events-add {
   position: absolute;
   left: 15%;
-  top: 23%
+  top: 24%
 }
 
 .btn-events-sort {
   position: absolute;
   left: 15%;
-  top: 31%
+  top: 33%
 }
 
-.btn-custom {
+.btn-custom-reserve-spot {
   right: 0;
-  bottom: 2%;
+  bottom: 0.5%;
   position: absolute;
+  display: inline-block;
+  width: 100%;
+  padding: 10px 16px;
+  color: #475f7b;
+  background-color: #e5e8ec;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 8px;
 }
 
 .btn-user-settings-2 {
@@ -209,4 +216,42 @@ body {
 
 .submitButton-left {
   margin-top: 190%;
+}
+
+.event-header{
+  position: absolute;
+  left: 20%;
+  top: 15%;
+}
+
+.custom-event-button-2{
+  border-radius: 20px;
+  z-index: 1;
+}
+
+.carousel {
+  width:300px;
+  height:500px;
+  position: absolute !important;
+  left: -3%;
+  margin: auto;
+  z-index: 1;
+}
+
+.custom-navbar{
+  position: absolute !important;
+  top: 90%;
+  width: 100%;
+  height: 10%;
+  background-color: #212529;
+}
+
+.custom-form-search-bar{
+  position: absolute !important;
+  left:45%;
+}
+
+.search-bar-icon{
+  position: absolute;
+  left: 0
 }

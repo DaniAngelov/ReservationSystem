@@ -5,14 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.DeleteEventDTO;
-import com.lecturesystem.reservationsystem.model.dto.EventDTO;
-import com.lecturesystem.reservationsystem.model.dto.FloorDTO;
+import com.lecturesystem.reservationsystem.model.dto.FacultyDTO;
 import com.lecturesystem.reservationsystem.model.dto.WrapperDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.entity.Event;
-import com.lecturesystem.reservationsystem.model.entity.Floor;
+import com.lecturesystem.reservationsystem.model.entity.Faculty;
 import com.lecturesystem.reservationsystem.service.EventService;
-import com.lecturesystem.reservationsystem.service.FloorService;
+import com.lecturesystem.reservationsystem.service.FacultyAndFloorService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class DeskSpotController {
 
-    private final FloorService floorService;
+    private final FacultyAndFloorService facultyAndFloorService;
 
     private final EventService eventService;
 
@@ -39,19 +38,26 @@ public class DeskSpotController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<FloorDTO> addFloor(@RequestBody FloorDTO floorDTO) throws CustomUserException {
-        Floor floor = floorService.addFloor(floorDTO);
-        return new ResponseEntity<>(modelMapper.map(floor, FloorDTO.class), HttpStatus.CREATED);
+    public ResponseEntity<?> addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException {
+        facultyAndFloorService.addFaculty(facultyDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping("/events")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
-    public ResponseEntity<EventDTO> addEvent(@RequestBody EventDTO EventDTO) throws CustomEventException {
+    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO EventDTO) throws CustomEventException {
         Event event = eventService.addEvent(EventDTO);
-        return new ResponseEntity<>(modelMapper.map(event, EventDTO.class), HttpStatus.CREATED);
+        return new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/events/search")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    public ResponseEntity<List<EventDTO>> searchEvent(@RequestBody SearchEventDTO searchEventDTO) {
+        List<Event> events = eventService.searchEvents(searchEventDTO);
+        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(Collectors.toList());
+        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
     @DeleteMapping("/events")
@@ -61,28 +67,35 @@ public class DeskSpotController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @DeleteMapping("/events/disable")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
+    public ResponseEntity<?> disableEvent(@RequestBody DisableEventDTO disableEventDTO) throws CustomEventException {
+        eventService.disableEvent(disableEventDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @GetMapping("/events")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
-    public ResponseEntity<List<EventDTO>> getAllEventsSorted(@RequestParam String sortField) {
+    public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) {
         List<Event> events = eventService.getAllEvents(sortField);
-        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(Collectors.toList());
+        List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
     @GetMapping("/events/user")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
-    public ResponseEntity<List<EventDTO>> getAllEventsSortedForUser(@RequestParam String username) throws CustomUserException {
+    public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForUser(@RequestParam String username) throws CustomUserException {
         List<Event> events = eventService.getAllEventsForUser(username);
-        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(Collectors.toList());
+        List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'LECTOR','ADMIN')")
-    public ResponseEntity<List<FloorDTO>> getAllFloorsWithDetailsSorted() {
-        List<Floor> floors = floorService.getAllFloors();
-        List<FloorDTO> floorDTOS = floors.stream().map(floor -> modelMapper.map(floor, FloorDTO.class)).collect(Collectors.toList());
-        return new ResponseEntity<>(floorDTOS, HttpStatus.OK);
+    public ResponseEntity<List<FacultyDTO>> getAllFloorsWithDetailsSorted() {
+        List<Faculty> faculties = facultyAndFloorService.getAllFloors();
+        List<FacultyDTO> facultyDTOS = faculties.stream().map(faculty -> modelMapper.map(faculty, FacultyDTO.class)).collect(Collectors.toList());
+        return new ResponseEntity<>(facultyDTOS, HttpStatus.OK);
     }
 
     @PostMapping("/upload")
@@ -91,8 +104,8 @@ public class DeskSpotController {
         objectMapper.registerModule(new JavaTimeModule());
         System.out.println(file);
         WrapperDTO wrapperDTO = objectMapper.readValue(file.getInputStream(), WrapperDTO.class);
-        for (FloorDTO floorDTO : wrapperDTO.getFloors()) {
-            addFloor(floorDTO);
+        for (FacultyDTO facultyDTO : wrapperDTO.getFaculties()) {
+            addFaculty(facultyDTO);
         }
         for (EventDTO eventDTO : wrapperDTO.getEvents()) {
             addEvent(eventDTO);

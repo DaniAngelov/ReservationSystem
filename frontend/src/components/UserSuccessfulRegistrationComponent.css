@@ -17,8 +17,11 @@ html,body{
 }
 
 .modal-content-test{
-  width: 100%;
+  width: 50%;
+  position: absolute;
+  left:25%;
   border-radius: 20%;
+  bottom: 8%;
 }
 
 .mt-6 {

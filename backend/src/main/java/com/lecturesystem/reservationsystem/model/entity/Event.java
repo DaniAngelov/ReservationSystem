@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.model.entity;
 
+import com.lecturesystem.reservationsystem.model.enums.DisableEventReason;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
 import com.lecturesystem.reservationsystem.model.enums.EventType;
 import jakarta.persistence.*;
@@ -29,9 +30,6 @@ public class Event {
     private int floorNumber;
 
     @Column
-    private User organizer;
-
-    @Column
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
@@ -53,6 +51,16 @@ public class Event {
 
     @Column
     private int roomNumber;
+
+    @Column
+    private String facultyName;
+
+    @Column
+    private boolean enabled;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private DisableEventReason disableEventReason;
 
     public String getEventType() {
         return eventType.toString();

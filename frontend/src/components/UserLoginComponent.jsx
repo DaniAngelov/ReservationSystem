@@ -35,7 +35,13 @@ const UserLoginComponent = () => {
 
   const toggleForgottenPass = (e) => {
     e.preventDefault();
+    console.log("TYPE: " + e.type);
     return setForgottenPass(!forgottenPass);
+  }
+
+  const closeForgottenPassForm = (e) => {
+    e.preventDefault();
+    return setForgottenPass(false);
   }
 
   const updateForgottenPassState = () => {
@@ -133,22 +139,28 @@ const UserLoginComponent = () => {
       <>
         <div className='card-body-forgot-pass text-center text-black bg-light p-5'>
           <form>
+            <button className="btn-close-forgotten-pass-form btn btn-danger" onClick={(e) => closeForgottenPassForm(e)}>x</button>
             <h1 className='mb-5'>Reset your password</h1>
             <p className='mb-3 text-secondary'>Enter your email and we'll send  send you a link to reset your password.</p>
-          
+
           </form>
           <div class="mb-3 mt-5">
-              <TbMailFilled size={30} className='mail-image' />
-              <input type="email" placeholder='Email' class="form-control" id="exampleInputEmail1" value={email}  aria-describedby="emailHelp" onChange={(e) => setEmail(e.target.value)}>
-              </input>
-            </div>
-            <button className='btn  btn-success mt-4' onClick={(e) => toggleForgottenPassTrue(e,email)}>Submit!</button>
-            {showText && <p className='mt-3 text-success'>We've sent a code to the specific email to reset your password. Check your email!</p>}
+            <TbMailFilled size={30} className='mail-image' />
+            <input type="email" placeholder='Email' class="form-control" id="exampleInputEmail1" value={email} aria-describedby="emailHelp" onChange={(e) => setEmail(e.target.value)}>
+            </input>
+          </div>
+          <button className='btn  btn-success mt-4' onClick={(e) => toggleForgottenPassTrue(e, email)}>Submit!</button>
+          {showText && <p className='mt-3 text-success'>We've sent a code to the specific email to reset your password. Check your email!</p>}
         </div>
       </>
     )
   }
 
+  const pressEnter = (e) => {
+    if (e.keyCode == 13) {
+      userLogin(e);
+    }
+  }
 
   return (
     <>
@@ -167,17 +179,17 @@ const UserLoginComponent = () => {
               <div className='form-group text-start mb-2'>
                 <label className='form-label text-light'>Username:</label>
                 <input type='text' placeholder='Enter Username' name='username' value={username} className='form-control'
-                  onChange={(e) => setUsername(e.target.value)}>
+                  onChange={(e) => setUsername(e.target.value)} onKeyDown={(e) => {pressEnter(e)}}>
                 </input>
               </div>
 
               <div className='form-group text-start'>
                 <label className='form-label text-light'>Password:</label>
                 <input type='password' placeholder='Enter Password' name='password' value={password} className='form-control'
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => {pressEnter(e)}}
                 >
                 </input>
-                <button className='btn text-light text-center ml-5 mt-2' onClick={(e) => {
+                <button className='btn text-light text-center ml-5' onClick={(e) => {
                   toggleForgottenPass(e);
                 }}>Forgotten password?</button>
               </div>
