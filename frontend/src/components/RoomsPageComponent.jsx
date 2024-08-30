@@ -55,6 +55,8 @@ const RoomsPageComponent = (parentRoom) => {
   const [showSortEvents, setShowSortEvents] = useState(false);
 
   const [filteredEvents, setFilteredEvents] = useState([]);
+  
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const navigator = useNavigate();
 
@@ -80,6 +82,8 @@ const RoomsPageComponent = (parentRoom) => {
   useEffect(() => {
     getEvents(token)
       .then((response) => {
+        console.log("RESPONSE:");
+        console.log(response.data);
         const newEvents = [];
         response.data.map(event => {
           newEvents.push(event);
@@ -144,7 +148,11 @@ const RoomsPageComponent = (parentRoom) => {
     }
     console.log(JSON.stringify(eventDTO));
     addEvent(JSON.stringify(eventDTO), token).then((response) => {
+      alert("Event added successfully!");
       console.log(response.data);
+    }).catch((error) => {
+      alert("Event added successfully!");
+      console.log(error);
     });
   }
 
@@ -154,7 +162,7 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         <div className='card-body-5 text-center bg-success p-5'>
           <h1 className=' text-center text-light font-weight-bold'>
-            <MdEventAvailable size={60} className='mr-3 mb-1'/>
+            <MdEventAvailable size={60} className='mr-3 mb-1' />
             Add event</h1>
           <form className='add-event-form'>
             <div className='row'>
@@ -200,9 +208,9 @@ const RoomsPageComponent = (parentRoom) => {
                     onChange={(e) => setEndDate(e.target.value)}>
                   </input>
                 </div>
-               
+
               </div>
-              
+
             </div>
             <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate, seatsNumber)}>Add event!</button>
           </form>
@@ -323,6 +331,7 @@ const RoomsPageComponent = (parentRoom) => {
         "username": user,
         "seat": chosenSeat,
         "floorNumber": floorId,
+        "facultyName": parentRoom.faculty,
         "eventName": chosenEvent,
         "roomNumber": roomId,
         "occupiesComputer": occupiesComputer,
@@ -432,18 +441,23 @@ const RoomsPageComponent = (parentRoom) => {
       console.log(events);
     }
 
+    const showEventIfEnabled = (event) => {
+      setEvent(event)
+      toggleUpdateSeats();
+    }
+
     const showEvent = (event, idx) => {
 
       let newStartDate = event.duration.startDate.replace('T', ' ');
       let newEndDate = event.duration.endDate.replace('T', ' ');
-      console.log(newStartDate);
-      console.log(event)
+
+      
+
       return <Carousel.Item key={idx}>
-        <button className="d-block custom-event-button-2 text-light bg-primary p-3 mt-5" key={idx} onClick={() => {
-          setEvent(event);
-          toggleUpdateSeats();
-        }
-        }>
+        <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-primary' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={() => {
+          {console.log("IDX:" + idx)}
+          setActiveIndex(idx)
+           event.enabled == true && showEventIfEnabled(event)}}>
           <MdEventAvailable size={30} />
           <h5>Event: {event.name}</h5>
           <small>Event type: {event.eventType}</small>
@@ -454,7 +468,10 @@ const RoomsPageComponent = (parentRoom) => {
           <br />
           <small>End: {newEndDate}</small>
           <br />
-          <small>Organizer: {event.user.username}</small>
+          <small>Organizer: {event.organizer}</small>
+          <br />
+          {!event.enabled && <small>
+            Cancelled due to {event.disableEventReason}</small>}
 
         </button></Carousel.Item>;
 
@@ -466,7 +483,7 @@ const RoomsPageComponent = (parentRoom) => {
         <div className="container-fluid mt-3">
           <div className="sidebar-left">
             <div className="sd-header">
-              <img src={logo} width={135} height={135} alt='Responsive image' className='img-fluid logoImage' />
+              <img src={logo} width={100} height={100} alt='Responsive image' className='img-fluid logoImage-2' />
             </div>
 
             <div className="sd-body">
@@ -494,9 +511,9 @@ const RoomsPageComponent = (parentRoom) => {
                   })}
                 </ul>
 
-
-                <Carousel size={150} width={150} height={200} className='p-5 mt-5'>
+                <Carousel size={150} width={150} height={200} className='p-5 mt-5' defaultActiveIndex={activeIndex}>
                   {filteredEvents.map((event, idx) => {
+
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
                       return showEvent(event, idx);
                     }
@@ -516,7 +533,6 @@ const RoomsPageComponent = (parentRoom) => {
   const SeatComponent = () => {
 
     const updateSeatStatus = (eventName, seat) => {
-
       setChosenSeat(seat);
       setChosenEvent(eventName);
       if (!seat.seatTaken) {
@@ -530,7 +546,8 @@ const RoomsPageComponent = (parentRoom) => {
 
     return (
       <>
-
+        {console.log("NEWW EVENT:")}
+        {console.log(event)}
         <div className="container-fluid">
           <div className='position-absolute top-50 start-50 translate-middle border border-primary'>
             {event.seats.map((seat, idx) =>
@@ -625,7 +642,6 @@ const RoomsPageComponent = (parentRoom) => {
     return (
       <>
         <nav class="custom-navbar navbar justify-content-between">
-          <a class="navbar-brand">Navbar</a>
           <form class="custom-form-search-bar form-inline">
             <IoMdSearch size={40} className='text-secondary search-bar-icon' />
             <input class="form-control mr-sm-2" type="search" placeholder="Search for event" aria-label="Search" value={searchField}

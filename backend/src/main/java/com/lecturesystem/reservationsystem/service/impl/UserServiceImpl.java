@@ -123,7 +123,7 @@ public class UserServiceImpl implements UserService {
         if (!seatFound) {
             throw new CustomUserException("There is no such seat!");
         }
-        if (!checkIfUserCanReserveSeat(user, chosenSeat)) {
+        if (!checkIfUserCanReserveSeat(userReserveSpotDTO)) {
             throw new CustomUserException("You have already reserved seat in this room!");
         }
         if (chosenSeat.isSeatTaken()) {
@@ -138,9 +138,7 @@ public class UserServiceImpl implements UserService {
         }
         chosenSeat.setSeatTaken(true);
         chosenSeat.setUserThatOccupiedSeat(user.getUsername());
-        Seat savedSeat = seatRepository.save(chosenSeat);
-        user.getSeats().add(savedSeat);
-        user.setSeats(user.getSeats());
+        seatRepository.save(chosenSeat);
         user.setEvents(addEvent(user.getEvents(), event));
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
@@ -175,7 +173,6 @@ public class UserServiceImpl implements UserService {
             chosenSeat.setOccupiesComputer(false);
         }
         chosenSeat.setSeatTaken(false);
-        user.getSeats().remove(chosenSeat);
         chosenSeat.setUserThatOccupiedSeat("");
         seatRepository.save(chosenSeat);
         user.getEvents().remove(event);
@@ -219,6 +216,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+
     @Override
     public void sendMessageToEmail(String email) throws CustomUserException, MessagingException {
         User user = userRepository.getUserByEmail(email);
@@ -234,6 +232,65 @@ public class UserServiceImpl implements UserService {
         helper.setText("You have requested to change your password in FMI DeskSpot! \n \n In order to chnage your password click the link below:" +
                 "\n \n \n http://localhost:5173/change-password");
         javaMailSender.send(message);
+    }
+
+    @Override
+    public void sendOneTimePassCode(OneTimePassCodeRequestDTO oneTimePassCodeRequestDTO) throws CustomUserException, MessagingException {
+        User user = userRepository.getUserByEmail(oneTimePassCodeRequestDTO.getEmail());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        OneTimePassCodeWrapper oneTimePassCodeWrapper = twoFactorAuthenticationService.createOneTimePassword();
+
+        user.setOnePassCode(String.valueOf(oneTimePassCodeWrapper.getCode()));
+        userRepository.save(user);
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setSubject("Login with one time pass code!");
+        helper.setTo(oneTimePassCodeRequestDTO.getEmail());
+        helper.setText("You have requested to login in your account in FMI DeskSpot via one time pass code! \n \n In order to login into your account enter the passcode below:" +
+                "\n \n \n " + oneTimePassCodeWrapper.getCode() + " \n \n expiration time: 2 minutes");
+        javaMailSender.send(message);
+    }
+
+    @Override
+    public void verifyOnePassCode(OneTimePassVerificationDTO oneTimePassVerificationDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(oneTimePassVerificationDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+
+        if (!twoFactorAuthenticationService.isOneTimePassValid(user.getOnePassCode(), oneTimePassVerificationDTO.getCode())) {
+            throw new CustomUserException("The verification code is not correct!");
+        }
+    }
+
+    @Override
+    public EnableOneTimePassResponseDTO enableOrDisableOneTimePass(EnableOneTimePassDTO enableOneTimePassDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(enableOneTimePassDTO.getUsername());
+
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        EnableOneTimePassResponseDTO enableOneTimePassResponseDTO = new EnableOneTimePassResponseDTO();
+        enableOneTimePassResponseDTO.setEnabled(!user.isOneTimePassEnabled());
+        user.setOneTimePassEnabled(!user.isOneTimePassEnabled());
+        userRepository.save(user);
+        return enableOneTimePassResponseDTO;
+    }
+
+    @Override
+    public EnableTwoFactorAuthenticationResponseDTO enableOrDisableTwoFactorAuthentication(EnableTwoFactorAuthenticationDTO enableTwoFactorAuthenticationDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(enableTwoFactorAuthenticationDTO.getUsername());
+
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        EnableTwoFactorAuthenticationResponseDTO enableTwoFactorAuthenticationResponseDTO = new EnableTwoFactorAuthenticationResponseDTO();
+        enableTwoFactorAuthenticationResponseDTO.setEnabled(enableTwoFactorAuthenticationDTO.isEnabled());
+        user.setMfaEnabled(enableTwoFactorAuthenticationDTO.isEnabled());
+        userRepository.save(user);
+        return enableTwoFactorAuthenticationResponseDTO;
     }
 
     @Override
@@ -276,12 +333,13 @@ public class UserServiceImpl implements UserService {
         return eventList;
     }
 
-    private boolean checkIfUserCanReserveSeat(User user, Seat newSeat) {
-        for (Seat seat : user.getSeats()) {
-
-            if (seat.getEvent() != null
-                    && newSeat.getEvent().getName().equals(seat.getEvent().getName())
-                    && newSeat.getEvent().getRoom().getRoomNumber() == seat.getEvent().getRoom().getRoomNumber()) {
+    private boolean checkIfUserCanReserveSeat(UserReserveSpotDTO userReserveSpotDTO) {
+        List<Seat> seats = seatRepository.findAll();
+        for (Seat seat : seats) {
+            if (userReserveSpotDTO.getFacultyName().equals(seat.getEvent().getFacultyName()) &&
+                    userReserveSpotDTO.getFloorNumber() == seat.getEvent().getFloorNumber() &&
+                    userReserveSpotDTO.getRoomNumber() == seat.getEvent().getRoomNumber() &&
+                    seat.getUserThatOccupiedSeat().equals(userReserveSpotDTO.getUsername())) {
                 return false;
             }
         }

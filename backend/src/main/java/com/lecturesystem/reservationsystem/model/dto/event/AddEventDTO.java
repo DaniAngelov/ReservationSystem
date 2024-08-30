@@ -23,6 +23,7 @@ public class AddEventDTO {
     private DisableEventReason disableEventReason;
     private int roomNumber;
     private int floorNumber;
+    private String organizer;
     private String facultyName;
     private UserDTO user;
     private List<SeatDTO> seats;

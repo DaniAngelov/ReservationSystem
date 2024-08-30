@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.service.impl;
 
+import com.lecturesystem.reservationsystem.model.dto.users.OneTimePassCodeWrapper;
 import dev.samstevens.totp.code.*;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import dev.samstevens.totp.qr.QrData;
@@ -11,8 +12,26 @@ import dev.samstevens.totp.time.TimeProvider;
 import dev.samstevens.totp.util.Utils;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+import java.util.Random;
+
 @Service
 public class TwoFactorAuthenticationService {
+
+
+    public boolean isOneTimePassValid(String userCode, String newOneTimePassCode) {
+        return userCode.equals(newOneTimePassCode);
+    }
+
+    public OneTimePassCodeWrapper createOneTimePassword() {
+        Random random = new Random();
+        int code = random.nextInt(899999) + 100000;
+        Date expirationDate = new Date(System.currentTimeMillis() + (1000 * 60 * 2));
+        OneTimePassCodeWrapper oneTimePassCodeWrapper = new OneTimePassCodeWrapper();
+        oneTimePassCodeWrapper.setCode(code);
+        oneTimePassCodeWrapper.setExpirationDate(expirationDate);
+        return oneTimePassCodeWrapper;
+    }
 
     public String generateNewSecret() {
         return new DefaultSecretGenerator().generate();

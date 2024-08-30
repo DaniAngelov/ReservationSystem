@@ -1,7 +1,6 @@
 package com.lecturesystem.reservationsystem.model.dto.users;
 
 import com.lecturesystem.reservationsystem.model.entity.Event;
-import com.lecturesystem.reservationsystem.model.entity.Seat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +16,5 @@ public class UserDTO {
     private String password;
     private String email;
     private LocalDateTime lastActive;
-    private List<Seat> seats;
     private List<Event> events;
 }

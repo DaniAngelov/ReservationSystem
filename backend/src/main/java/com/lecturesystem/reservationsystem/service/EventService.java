@@ -19,6 +19,8 @@ public interface EventService {
 
     List<Event> getAllEventsForUser(String username) throws CustomUserException;
 
+    List<Event> getAllEventsForOrganizer(String organizer) throws CustomUserException;
+
     void deleteEvent(DeleteEventDTO deleteEventDTO) throws CustomEventException;
 
     void disableEvent(DisableEventDTO disableEventDTO) throws CustomEventException;

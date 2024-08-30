@@ -63,6 +63,13 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping("/enable-2fa")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER','LECTOR')")
+    public ResponseEntity<EnableTwoFactorAuthenticationResponseDTO> enableTwoFactorAuthentication(@RequestBody EnableTwoFactorAuthenticationDTO enableTwoFactorAuthenticationDTO) throws CustomUserException {
+        EnableTwoFactorAuthenticationResponseDTO enableTwoFactorAuthenticationResponseDTO = userService.enableOrDisableTwoFactorAuthentication(enableTwoFactorAuthenticationDTO);
+        return new ResponseEntity<>(enableTwoFactorAuthenticationResponseDTO, HttpStatus.OK);
+    }
+
     @PutMapping("/generate-2fa")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER','LECTOR')")
     public ResponseEntity<User2FADTO> generateTwoFactorAuthentication(@RequestBody User2FAAuthenticationRequestDTO user2FAAuthenticationRequestDTO) throws QrGenerationException, CustomUserException {
@@ -77,10 +84,24 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-//
-//    @PutMapping("/forgotten-password")
-//    public ResponseEntity<?> pa(@RequestBody UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException {
-//        userService.reserveSpot(userReserveSpotDTO);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    @PutMapping("/enable-one-time-pass")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER','LECTOR')")
+    public ResponseEntity<EnableOneTimePassResponseDTO> enableOneTimePass(@RequestBody EnableOneTimePassDTO enableOneTimePassDTO) throws CustomUserException {
+        EnableOneTimePassResponseDTO enableOneTimePassResponseDTO = userService.enableOrDisableOneTimePass(enableOneTimePassDTO);
+        return new ResponseEntity<>(enableOneTimePassResponseDTO, HttpStatus.OK);
+    }
+
+    @PutMapping("/generate-one-time-pass")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER','LECTOR')")
+    public ResponseEntity<?> sendOneTimePassCode(@RequestBody OneTimePassCodeRequestDTO oneTimePassCodeRequestDTO) throws CustomUserException, MessagingException {
+        userService.sendOneTimePassCode(oneTimePassCodeRequestDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/verify-one-time-code")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER','LECTOR')")
+    public ResponseEntity<?> verifyOneTimePassCode(@RequestBody OneTimePassVerificationDTO oneTimePassVerificationDTO) throws CustomUserException {
+        userService.verifyOnePassCode(oneTimePassVerificationDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

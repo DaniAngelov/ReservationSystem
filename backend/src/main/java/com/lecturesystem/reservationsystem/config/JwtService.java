@@ -51,6 +51,7 @@ public class JwtService {
                 .subject(user.getUsername())
                 .claim("role", user.getRole().name())
                 .claim("faEnabled", user.isMfaEnabled())
+                .claim("oneTimePassEnabled", user.isOneTimePassEnabled())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
                 .signWith(getSignInKey())

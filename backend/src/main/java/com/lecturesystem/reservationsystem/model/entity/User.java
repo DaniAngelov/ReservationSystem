@@ -37,18 +37,19 @@ public class User implements Serializable, UserDetails {
 
     @Column
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private List<Seat> seats;
-
-    @Column
-    @OneToMany(cascade = CascadeType.ALL)
     private List<Event> events;
 
     @Column
     private boolean mfaEnabled;
 
     @Column
+    private boolean oneTimePassEnabled;
+
+    @Column
     private String secret;
+
+    @Column
+    private String onePassCode;
 
     @Column
     @Enumerated(EnumType.STRING)

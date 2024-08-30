@@ -65,8 +65,10 @@ body {
 
 }
 
-.logoImage {
-  margin-left: 23%;
+.logoImage-2 {
+  position: absolute;
+  top: 1.25%;
+  left: 35%;
 }
 
 .sd-header {
@@ -116,22 +118,22 @@ body {
   width: 50%;
   border-radius: 10%;
   position: absolute;
-  left:31%;
+  left: 31%;
   bottom: 15%;
   height: 70%;
 }
 
-.btn-filter-events{
+.btn-filter-events {
   position: absolute;
   bottom: 2%;
   left: 36%;
 }
 
-.card-body-filter{
+.card-body-filter {
   width: 30%;
   border-radius: 10%;
   position: absolute;
-  left:38%;
+  left: 38%;
   bottom: 10.5%;
   height: 75%;
 }
@@ -155,22 +157,25 @@ body {
   z-index: 1;
 }
 
-.btn-events-filter {
-  position: absolute;
-  top: 31%;
-  left: 15%;
-}
-
 .btn-events-add {
   position: absolute;
   left: 15%;
-  top: 24%
+  top: 17%;
+  z-index: 1;
+}
+
+.btn-events-filter {
+  position: absolute;
+  left: 15%;
+  top: 24%;
+  z-index: 1;
 }
 
 .btn-events-sort {
   position: absolute;
   left: 15%;
-  top: 33%
+  top: 26%;
+  z-index: 1;
 }
 
 .btn-custom-reserve-spot {
@@ -197,15 +202,15 @@ body {
   z-index: 1;
 }
 
-.header-user-icon{
+.header-user-icon {
   position: absolute;
-  left:50%;
+  left: 50%;
   bottom: 20%;
 }
 
-.img-fluid-user-icon{
+.img-fluid-user-icon {
   position: absolute;
-  left:0;
+  left: 0;
 }
 
 .events {
@@ -218,27 +223,27 @@ body {
   margin-top: 190%;
 }
 
-.event-header{
+.event-header {
   position: absolute;
   left: 20%;
   top: 15%;
 }
 
-.custom-event-button-2{
+.custom-event-button-2 {
   border-radius: 20px;
   z-index: 1;
 }
 
 .carousel {
-  width:300px;
-  height:500px;
+  width: 300px;
+  height: 400px;
   position: absolute !important;
   left: -3%;
+  top: 20%;
   margin: auto;
-  z-index: 1;
 }
 
-.custom-navbar{
+.custom-navbar {
   position: absolute !important;
   top: 90%;
   width: 100%;
@@ -246,12 +251,12 @@ body {
   background-color: #212529;
 }
 
-.custom-form-search-bar{
+.custom-form-search-bar {
   position: absolute !important;
-  left:45%;
+  left: 45%;
 }
 
-.search-bar-icon{
+.search-bar-icon {
   position: absolute;
   left: 0
 }

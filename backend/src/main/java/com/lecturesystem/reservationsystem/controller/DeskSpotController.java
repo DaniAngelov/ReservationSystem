@@ -67,7 +67,7 @@ public class DeskSpotController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/events/disable")
+    @PutMapping("/events/disable")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
     public ResponseEntity<?> disableEvent(@RequestBody DisableEventDTO disableEventDTO) throws CustomEventException {
         eventService.disableEvent(disableEventDTO);
@@ -86,6 +86,14 @@ public class DeskSpotController {
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
     public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForUser(@RequestParam String username) throws CustomUserException {
         List<Event> events = eventService.getAllEventsForUser(username);
+        List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
+        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/events/organizer")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
+    public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForOrganizer(@RequestParam String organizer) throws CustomUserException {
+        List<Event> events = eventService.getAllEventsForOrganizer(organizer);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }

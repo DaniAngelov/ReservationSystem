@@ -32,8 +32,6 @@ public class EventServiceImpl implements EventService {
 
     private final SeatRepository seatRepository;
 
-    private final FloorRepository floorRepository;
-
     private final UserRepository userRepository;
 
     private final FacultyRepository facultyRepository;
@@ -69,8 +67,8 @@ public class EventServiceImpl implements EventService {
                         event.setRoomNumber(eventDTO.getRoomNumber());
                         event.setDisableEventReason(null);
                         event.setRoom(room);
+                        event.setOrganizer(eventDTO.getUser());
                         event.setEnabled(true);
-                        event.setUser(organizer);
                         event.setFacultyName(eventDTO.getFacultyName());
                         Event newEvent = this.eventRepository.save(event);
                         room.getEvents().add(newEvent);
@@ -115,6 +113,18 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> getAllEventsForOrganizer(String organizer) throws CustomUserException {
+        List<Event> events = eventRepository.findAll();
+        List<Event> organizerEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getOrganizer().equals(organizer)) {
+                organizerEvents.add(event);
+            }
+        }
+        return sortValues(organizerEvents, "name");
+    }
+
+    @Override
     public void deleteEvent(DeleteEventDTO deleteEventDTO) throws CustomEventException {
         Event event = eventRepository.findEventByName(deleteEventDTO.getName());
         if (event == null) {
@@ -133,11 +143,11 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
-        if (event.getUser().getUsername().equals(user.getUsername())) {
+        if (event.getOrganizer().equals(user.getUsername())) {
             event.setDisableEventReason(disableEventDTO.getDisableReason());
             event.setEnabled(false);
+            eventRepository.save(event);
         }
-
     }
 
     private List<Event> sortValues(List<Event> eventList, String sortField) {

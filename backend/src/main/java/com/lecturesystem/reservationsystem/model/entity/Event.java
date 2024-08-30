@@ -50,6 +50,9 @@ public class Event {
     private User user;
 
     @Column
+    private String organizer;
+
+    @Column
     private int roomNumber;
 
     @Column

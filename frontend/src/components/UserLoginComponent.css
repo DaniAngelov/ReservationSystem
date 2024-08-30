@@ -72,9 +72,77 @@ body {
   position: absolute;
   border-radius: 12px;
   left: 30%;
-  top:23%;
+  top: 23%;
   width: 40%;
 }
+
+.btn-close-forgotten-pass-form {
+  position: absolute;
+  right: 2%;
+  top: 2%;
+  width: 7%;
+  height: 10%;
+}
+
+.card-body-mfa {
+  position: absolute;
+  border-radius: 12px;
+  left: 30%;
+  top: 23%;
+  width: 40%;
+  height: 60%;
+}
+
+.btn-close-mfa-form {
+  position: absolute;
+  right: 2%;
+  top: 2%;
+  width: 7%;
+  height: 10%;
+}
+
+.btn-close-one-time-pass-form{
+  position: absolute;
+  right: 4%;
+  top: 4%;
+  width: 6%;
+  height: 8%;
+}
+
+.btn-mfa-1 {
+  position: absolute;
+  left: 25%;
+  top: 60%;
+  width: 50%;
+  height: 10%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-mfa-1:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-mfa-2 {
+  position: absolute;
+  left: 25%;
+  top: 73%;
+  width: 50%;
+  height: 10%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-mfa-2:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
 
 .mail-image {
   position: absolute;
@@ -82,10 +150,35 @@ body {
   bottom: 32%;
 }
 
-.btn-close-forgotten-pass-form{
+
+.custom-card-body-one-pass-form {
   position: absolute;
-  right: 2%;
-  top: 2%;
-  width: 7%;
-  height: 10%;
+  top: 13%;
+  left: 28%;
+  height: 70%;
+  border-radius: 10%;
+  width: 45%;
+}
+
+.custom-form-one-pass {
+  position: absolute;
+  bottom: 15%;
+  left: 5%;
+}
+
+.btn-embossed-one-pass {
+  position: absolute;
+  bottom: 8%;
+  width: 45%;
+  padding: 6px;
+  right: 27%;
+  background-color: #B85FC6;
+  border: none;
+  text-transform: uppercase;
+}
+
+.mail-image-one-time{
+  position: absolute;
+  left: 10%;
+  bottom: 34%;
 }

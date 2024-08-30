@@ -25,4 +25,5 @@ public class EventDTO {
     private String facultyName;
     private String user;
     private List<SeatDTO> seats;
+    private String organizer;
 }

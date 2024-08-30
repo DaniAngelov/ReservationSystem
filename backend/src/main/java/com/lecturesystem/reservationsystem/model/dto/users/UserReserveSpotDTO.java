@@ -13,6 +13,7 @@ public class UserReserveSpotDTO {
     private String eventName;
     private SeatDTO seat;
     private int floorNumber;
+    private String facultyName;
     private int roomNumber;
     private boolean occupiesComputer;
     private boolean occupiesCharger;

@@ -22,5 +22,13 @@ public interface UserService {
 
     void sendMessageToEmail(String email) throws CustomUserException, MessagingException;
 
+    void sendOneTimePassCode(OneTimePassCodeRequestDTO oneTimePassCodeRequestDTO) throws CustomUserException, MessagingException;
+
     void updatePassword(String password) throws CustomUserException;
+
+    void verifyOnePassCode(OneTimePassVerificationDTO oneTimePassVerificationDTO) throws CustomUserException;
+
+    EnableOneTimePassResponseDTO enableOrDisableOneTimePass(EnableOneTimePassDTO enableOneTimePassDTO) throws CustomUserException;
+
+    EnableTwoFactorAuthenticationResponseDTO enableOrDisableTwoFactorAuthentication(EnableTwoFactorAuthenticationDTO enableTwoFactorAuthenticationDTO) throws CustomUserException;
 }
