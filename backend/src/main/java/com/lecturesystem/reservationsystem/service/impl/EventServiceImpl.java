@@ -15,6 +15,8 @@ import com.lecturesystem.reservationsystem.service.EventService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.sql.rowset.serial.SerialBlob;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ public class EventServiceImpl implements EventService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
-    public Event addEvent(EventDTO eventDTO) throws CustomEventException {
+    public Event addEvent(EventDTO eventDTO) throws CustomEventException, SQLException {
         Event eventByName = eventRepository.findEventByName(eventDTO.getName());
         if (eventByName != null) {
             throw new CustomEventException("There is such event already!");
@@ -66,6 +68,9 @@ public class EventServiceImpl implements EventService {
                         event.setFloorNumber(eventDTO.getFloorNumber());
                         event.setRoomNumber(eventDTO.getRoomNumber());
                         event.setDisableEventReason(null);
+                        if (eventDTO.getQrCodeQuestions() != null) {
+                            event.setQrCodeQuestions(new SerialBlob(eventDTO.getQrCodeQuestions().getBytes()));
+                        }
                         event.setRoom(room);
                         event.setOrganizer(eventDTO.getUser());
                         event.setEnabled(true);

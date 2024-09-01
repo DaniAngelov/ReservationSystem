@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,8 +49,8 @@ public class DeskSpotController {
 
     @PostMapping("/events")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
-    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO EventDTO) throws CustomEventException {
-        Event event = eventService.addEvent(EventDTO);
+    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException {
+        Event event = eventService.addEvent(eventDTO);
         return new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
     }
 
@@ -76,10 +78,11 @@ public class DeskSpotController {
 
     @GetMapping("/events")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
-    public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) {
+    public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) throws SQLException, IOException {
         List<Event> events = eventService.getAllEvents(sortField);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
-        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+        List<AddEventDTO> serializerEventDTOS = serializeDTOS(eventDTOS, events);
+        return new ResponseEntity<>(serializerEventDTOS, HttpStatus.OK);
     }
 
     @GetMapping("/events/user")
@@ -108,7 +111,7 @@ public class DeskSpotController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<WrapperDTO> readDataFromFile(@ModelAttribute MultipartFile file) throws IOException, CustomUserException, CustomEventException {
+    public ResponseEntity<WrapperDTO> readDataFromFile(@ModelAttribute MultipartFile file) throws IOException, CustomUserException, CustomEventException, SQLException {
         objectMapper.registerModule(new JavaTimeModule());
         System.out.println(file);
         WrapperDTO wrapperDTO = objectMapper.readValue(file.getInputStream(), WrapperDTO.class);
@@ -119,5 +122,20 @@ public class DeskSpotController {
             addEvent(eventDTO);
         }
         return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
+    }
+
+    private List<AddEventDTO> serializeDTOS(List<AddEventDTO> eventDTOS, List<Event> events) throws SQLException, IOException {
+        List<AddEventDTO> serializedEvents = new ArrayList<>();
+        for (AddEventDTO eventDTO : eventDTOS) {
+            for (Event event : events) {
+                if (eventDTO.getName().equals(event.getName())) {
+                    if (event.getQrCodeQuestions() != null) {
+                        eventDTO.setQrCodeQuestions(new String(event.getQrCodeQuestions().getBinaryStream().readAllBytes()));
+                    }
+                }
+            }
+            serializedEvents.add(eventDTO);
+        }
+        return serializedEvents;
     }
 }

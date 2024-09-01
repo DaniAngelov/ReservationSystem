@@ -26,4 +26,5 @@ public class EventDTO {
     private String user;
     private List<SeatDTO> seats;
     private String organizer;
+    private String qrCodeQuestions;
 }

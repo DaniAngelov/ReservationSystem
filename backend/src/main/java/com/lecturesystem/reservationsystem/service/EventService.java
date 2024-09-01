@@ -8,10 +8,12 @@ import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.SearchEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface EventService {
-    Event addEvent(EventDTO eventDTO) throws CustomEventException;
+    Event addEvent(EventDTO eventDTO) throws CustomEventException, IOException, SQLException;
 
     List<Event> getAllEvents(String sortField);
 

@@ -27,4 +27,5 @@ public class AddEventDTO {
     private String facultyName;
     private UserDTO user;
     private List<SeatDTO> seats;
+    private String qrCodeQuestions;
 }

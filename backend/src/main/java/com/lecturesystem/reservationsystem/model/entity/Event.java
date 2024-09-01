@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Blob;
 import java.util.List;
 
 @Entity(name = "events")
@@ -60,6 +61,10 @@ public class Event {
 
     @Column
     private boolean enabled;
+
+    @Column
+    @Lob
+    private Blob qrCodeQuestions;
 
     @Column
     @Enumerated(EnumType.STRING)

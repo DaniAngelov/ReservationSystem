@@ -41,6 +41,10 @@ const RoomsPageComponent = (parentRoom) => {
 
   const role = decodedToken.role;
 
+  const [qrCodeQuestions, setQrCodeQuestions] = useState('');
+
+  const [qrQuestionsInputEnable, setQrQuestionsInputEnable] = useState(true);
+
   // Seats
   const [event, setEvent] = useState([]);
 
@@ -61,6 +65,9 @@ const RoomsPageComponent = (parentRoom) => {
   const navigator = useNavigate();
 
 
+  const toggleQrQuestionsInputEnable = () => {
+    return setQrQuestionsInputEnable(!qrQuestionsInputEnable);
+  }
 
   const toggleShowSortEvents = () => {
     return setShowSortEvents(!showSortEvents);
@@ -121,6 +128,13 @@ const RoomsPageComponent = (parentRoom) => {
     </div>)
   }
 
+  //**blob to dataURL**
+  const blobToDataURL = (blob, callback) => {
+    var a = new FileReader();
+    a.onload = function (e) { callback(e.target.result); }
+    a.readAsDataURL(blob);
+  }
+
   const addNewEvent = (e, name, description, eventType, startDate, endDate, numberOfSeats) => {
     e.preventDefault();
     const floorNumber = floorId;
@@ -144,16 +158,37 @@ const RoomsPageComponent = (parentRoom) => {
       "duration": {
         "startDate": startDate,
         "endDate": endDate
-      }
+      },
+      "qrCodeQuestions": qrCodeQuestions
     }
+
     console.log(JSON.stringify(eventDTO));
     addEvent(JSON.stringify(eventDTO), token).then((response) => {
       alert("Event added successfully!");
       console.log(response.data);
     }).catch((error) => {
-      alert("Event added successfully!");
+      alert(error.response.data);
       console.log(error);
     });
+  }
+
+  const callTurningToData = (qrCodeQuestions) => {
+    axios({
+      method: 'get',
+      url: qrCodeQuestions,
+      responseType: 'blob'
+    }).then(function (response) {
+      var reader = new FileReader();
+      reader.readAsDataURL(response.data);
+      reader.onloadend = () => {
+        var base64data = reader.result;
+        self.props.onMainImageDrop(base64data)
+      }
+      blobToDataURL(response.data, function (dataurl) {
+        return setQrCodeQuestions(dataurl);
+      });
+
+    })
   }
 
   const callEventForm = () => {
@@ -167,49 +202,61 @@ const RoomsPageComponent = (parentRoom) => {
           <form className='add-event-form'>
             <div className='row'>
               <div className='col'>
-                <div className='form-group text-start mb-2'>
-                  <label className='form-label text-light'>Name</label>
-                  <input type='text' placeholder='Enter Event name' autoComplete='random-name' class='form-control text-start' value={name}
-                    onChange={(e) => setName(e.target.value)}>
-                  </input>
+                <div class="form-floating text-start mb-3 mt-4">
+                  <input type="text" class="form-control text-start" id="floatingInput" placeholder="Enter Event Name" value={name}
+                    onChange={(e) => setName(e.target.value)} />
+                  <label for="floatingInput text-light">Enter Name</label>
                 </div>
 
-                <div className='form-group text-start mb-2 mt-2'>
-                  <label className='form-label text-light'>Description</label>
-                  <textarea className='form-control' autoComplete='random-description' placeholder='Enter Event Description' name='description' value={description} rows="2" onChange={(e) => setDescription(e.target.value)} />
+                <div class="form-floating text-start mb-3 mt-4">
+                  <textarea class="form-control text-start" id="floatingInput2" placeholder="Enter Event Description" value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
+                  <label for="floatingInput2 text-light">Enter Description</label>
                 </div>
 
-                <div className='form-group text-start mb-2 mt-2'>
-                  <label className='form-label text-light'>Seats Number</label>
-                  <input type='number' placeholder='Enter Number of seats' name='seatsNumber' value={seatsNumber} className='form-control text-start'
-                    onChange={(e) => setSeatsNumber(e.target.value)}>
-                  </input>
+                <div class="form-floating text-start mb-3 mt-4">
+                  <input type="number" class="form-control text-start" id="floatingInput3" placeholder="Enter Number of seats" value={seatsNumber} onChange={(e) => setSeatsNumber(e.target.value)} />
+                  <label for="floatingInput3 text-light">Enter Seats Number</label>
                 </div>
+
               </div>
               <div className='col'>
-                <div className='form-group text-start mb-2 ml-3'>
-                  <label className='form-label text-light'>Event Type</label>
-                  <select type='text' placeholder='Enter Event Type' name='eventType' value={eventType} className='form-control'
+
+                <div class="form-floating text-start mb-3 mt-4 ml-3">
+                  <select type="text" class="form-control text-start" id="floatingInput4" placeholder="Enter Event Type" value={eventType}
                     onChange={(e) => setEventType(e.target.value)}>
                     <option>LECTURE</option>
                     <option>EXAM</option>
                     <option>SEMINAR</option>
                   </select>
+                  <label for="floatingInput4 text-light">Enter Event Type</label>
                 </div>
 
                 {eventType == '' && setEventType('LECTURE')}
-                <div className='form-group text-start mb-2 col mt-4'>
-                  <label className='form-label text-light'>Event Start Time</label>
-                  <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control text-start'
-                    onChange={(e) => setStartDate(e.target.value)}>
-                  </input>
-                  <label className='form-label text-light mt-3'>Event End time</label>
-                  <input type='datetime-local' placeholder='Enter Event End Time' name='endDate' value={endDate} className='form-control text-start'
-                    onChange={(e) => setEndDate(e.target.value)}>
-                  </input>
+                <div class="form-floating text-start mb-3 mt-4 ml-3">
+                  <input type="datetime-local" class="form-control text-start" id="floatingInput5" placeholder="Enter Event Start Time" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  <label for="floatingInput5 text-light">Event Start Time</label>
                 </div>
-
+                <div class="form-floating text-start mb-3 mt-4 ml-3">
+                  <input type="datetime-local" class="form-control text-start" id="floatingInput6" placeholder="Enter Event End time" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  <label for="floatingInput6 text-light">Enter Event End time</label>
+                </div>
               </div>
+              <div className='col'>
+                <div class="form-floating text-start mb-3 mt-4">
+                  {qrQuestionsInputEnable && <input class="form-control text-start" id="floatingInput7" placeholder="Enter Event Name" onPasteCapture={(e) => {
+                    toggleQrQuestionsInputEnable();
+                    setQrCodeQuestions(URL.createObjectURL(e.clipboardData.files[0]));
+                  }} />}
+                  {qrQuestionsInputEnable && <label for="floatingInput7 mt-3">Slido Question Code</label>}
+
+                </div>
+                {qrCodeQuestions != '' &&
+                  <h5 className='text-light'>Event Questions Code</h5>}
+                {qrCodeQuestions != '' && callTurningToData(qrCodeQuestions)}
+                {qrCodeQuestions != '' &&
+                  <img src={qrCodeQuestions} className='qr-code-questions-img' />}
+              </div>
+              {console.log(qrCodeQuestions)};
 
             </div>
             <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate, seatsNumber)}>Add event!</button>
@@ -332,7 +379,7 @@ const RoomsPageComponent = (parentRoom) => {
         "seat": chosenSeat,
         "floorNumber": floorId,
         "facultyName": parentRoom.faculty,
-        "eventName": chosenEvent,
+        "eventName": chosenEvent.name,
         "roomNumber": roomId,
         "occupiesComputer": occupiesComputer,
         "occupiesCharger": occupiesCharger,
@@ -357,8 +404,8 @@ const RoomsPageComponent = (parentRoom) => {
 
     const openComputerRoomSpecs = (roomType) => {
       if (roomType == 'COMPUTER') {
-        return <ul>
-          <li>
+        return <div className='row'>
+          <div className='computer-link-item col'>
             <h2 className='text-light'>Computer</h2>
             <Button onClick={() => {
               { toggleOccupiesComputer() }
@@ -366,8 +413,8 @@ const RoomsPageComponent = (parentRoom) => {
             }}>
               <HiDesktopComputer size={45} color={computerColor} />
             </Button>
-          </li>
-          <li>
+          </div>
+          <div className='charger-link-item col'>
             <h2 className='text-light mb-2'>Charger</h2>
             <Button onClick={() => {
               { toggleOccupiesCharger() }
@@ -375,8 +422,8 @@ const RoomsPageComponent = (parentRoom) => {
             }}>
               <LuCable size={45} color={chargerColor} />
             </Button>
-          </li>
-        </ul>
+          </div>
+        </div>
       } else {
         return '';
       }
@@ -387,28 +434,27 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         <div className="container-fluid mt-3">
           <div className={`sidebar ${isOpen == true ? 'active' : ''}`}>
-            <div className="sd-header">
-              <h4 className="event-headline display-6">Event booking</h4>
-            </div>
-            <div className="sd-body text-center">
-              <ul>
-                <li>
-                  <Button className='mt-2'>
-                    <MdEventAvailable size={30} />
-                    <h5 className='mt-3 text-light'>{`Event chosen: ${chosenEvent}`}</h5>
-                  </Button>
-                </li>
-                <li>
-                  <Button className='mt-2'>
-                    <PiOfficeChairFill size={30} />
-                    <h5 className='mt-3 text-light'>{`Seat chosen: ${chosenSeat.seatNumber}`}</h5>
-                  </Button>
-                </li>
+            <div className="sd-body text-center row">
+              <Button className='mt-2'>
+                <MdEventAvailable size={30} />
+                <h5 className='mt-3 text-light'>{`Event chosen: ${chosenEvent.name}`}</h5>
+              </Button>
+              <Button className='mt-2'>
+                <PiOfficeChairFill size={30} />
+                <h5 className='mt-3 text-light'>{`Seat chosen: ${chosenSeat.seatNumber}`}</h5>
+              </Button>
+
+             
                 {console.log("room Type: " + parentRoom.room.roomType)};
                 {openComputerRoomSpecs(parentRoom.room.roomType)}
+                {console.log(chosenEvent)}
+                {chosenEvent.qrCodeQuestions != '' &&
+                  <h5 className='text-light header-qr-code-client-image'>Have any questions or want to vote before event? Scan the QR code below!</h5>}
+                {chosenEvent.qrCodeQuestions != '' &&
+                  <img src={chosenEvent.qrCodeQuestions} className='qr-code-client-image' />}
 
                 <li><button className="btn btn-custom-reserve-spot btn-outline-light my-2 my-sm-0 sd-link" style={{ backgroundColor: backgroundColor, content: text }} onClick={takeSpot} >{text}</button></li>
-              </ul>
+             
             </div>
           </div>
 
@@ -451,13 +497,14 @@ const RoomsPageComponent = (parentRoom) => {
       let newStartDate = event.duration.startDate.replace('T', ' ');
       let newEndDate = event.duration.endDate.replace('T', ' ');
 
-      
+
 
       return <Carousel.Item key={idx}>
         <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-primary' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={() => {
-          {console.log("IDX:" + idx)}
+          { console.log("IDX:" + idx) }
           setActiveIndex(idx)
-           event.enabled == true && showEventIfEnabled(event)}}>
+          event.enabled == true && showEventIfEnabled(event)
+        }}>
           <MdEventAvailable size={30} />
           <h5>Event: {event.name}</h5>
           <small>Event type: {event.eventType}</small>
@@ -555,7 +602,7 @@ const RoomsPageComponent = (parentRoom) => {
                 className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} m-4 p-3 btn-lg active`}
                 key={idx} onClick={() => {
                   {
-                    updateSeatStatus(event.name, seat);
+                    updateSeatStatus(event, seat);
                   }
                 }}>
                 <PiOfficeChairFill size={30} />
@@ -598,7 +645,7 @@ const RoomsPageComponent = (parentRoom) => {
 
   const releaseSeats = () => {
     return (
-      <button className='btn-release btn btn-outline-primary my-2 my-sm-0' type='submit' onClick={(e) => { releaseUserSpot(e, chosenSeat, chosenEvent) }}>
+      <button className='btn-release btn btn-outline-primary my-2 my-sm-0' type='submit' onClick={(e) => { releaseUserSpot(e, chosenSeat, chosenEvent.name) }}>
         Release your spot ?
       </button>)
   }

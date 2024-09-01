@@ -260,3 +260,34 @@ body {
   position: absolute;
   left: 0
 }
+
+.qr-code-questions-img{
+  position: absolute;
+  top:35%;
+  right: 10%;
+}
+
+.qr-code-client-image{
+  position: absolute;
+  width: 70% !important;
+  height: 25%;
+  bottom: 10%;
+  right: 14%;
+}
+
+.charger-link-item{
+  position: absolute;
+  top:35%;
+  right: -25%;
+}
+
+.computer-link-item{
+  position: absolute;
+  top:35%;
+  right: 25%;
+}
+
+.header-qr-code-client-image{
+  position: absolute;
+  bottom:35%;
+}

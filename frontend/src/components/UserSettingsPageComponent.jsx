@@ -11,6 +11,7 @@ import { Carousel, Button } from "react-bootstrap";
 import { MdEventAvailable } from "react-icons/md";
 import { disableUserEvent } from '../services/FloorService';
 import { HiLightBulb } from "react-icons/hi";
+import { FaHome } from "react-icons/fa";
 
 const UserSettingsPageComponent = () => {
 
@@ -404,6 +405,7 @@ const UserSettingsPageComponent = () => {
               </li>
               <li>
                 <button className='btn btn-item-6 btn-danger text-light' onClick={() => { navigateToHome() }}>
+                  <FaHome size={35} className='mr-2 mb-1'/>
                   Home
                 </button>
               </li>
