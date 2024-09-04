@@ -31,6 +31,12 @@ public class Event {
     private int floorNumber;
 
     @Column
+    private String linkToOrganizerPage;
+
+//    @Column
+//    private FeedbackForm feedbackForm;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
@@ -46,9 +52,13 @@ public class Event {
     @JoinColumn(name = "event_id", referencedColumnName = "id")
     private List<Seat> seats;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "event_id", referencedColumnName = "id")
+    private List<Guest> guests;
+
+    @ManyToMany(mappedBy = "events")
+    private List<User> users;
 
     @Column
     private String organizer;

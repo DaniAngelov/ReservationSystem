@@ -8,6 +8,7 @@ import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.FacultyDTO;
 import com.lecturesystem.reservationsystem.model.dto.WrapperDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
+import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
 import com.lecturesystem.reservationsystem.model.entity.Faculty;
 import com.lecturesystem.reservationsystem.service.EventService;
@@ -25,6 +26,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @CrossOrigin("*")
 @RestController
@@ -49,7 +52,7 @@ public class DeskSpotController {
 
     @PostMapping("/events")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
-    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException {
+    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException, CustomUserException {
         Event event = eventService.addEvent(eventDTO);
         return new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
     }
@@ -58,14 +61,21 @@ public class DeskSpotController {
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
     public ResponseEntity<List<EventDTO>> searchEvent(@RequestBody SearchEventDTO searchEventDTO) {
         List<Event> events = eventService.searchEvents(searchEventDTO);
-        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(Collectors.toList());
+        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(toList());
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
-    @DeleteMapping("/events")
-    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
+    @PutMapping("/events/delete-inactive-event")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
     public ResponseEntity<?> deleteEvent(@RequestBody DeleteEventDTO deleteEventDTO) throws CustomEventException {
         eventService.deleteEvent(deleteEventDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/events/user")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN', 'USER')")
+    public ResponseEntity<?> deleteEventForUser(@RequestBody UserDeleteEventDTO userDeleteEventDTO) throws CustomEventException, CustomUserException {
+        eventService.deleteEventForUser(userDeleteEventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -113,7 +123,6 @@ public class DeskSpotController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<WrapperDTO> readDataFromFile(@ModelAttribute MultipartFile file) throws IOException, CustomUserException, CustomEventException, SQLException {
         objectMapper.registerModule(new JavaTimeModule());
-        System.out.println(file);
         WrapperDTO wrapperDTO = objectMapper.readValue(file.getInputStream(), WrapperDTO.class);
         for (FacultyDTO facultyDTO : wrapperDTO.getFaculties()) {
             addFaculty(facultyDTO);

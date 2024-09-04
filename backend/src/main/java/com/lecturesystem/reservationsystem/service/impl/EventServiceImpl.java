@@ -8,8 +8,11 @@ import com.lecturesystem.reservationsystem.model.dto.event.DeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.DisableEventDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.SearchEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
+import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import com.lecturesystem.reservationsystem.repository.*;
 import com.lecturesystem.reservationsystem.service.EventService;
 import lombok.AllArgsConstructor;
@@ -38,10 +41,12 @@ public class EventServiceImpl implements EventService {
 
     private final FacultyRepository facultyRepository;
 
+    private final GuestRepository guestRepository;
+
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
-    public Event addEvent(EventDTO eventDTO) throws CustomEventException, SQLException {
+    public Event addEvent(EventDTO eventDTO) throws CustomEventException, SQLException, CustomUserException {
         Event eventByName = eventRepository.findEventByName(eventDTO.getName());
         if (eventByName != null) {
             throw new CustomEventException("There is such event already!");
@@ -68,14 +73,18 @@ public class EventServiceImpl implements EventService {
                         event.setFloorNumber(eventDTO.getFloorNumber());
                         event.setRoomNumber(eventDTO.getRoomNumber());
                         event.setDisableEventReason(null);
+                        event.setUsers(new ArrayList<>());
                         if (eventDTO.getQrCodeQuestions() != null) {
                             event.setQrCodeQuestions(new SerialBlob(eventDTO.getQrCodeQuestions().getBytes()));
                         }
                         event.setRoom(room);
+                        addGuests(event, eventDTO);
                         event.setOrganizer(eventDTO.getUser());
+                        addSeatForOrganizer(eventDTO.getUser(), event);
                         event.setEnabled(true);
                         event.setFacultyName(eventDTO.getFacultyName());
                         Event newEvent = this.eventRepository.save(event);
+                        addEventsForGuests(eventDTO, newEvent);
                         room.getEvents().add(newEvent);
                         roomRepository.save(room);
                         return newEvent;
@@ -118,7 +127,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> getAllEventsForOrganizer(String organizer) throws CustomUserException {
+    public List<Event> getAllEventsForOrganizer(String organizer) {
         List<Event> events = eventRepository.findAll();
         List<Event> organizerEvents = new ArrayList<>();
         for (Event event : events) {
@@ -155,12 +164,106 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Override
+    public void deleteEventForUser(UserDeleteEventDTO userDeleteEventDTO) throws CustomUserException, CustomEventException {
+        User user = userRepository.getUserByUsername(userDeleteEventDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        Event event = eventRepository.findEventByName(userDeleteEventDTO.getEventName());
+        if (event == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        User organizer = userRepository.getUserByUsername(userDeleteEventDTO.getUsername());
+        if (organizer != null && userDeleteEventDTO.getUsername().equals(organizer.getUsername())) {
+            event.setOrganizer("");
+            event.setLinkToOrganizerPage("");
+            eventRepository.save(event);
+        }
+        user.getEvents().removeIf(userEvent -> userEvent.getName().equals(event.getName()));
+        userRepository.save(user);
+    }
+
+    private void addSeatForOrganizer(String user, Event event) {
+        User organizer = userRepository.getUserByUsername(user);
+        if (organizer != null) {
+            Seat seat = new Seat();
+            seat.setSeatType(SeatType.LECTOR);
+            seat.setSeatTaken(true);
+            seat.setUserThatOccupiedSeat(organizer.getUsername());
+            seat.setSeatNumber("L1");
+            event.getSeats().add(seatRepository.save(seat));
+        }
+    }
+
+    private void addEventsForGuests(EventDTO eventDTO, Event event) throws CustomUserException {
+        if (eventDTO.getGuests() != null) {
+            for (GuestDTO guestDTO : eventDTO.getGuests()) {
+                User user = userRepository.getUserByUsername(guestDTO.getUsername());
+                if (user == null) {
+                    throw new CustomUserException("There is no such user!");
+                }
+                user.getEvents().add(event);
+                userRepository.save(user);
+            }
+        }
+    }
+
+    private void addGuests(Event event, EventDTO eventDTO) {
+        if (eventDTO.getGuests() != null) {
+            if (event.getGuests() == null) {
+                event.setGuests(new ArrayList<>());
+                int counter = 1;
+                for (GuestDTO guestDTO : eventDTO.getGuests()) {
+                    Guest guest = new Guest();
+                    guest.setUsername(guestDTO.getUsername());
+                    event.getGuests().add(guest);
+                    Seat seat = new Seat();
+                    seat.setSeatType(SeatType.GUEST);
+                    seat.setSeatTaken(true);
+                    seat.setUserThatOccupiedSeat(guest.getUsername());
+                    seat.setSeatNumber("G" + counter);
+                    event.getSeats().add(seatRepository.save(seat));
+                    guest.setSeatNumber(seat.getSeatNumber());
+                    guestRepository.save(guest);
+                    counter++;
+                }
+            } else {
+                int counter = 1;
+                for (GuestDTO guestDTO : eventDTO.getGuests()) {
+
+                    boolean guestFound = false;
+                    for (Guest guest : event.getGuests()) {
+                        if (guest.getUsername().equals(guestDTO.getUsername())) {
+                            guestFound = true;
+                            break;
+                        }
+                    }
+                    if (!guestFound) {
+                        Guest guest = new Guest();
+                        guest.setUsername(guestDTO.getUsername());
+                        event.getGuests().add(guest);
+                        Seat seat = new Seat();
+                        seat.setSeatType(SeatType.GUEST);
+                        seat.setSeatTaken(true);
+                        seat.setUserThatOccupiedSeat(guest.getUsername());
+                        seat.setSeatNumber("G" + counter);
+                        event.getSeats().add(seatRepository.save(seat));
+                        guest.setSeatNumber(seat.getSeatNumber());
+                        guestRepository.save(guest);
+                        counter++;
+                    }
+
+                }
+            }
+        }
+    }
+
     private List<Event> sortValues(List<Event> eventList, String sortField) {
         Comparator<Event> comparing = Comparator.comparing(Event::getName);
         switch (sortField) {
             case "name" -> comparing = Comparator.comparing(Event::getName);
             case "eventType" -> comparing = Comparator.comparing(Event::getEventType);
-//            case "date" -> comparing = Comparator.comparing(Event::getDuration);
             case "duration" ->
                     comparing = Comparator.comparing(Event::getDuration, Comparator.comparing(Duration::getStartDate));
         }
@@ -194,6 +297,11 @@ public class EventServiceImpl implements EventService {
                 Seat newSeat = new Seat();
                 newSeat.setSeatNumber(seatDTO.getSeatNumber());
                 newSeat.setSeatTaken(false);
+                if (seatDTO.getSeatType() != null) {
+                    newSeat.setSeatType(seatDTO.getSeatType());
+                } else {
+                    newSeat.setSeatType(SeatType.NORMAL);
+                }
                 newSeat.setUserThatOccupiedSeat("");
                 seats.add(seatRepository.save(newSeat));
             }

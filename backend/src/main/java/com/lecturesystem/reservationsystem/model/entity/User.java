@@ -36,7 +36,12 @@ public class User implements Serializable, UserDetails {
     private LocalDateTime lastActive;
 
     @Column
-    @OneToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "User_Event",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "event_id")}
+    )
     private List<Event> events;
 
     @Column
@@ -57,6 +62,9 @@ public class User implements Serializable, UserDetails {
 
     @Column
     private Boolean isPasswordChangeEnabled;
+
+    @Column
+    private String linkToPage;
 
     @Override
     public String getUsername() {

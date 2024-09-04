@@ -43,7 +43,7 @@ body {
   z-index: 1;
 }
 
-.logoImage-3{
+.logoImage-3 {
   margin-left: 23%;
 }
 
@@ -107,45 +107,28 @@ body {
 
 }
 
-.btn-item-4 {
-  position: absolute;
-  left: 5%;
-  top: 46%;
-  width: 90%;
-  height: 9%;
-  color: #475f7b;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-item-4:hover {
-  transition: all .2s ease-in-out;
-  box-shadow: 0 0 5px white inset;
-}
-
-.btn-item-5 {
+.btn-item-dashboard {
   position: absolute;
   left: 5%;
   width: 90%;
-  top: 25%;
-  height: 7%;
-  color: #475f7b;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-item-5:hover {
-  transition: all .2s ease-in-out;
-  box-shadow: 0 0 5px white inset;
-}
-
-
-.btn-item-3 {
-  position: absolute;
-  left: 5%;
   top: 34%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-dashboard:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+
+.btn-item-your-created-events {
+  position: absolute;
+  left: 5%;
+  top: 43%;
   width: 90%;
   height: 7%;
   color: #475f7b;
@@ -154,12 +137,48 @@ body {
   text-decoration: none;
 }
 
-.btn-item-3:hover {
+.btn-item-your-created-events:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
 
-.btn-item-6 {
+.btn-item-authentication-types {
+  position: absolute;
+  left: 5%;
+  top: 25%;
+  width: 90%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-authentication-types:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+
+
+.btn-item-add-link {
+  position: absolute;
+  left: 5%;
+  top: 52%;
+  width: 90%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-add-link:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-item-home {
   position: absolute;
   left: 5%;
   width: 90%;
@@ -171,33 +190,16 @@ body {
   text-decoration: none;
 }
 
-.btn-item-6:hover {
+.btn-item-home:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
 
-.btn-item-7 {
+.btn-item-enable-two-factor {
   position: absolute;
-  left: 5%;
-  width: 90%;
-  top: 68%;
-  height: 7%;
-  color: #475f7b;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-item-7:hover {
-  transition: all .2s ease-in-out;
-  box-shadow: 0 0 5px white inset;
-}
-
-.btn-item-8 {
-  position: absolute;
-  left: 5%;
-  width: 90%;
-  top: 57%;
+  left: 41%;
+  width: 30%;
+  top: 32%;
   height: 9%;
   color: #475f7b;
   border-radius: 4px;
@@ -205,10 +207,45 @@ body {
   text-decoration: none;
 }
 
-.btn-item-8:hover {
+.btn-item-enable-two-factor:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
+
+.btn-item-disable-two-factor {
+  position: absolute;
+  left: 41%;
+  width: 30%;
+  top: 45%;
+  height: 9%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-disable-two-factor:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-item-one-time-pass-auth {
+  position: absolute;
+  left: 41%;
+  width: 30%;
+  top: 58%;
+  height: 9%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-one-time-pass-auth:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
 
 .custom-form {
   position: absolute;
@@ -252,40 +289,40 @@ input {
   width: 300px;
   height: 480px;
   position: absolute !important;
-  left: 40%;
-  top: 10%;
+  left: 45%;
+  top: 0%;
 }
 
 .carousel-new-item-2 {
   width: 500px;
-  
+
 }
 
-.btn-disable{
+.btn-disable {
   position: absolute;
-  top: 20%;
-  left: 45%;
+  top: 12%;
+  left: 50%;
 }
 
-.btn-disable-events{
+.btn-disable-events {
   position: absolute;
   bottom: 2%;
   right: 0;
 }
 
-.card-body-disable{
+.card-body-disable {
   width: 35%;
   border-radius: 10%;
   position: absolute;
-  right:3%;
+  right: 3%;
   bottom: 8%;
   height: 70%;
   z-index: 1;
 }
 
-.btn-close-disable-event-form{
+.btn-close-disable-event-form {
   position: absolute;
-  right:4%;
+  right: 4%;
   top: 4%;
   width: 8%;
   height: 11%;
@@ -331,4 +368,70 @@ input {
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
+}
+
+.authentication-types-form {
+  position: absolute;
+  top: 20%;
+  right: 30%;
+}
+
+.authentication-types-header {
+  position: absolute;
+  top: 15%;
+  left: 42%;
+}
+
+.add-resources-link-div{
+  position: absolute;
+  width: 45%;
+  height: 60%;
+  top: 18%;
+  left: 35%;
+  border-radius: 20px;
+  z-index: 1;
+}
+
+
+.add-resources-link-form{
+  position: absolute;
+  width: 60%;
+  height: 100%;
+  left: 20%;
+  top: 50%;
+}
+
+.btn-item-add-resource-in-form {
+  position: absolute;
+  left: 22%;
+  width: 55%;
+  bottom: 10%;
+  height: 15%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-add-resource-in-form:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.input-resource-link-icon{
+  position: absolute;
+  top: 0.5%;
+  left: -12%;
+}
+
+.btn-close-add-resources-link-form{
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  width: 7%;
+  height: 11%;
+}
+
+.button-link-organizer{
+  z-index: 1;
 }

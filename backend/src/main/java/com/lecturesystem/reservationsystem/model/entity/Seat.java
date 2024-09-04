@@ -1,5 +1,6 @@
 package com.lecturesystem.reservationsystem.model.entity;
 
+import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,4 +35,8 @@ public class Seat implements Serializable {
 
     @Column(name = "occupied_charger")
     private boolean occupiesCharger;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private SeatType seatType;
 }

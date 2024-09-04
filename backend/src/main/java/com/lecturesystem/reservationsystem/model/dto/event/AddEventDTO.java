@@ -2,6 +2,7 @@ package com.lecturesystem.reservationsystem.model.dto.event;
 
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDTO;
 import com.lecturesystem.reservationsystem.model.enums.DisableEventReason;
 import com.lecturesystem.reservationsystem.model.enums.EventType;
@@ -28,4 +29,6 @@ public class AddEventDTO {
     private UserDTO user;
     private List<SeatDTO> seats;
     private String qrCodeQuestions;
+    private String linkToPage;
+    private List<GuestDTO> guests;
 }

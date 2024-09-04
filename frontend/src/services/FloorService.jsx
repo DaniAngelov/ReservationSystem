@@ -33,3 +33,7 @@ export const searchNewEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_UR
 export const uploadFile = (formData, token) => axios.post(REST_API_BASE_URL + '/upload', formData, { headers: { 'Content-Type': 'multipart/form-data', "Authorization": `Bearer ${token}` } });
 
 export const disableUserEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/disable', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const deleteUserEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/user', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const deleteEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/delete-inactive-event', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

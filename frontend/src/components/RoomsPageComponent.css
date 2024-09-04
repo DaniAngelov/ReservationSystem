@@ -115,12 +115,12 @@ body {
 }
 
 .card-body-5 {
-  width: 50%;
+  width: 68%;
   border-radius: 10%;
   position: absolute;
-  left: 31%;
-  bottom: 15%;
-  height: 70%;
+  left: 21%;
+  bottom: 11%;
+  height: 75%;
 }
 
 .btn-filter-events {
@@ -261,13 +261,13 @@ body {
   left: 0
 }
 
-.qr-code-questions-img{
+.qr-code-questions-img {
   position: absolute;
-  top:35%;
-  right: 10%;
+  top: 40%;
+  right: 7%;
 }
 
-.qr-code-client-image{
+.qr-code-client-image {
   position: absolute;
   width: 70% !important;
   height: 25%;
@@ -275,19 +275,69 @@ body {
   right: 14%;
 }
 
-.charger-link-item{
+.charger-link-item {
   position: absolute;
-  top:35%;
+  top: 35%;
   right: -25%;
 }
 
-.computer-link-item{
+.computer-link-item {
   position: absolute;
-  top:35%;
+  top: 35%;
   right: 25%;
 }
 
-.header-qr-code-client-image{
+.header-qr-code-client-image {
   position: absolute;
-  bottom:35%;
+  bottom: 35%;
+}
+
+.chosen-seat-taken-for-user-div {
+  position: absolute;
+  bottom: 1%;
+  left: 22%;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.add-event-form{
+  position: absolute;
+  width: 90%;
+}
+
+.btn-close-add-event-form{
+  position: absolute;
+  right: 4%;
+  top: 4%;
+  width: 7%;
+  height: 9%;
+}
+
+.seats-div-custom {
+  position: absolute;
+  bottom: 12%;
+  left: 25%;
+  width: 55%;
+  height: 80%;
+}
+
+.seats-div-custom-lower-seats-count {
+  position: absolute;
+  bottom: 40%;
+  left: 22%;
+  width: 60%;
+  height: 20%;
+}
+
+.lectors-div-guests{
+  position: absolute;
+  top: -105%;
+  right: 30%;
+}
+
+.guests-list{
+  position: absolute;
+  right:4%;
+  top:26%;
+  width: 100%;
 }

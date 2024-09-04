@@ -25,3 +25,7 @@ export const enableOneTimePass = (request,token) => axios.put(REST_API_BASE_URL 
 export const generateOneTimePass = (request,token) => axios.put(REST_API_BASE_URL + '/generate-one-time-pass', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const verifyOneTimePass = (request,token) => axios.put(REST_API_BASE_URL + '/verify-one-time-code', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const addLinkToPage = (request,token) => axios.put(REST_API_BASE_URL + '/add-link-to-page', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const getUsers = (token) => axios.get(REST_API_BASE_URL + '/get-users', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

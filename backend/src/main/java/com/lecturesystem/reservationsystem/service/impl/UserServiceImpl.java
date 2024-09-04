@@ -7,11 +7,13 @@ import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
 import com.lecturesystem.reservationsystem.model.entity.Event;
+import com.lecturesystem.reservationsystem.model.entity.Faculty;
 import com.lecturesystem.reservationsystem.model.entity.Seat;
 import com.lecturesystem.reservationsystem.model.entity.User;
 import com.lecturesystem.reservationsystem.model.enums.Role;
 import com.lecturesystem.reservationsystem.model.enums.RoomType;
 import com.lecturesystem.reservationsystem.repository.EventRepository;
+import com.lecturesystem.reservationsystem.repository.FacultyRepository;
 import com.lecturesystem.reservationsystem.repository.SeatRepository;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.UserService;
@@ -28,9 +30,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -38,6 +40,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final SeatRepository seatRepository;
     private final EventRepository eventRepository;
+
+    private final FacultyRepository facultyRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -110,6 +114,10 @@ public class UserServiceImpl implements UserService {
         if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
+        Faculty faculty = facultyRepository.findFacultyByName(userReserveSpotDTO.getFacultyName());
+        if (faculty == null) {
+            throw new CustomEventException("There is no such faculty!");
+        }
         SeatDTO seatDTO = userReserveSpotDTO.getSeat();
         Seat chosenSeat = new Seat();
         boolean seatFound = false;
@@ -139,7 +147,7 @@ public class UserServiceImpl implements UserService {
         chosenSeat.setSeatTaken(true);
         chosenSeat.setUserThatOccupiedSeat(user.getUsername());
         seatRepository.save(chosenSeat);
-        user.setEvents(addEvent(user.getEvents(), event));
+        user.setEvents(addEvent(user, user.getEvents(), event));
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
     }
@@ -229,8 +237,13 @@ public class UserServiceImpl implements UserService {
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
         helper.setSubject("Change your password!");
         helper.setTo(email);
-        helper.setText("You have requested to change your password in FMI DeskSpot! \n \n In order to chnage your password click the link below:" +
-                "\n \n \n http://localhost:5173/change-password");
+        helper.setText("""
+                You have requested to change your password in FMI DeskSpot!\s
+                \s
+                 In order to chnage your password click the link below:
+                \s
+                \s
+                 http://localhost:5173/change-password""");
         javaMailSender.send(message);
     }
 
@@ -294,6 +307,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void addLinkToPage(AddLinkToPageDTO addLinkToPageDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(addLinkToPageDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        user.setLinkToPage(addLinkToPageDTO.getLinkToPage());
+        userRepository.save(user);
+        for (Event event : eventRepository.findAll()) {
+            if (event.getOrganizer().equals(user.getUsername())) {
+                event.setLinkToOrganizerPage(user.getLinkToPage());
+                eventRepository.save(event);
+            }
+        }
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
     public void updatePassword(String password) throws CustomUserException {
         List<User> users = userRepository.findAll();
         User newUser = new User();
@@ -315,20 +349,31 @@ public class UserServiceImpl implements UserService {
         userRepository.save(newUser);
     }
 
-    private List<Event> addEvent(List<Event> eventList, Event event) {
+    private List<Event> addEvent(User user, List<Event> eventList, Event event) {
+
         if (eventList.isEmpty()) {
             eventList.add(event);
+            if (event.getUsers().isEmpty()) {
+                event.setUsers(new ArrayList<>());
+            }
+            event.getUsers().add(user);
+            eventRepository.save(event);
             return eventList;
         }
         boolean checkIfContainsEvent = false;
         for (Event userEvent : eventList) {
-            if (Objects.equals(userEvent.getId(), event.getId())) {
+            if (userEvent.getName().equals(event.getName())) {
                 checkIfContainsEvent = true;
                 break;
             }
         }
         if (!checkIfContainsEvent) {
             eventList.add(event);
+            if (event.getUsers().isEmpty()) {
+                event.setUsers(new ArrayList<>());
+            }
+            event.getUsers().add(user);
+            eventRepository.save(event);
         }
         return eventList;
     }
@@ -339,6 +384,7 @@ public class UserServiceImpl implements UserService {
             if (userReserveSpotDTO.getFacultyName().equals(seat.getEvent().getFacultyName()) &&
                     userReserveSpotDTO.getFloorNumber() == seat.getEvent().getFloorNumber() &&
                     userReserveSpotDTO.getRoomNumber() == seat.getEvent().getRoomNumber() &&
+                    userReserveSpotDTO.getEventName().equals(seat.getEvent().getName()) &&
                     seat.getUserThatOccupiedSeat().equals(userReserveSpotDTO.getUsername())) {
                 return false;
             }

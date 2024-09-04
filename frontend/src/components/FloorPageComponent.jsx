@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import userIcon from '../assets/user-icon.png';
-import { getFloors, uploadFile } from '../services/FloorService';
+import { getFloors, uploadFile,getEvents , deleteEvent} from '../services/FloorService';
 import { BsFillDoorOpenFill } from "react-icons/bs";
 
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [faculties, setFaculties] = useState([]);
   const [floorNumbers, setFloorNumbers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [events, setEvents] = useState([]);
   const token = localStorage.getItem('token');
   const decodedToken = jwtDecode(token);
 
@@ -32,6 +33,22 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       return 'secondary';
     }
   }
+
+  useEffect(() => {
+    getEvents(token)
+      .then((response) => {
+        console.log("RESPONSE:");
+        console.log(response.data);
+        const newEvents = [];
+        const newFilteredEvents = [];
+        response.data.map(event => {
+          newEvents.push(event);
+        })
+        setEvents(newEvents);
+      }).catch(error => {
+        console.error(error);
+      })
+  }, []);
 
   useEffect(() => {
     getFloors(token).then((response) => {
@@ -195,12 +212,40 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </>)
   }
 
+  const checkIfEventStillContinues = () => {
+
+    console.log("THIS EVENTS")
+    console.log(events)
+    events.map(event => {
+      let eventEndDate = event.duration.endDate.replace('T', ' ');
+      const nowTime = new Date(Date.now());
+      const newEndDate = new Date(eventEndDate);
+      if(Date.parse(nowTime) > Date.parse(newEndDate)){
+        const request = {
+          "name": event.name
+        }
+        console.log(JSON.stringify(request))
+        deleteEvent(JSON.stringify(request),token).then((response) => {
+          console.log("response");
+          console.log(response.data);
+        }).catch((error) => {
+          console.log("error");
+          console.log(error);
+        })
+      }
+    })
+   
+    
+    
+  }
+
   return (
     <>
       <SidebarLeftComponent />
       <SeatsComponent />
       <UploadFile />
       <OpenUserSettings />
+      {checkIfEventStillContinues()}
     </>
   )
 }

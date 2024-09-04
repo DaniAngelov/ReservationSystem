@@ -4,15 +4,21 @@ import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
+import com.lecturesystem.reservationsystem.model.entity.User;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.UserService;
 import com.lecturesystem.reservationsystem.service.impl.TwoFactorAuthenticationService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import jakarta.mail.MessagingException;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 
 @CrossOrigin("*")
@@ -20,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/users")
 public class UserController {
     private final UserService userService;
+
+    private final ModelMapper modelMapper = new ModelMapper();
 
     public UserController(UserService userService, TwoFactorAuthenticationService twoFactorAuthenticationService, UserRepository userRepository) {
         this.userService = userService;
@@ -103,5 +111,20 @@ public class UserController {
     public ResponseEntity<?> verifyOneTimePassCode(@RequestBody OneTimePassVerificationDTO oneTimePassVerificationDTO) throws CustomUserException {
         userService.verifyOnePassCode(oneTimePassVerificationDTO);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/add-link-to-page")
+    @PreAuthorize("hasAnyAuthority('ADMIN','LECTOR')")
+    public ResponseEntity<?> addLinkToPage(@RequestBody AddLinkToPageDTO addLinkToPageDTO) throws CustomUserException {
+        userService.addLinkToPage(addLinkToPageDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/get-users")
+    @PreAuthorize("hasAnyAuthority('ADMIN','LECTOR')")
+    public ResponseEntity<List<GetUserDTO>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        List<GetUserDTO> userDTOS = users.stream().map(event -> modelMapper.map(event, GetUserDTO.class)).collect(toList());
+        return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
 }

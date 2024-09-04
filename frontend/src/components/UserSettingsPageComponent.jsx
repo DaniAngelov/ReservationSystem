@@ -2,16 +2,18 @@ import React, { useEffect, useState } from 'react'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import './UserSettingsPageComponent.css'
 import userIcon from '../assets/user-icon.png';
-import { generateTwoFA, verifyTwoFA, enableTwoFA, generateOneTimePass, verifyOneTimePass, enableOneTimePass } from '../services/UserService';
+import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage } from '../services/UserService';
 import { BsShieldLockFill } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom';
-import { getEventsForUser, getEventsForOrganizer } from '../services/FloorService';
+import { getEventsForUser, getEventsForOrganizer,deleteUserEvent } from '../services/FloorService';
 import { Carousel, Button } from "react-bootstrap";
 import { MdEventAvailable } from "react-icons/md";
 import { disableUserEvent } from '../services/FloorService';
 import { HiLightBulb } from "react-icons/hi";
 import { FaHome } from "react-icons/fa";
+import { FaUserPen } from "react-icons/fa6";
+import { GrDocumentText } from "react-icons/gr";
 
 const UserSettingsPageComponent = () => {
 
@@ -25,9 +27,9 @@ const UserSettingsPageComponent = () => {
 
   const [createdEventsDashboard, setCreatedEventsDashBoard] = useState(false);
 
-  const [otherDisableReason, setOtherDisableReason] = useState('');
+  const [authenticationForm, setAuthenticationForm] = useState(false);
 
-  const [faEnabled, setFaEnabled] = useState(false);
+  const [addResourcesLinkForm, setaddResourcesLinkForm] = useState(false);
 
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -41,6 +43,8 @@ const UserSettingsPageComponent = () => {
   const [disableEventForm, setDisableEventForm] = useState(false);
   const [disableEventReason, setDisableEventReason] = useState('');
 
+  const [linkResources, setLinkResources] = useState('')
+
   const [digit1, setDigit1] = useState('');
   const [digit2, setDigit2] = useState('');
   const [digit3, setDigit3] = useState('');
@@ -53,6 +57,8 @@ const UserSettingsPageComponent = () => {
   const decodedToken = jwtDecode(token);
 
   const user = decodedToken.sub;
+
+  const role = decodedToken.role;
 
   const navigator = useNavigate();
 
@@ -100,6 +106,18 @@ const UserSettingsPageComponent = () => {
     return setFaEventForm(!faEventForm);
   }
 
+  const toggleAuthenticationForm = () => {
+    return setAuthenticationForm(!authenticationForm);
+  }
+
+  const toggleAddResourcesForm = () => {
+    return setaddResourcesLinkForm(!addResourcesLinkForm);
+  }
+
+  const closeAddResourcesLinkForm = () => {
+    return setaddResourcesLinkForm(false);
+  }
+
   const navigateToUserSettings = () => {
     navigator('/settings');
   }
@@ -127,8 +145,8 @@ const UserSettingsPageComponent = () => {
       alert("Two Factor Authentication has been enabled! Next time you try to login it will be an option.")
       toggleFaEventForm();
       const newRequest = {
-        "username":user,
-        "enabled":true
+        "username": user,
+        "enabled": true
       }
       enableTwoFA(newRequest, token).then((response) => {
       }).catch((error) => {
@@ -195,7 +213,7 @@ const UserSettingsPageComponent = () => {
     }).catch((error) => {
       console.log(error.response.data);
     });
-    
+
   }
 
   const disableTwoFactorAuthentication = () => {
@@ -227,11 +245,35 @@ const UserSettingsPageComponent = () => {
 
   }
 
+  const checkIfEventStillContinues = (event,endDate) => {
+    
+    const nowTime = new Date(Date.now());
+    const newEndDate = new Date(endDate);
+    
+    if(Date.parse(nowTime) > Date.parse(newEndDate)){
+      const request = {
+        "username": user,
+        "eventName": event.name,
+        "organizer": event.organizer
+      }
+      console.log(JSON.stringify(request))
+      deleteUserEvent(JSON.stringify(request),token).then((response) => {
+        alert(`Event "${event.name}" has ended! Please give your feedback to help improve our quality service! Thank you!`);
+        console.log("response");
+        console.log(response.data);
+      }).catch((error) => {
+        console.log("error");
+        console.log(error);
+      })
+    }
+  }
+
   const showEvent = (event, idx) => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
+    checkIfEventStillContinues(event,newEndDate);
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
-      <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-primary' : 'bg-secondary'} p-3 mt-5`} key={idx} >
+      <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} >
         <MdEventAvailable size={30} />
         <h5>Event: {event.name}</h5>
         <small>Event type: {event.eventType}</small>
@@ -246,7 +288,8 @@ const UserSettingsPageComponent = () => {
         <br />
         <small>Room: {event.roomNumber}</small>
         <br />
-        <small>Organizer: {event.organizer}</small>
+        {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
+          <small>Organizer: <a href={`${event.linkToPage}`} onClick={(e) => e.stopPropagation()} > {event.organizer}</a></small>}
         <br />
         {!event.enabled && <small>
           Cancelled due to {event.disableEventReason}</small>}
@@ -281,11 +324,12 @@ const UserSettingsPageComponent = () => {
   const showCreatedEvent = (event, idx) => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
+    checkIfEventStillContinues(event,newEndDate);
     console.log(event);
     console.log(event.enabled);
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
       <div>
-        <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-primary' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={(e) => {
+        <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={(e) => {
           setActiveIndex(idx)
           event.enabled == true && showEventIfEnabled(e, event)
         }
@@ -304,29 +348,24 @@ const UserSettingsPageComponent = () => {
           <br />
           <small>Room: {event.roomNumber}</small>
           <br />
-          <small>Organizer: {event.organizer}</small>
+          {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
+            <small>Organizer: <a href={`${event.linkToPage}`} onClick={(e) => e.stopPropagation()} > {event.organizer}</a></small>}
           <br />
           {!event.enabled && <small>
             Cancelled due to {event.disableEventReason}</small>}
-
-
+          {console.log(event.linkToPage)}
         </button>
       </div></Carousel.Item>;
   }
 
   const ShowAllCreatedEventsForUser = () => {
-    console.log("events:");
-    console.log(organizerEvents);
     return (
       <>
         <div>
           <Carousel className='carousel-2 p-5 mt-5' defaultActiveIndex={activeIndex} >
-
             {organizerEvents.map((event, idx) => {
               return showCreatedEvent(event, idx);
             })}
-
-
           </Carousel>
         </div>
       </>
@@ -369,6 +408,29 @@ const UserSettingsPageComponent = () => {
     navigator('/welcome')
   }
 
+  const callAuthenticationForm = () => {
+    return (
+      <ul>
+        <h1 className='text-light authentication-types-header font-weight-bold'>Authentication types</h1>
+        <li>
+          <button className='btn btn-secondary btn-item-enable-two-factor text-light' onClick={() => { enableTwoFactorAuthentication() }}>
+            Enable Two-Factor Authentication
+          </button>
+        </li>
+        <li>
+          <button className='btn  btn-secondary btn-item-disable-two-factor text-light' onClick={() => { disableTwoFactorAuthentication() }}>
+            Disable Two-Factor Authentication
+          </button>
+        </li>
+        <li>
+          <button className='btn  btn-secondary btn-item-one-time-pass-auth text-light' onClick={() => { enableOrDisableOneTimePass() }}>
+            One Time Pass Authentication
+          </button>
+        </li>
+      </ul>
+    )
+  }
+
   const SidebarLeftComponent = () => {
     return (
       <>
@@ -379,33 +441,26 @@ const UserSettingsPageComponent = () => {
             </div>
             <ul className='text-center m-2'>
               <li>
-                <button className='btn btn-item-4 btn-secondary text-light' onClick={() => { enableTwoFactorAuthentication() }}>
-                  Enable Two-Factor Authentication
+                <button className='btn btn-item-authentication-types btn-primary text-light' onClick={() => { toggleAuthenticationForm() }}>
+                  Authentication
                 </button>
               </li>
               <li>
-                <button className='btn btn-item-8 btn-secondary text-light' onClick={() => { disableTwoFactorAuthentication() }}>
-                  Disable Two-Factor Authentication
-                </button>
-              </li>
-              <li>
-                <button className='btn btn-item-7 btn-secondary text-light' onClick={() => { enableOrDisableOneTimePass() }}>
-                  One Time Pass Authentication
-                </button>
-              </li>
-              <li>
-                <button className='btn btn-item-5 btn-primary text-light' onClick={() => { toggleDashboard() }}>
+                <button className='btn btn-item-dashboard btn-primary text-light' onClick={() => { toggleDashboard() }}>
                   Dashboard
                 </button>
               </li>
-              <li>
-                <button className='btn btn-item-3 btn-primary text-light' onClick={() => { toggleCreatedEventsDashboard() }}>
+              {role != 'USER' && <li>
+                <button className='btn btn-item-your-created-events btn-primary text-light' onClick={() => { toggleCreatedEventsDashboard() }}>
                   Your created events
                 </button>
-              </li>
+              </li>}
+              {role != 'USER' && <li><button className='btn btn-item-add-link btn-primary text-light' onClick={() => { toggleAddResourcesForm() }}>
+                Add link to your resources
+              </button></li>}
               <li>
-                <button className='btn btn-item-6 btn-danger text-light' onClick={() => { navigateToHome() }}>
-                  <FaHome size={35} className='mr-2 mb-1'/>
+                <button className='btn btn-item-home btn-primary text-light' onClick={() => { navigateToHome() }}>
+                  <FaHome size={35} className='mr-2 mb-1' />
                   Home
                 </button>
               </li>
@@ -458,12 +513,48 @@ const UserSettingsPageComponent = () => {
 
             </div>
           </div>
-
-
-
           <div className={`sidebar-settings-right-overlay ${isOpen == true ? 'active' : ''}`} onClick={ToggleSidebar}></div>
         </div>
       </>
+    )
+  }
+
+  const addResourceLinkForUser = () => {
+    const request = {
+      "username": user,
+      "linkToPage": linkResources
+    };
+    console.log(JSON.stringify(request));
+
+    addLinkToPage(request, token).then((response) => {
+      alert("Successfully added link!");
+      console.log("response");
+      console.log(response);
+      toggleAddResourcesForm();
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
+  const callAddResourcesNewForm = () => {
+    return (
+      <div className='add-resources-link-div bg-success p-5'>
+        <button className="btn-close-add-resources-link-form btn btn-danger" onClick={(e) => closeAddResourcesLinkForm(e)}>x</button>
+        <h1 className='form-label text-light text-center mb-5 mr-5'> <FaUserPen className='mr-3 mb-2 text-white' size={80} /> Add Resources Link</h1>
+        <form className='add-resources-link-form'>
+          <GrDocumentText size={35} className='input-resource-link-icon text-light' />
+          <div className='form-group text-start mb-2'>
+
+            <input type='text' placeholder='Enter Resources Link' name='linkResources' value={linkResources} className='form-control text-center'
+              onChange={(e) => { setLinkResources(e.target.value) }} />
+          </div>
+
+        </form>
+        <button className='btn btn-item-add-resource-in-form btn-primary text-light' onClick={() => { addResourceLinkForUser() }}>
+          Add!
+        </button>
+      </div>
     )
   }
 
@@ -475,7 +566,9 @@ const UserSettingsPageComponent = () => {
       {dashboard && <ShowAllEventsForUser />}
       {createdEventsDashboard && <ShowAllCreatedEventsForUser />}
       {faEventForm && callEventForm()}
+      {authenticationForm && callAuthenticationForm()}
       {disableEvent && callDisableEventButton()}
+      {addResourcesLinkForm && callAddResourcesNewForm()}
       <OpenUserSettings />
     </>
   )

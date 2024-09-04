@@ -4,8 +4,11 @@ import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
+import com.lecturesystem.reservationsystem.model.entity.User;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import jakarta.mail.MessagingException;
+
+import java.util.List;
 
 public interface UserService {
     AuthenticationResponseDTO registerUser(UserDTO userDto) throws CustomUserException;
@@ -31,4 +34,8 @@ public interface UserService {
     EnableOneTimePassResponseDTO enableOrDisableOneTimePass(EnableOneTimePassDTO enableOneTimePassDTO) throws CustomUserException;
 
     EnableTwoFactorAuthenticationResponseDTO enableOrDisableTwoFactorAuthentication(EnableTwoFactorAuthenticationDTO enableTwoFactorAuthenticationDTO) throws CustomUserException;
+
+    void addLinkToPage(AddLinkToPageDTO addLinkToPageDTO) throws CustomUserException;
+
+    List<User> getAllUsers();
 }
