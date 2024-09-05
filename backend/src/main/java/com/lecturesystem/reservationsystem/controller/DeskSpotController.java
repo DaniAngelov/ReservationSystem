@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
+import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
 import com.lecturesystem.reservationsystem.model.dto.FacultyDTO;
 import com.lecturesystem.reservationsystem.model.dto.WrapperDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
@@ -117,6 +118,20 @@ public class DeskSpotController {
         List<Faculty> faculties = facultyAndFloorService.getAllFloors();
         List<FacultyDTO> facultyDTOS = faculties.stream().map(faculty -> modelMapper.map(faculty, FacultyDTO.class)).collect(Collectors.toList());
         return new ResponseEntity<>(facultyDTOS, HttpStatus.OK);
+    }
+
+    @PutMapping("/events/feedback")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN', 'USER')")
+    public ResponseEntity<?> addFeedback(@RequestBody AddFeedbackFormDTO addFeedbackFormDTO) throws CustomEventException, CustomUserException {
+        eventService.addFeedback(addFeedbackFormDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/events/event-end")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN', 'USER')")
+    public ResponseEntity<?> endAnEvent(@RequestBody EndEventDTO endEventDTO) throws CustomEventException {
+        eventService.endEvent(endEventDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/upload")

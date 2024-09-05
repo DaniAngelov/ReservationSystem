@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import userIcon from '../assets/user-icon.png';
-import { getFloors, uploadFile,getEvents , deleteEvent} from '../services/FloorService';
+import { getFloors, uploadFile,getEvents , endEvent} from '../services/FloorService';
 import { BsFillDoorOpenFill } from "react-icons/bs";
 
 import { useNavigate } from 'react-router-dom';
@@ -225,7 +225,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           "name": event.name
         }
         console.log(JSON.stringify(request))
-        deleteEvent(JSON.stringify(request),token).then((response) => {
+        endEvent(JSON.stringify(request),token).then((response) => {
           console.log("response");
           console.log(response.data);
         }).catch((error) => {

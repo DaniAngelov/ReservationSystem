@@ -33,8 +33,9 @@ public class Event {
     @Column
     private String linkToOrganizerPage;
 
-//    @Column
-//    private FeedbackForm feedbackForm;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "event_id", referencedColumnName = "id")
+    private List<FeedbackForm> feedbackForm;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -75,6 +76,9 @@ public class Event {
     @Column
     @Lob
     private Blob qrCodeQuestions;
+
+    @Column
+    private Boolean hasEnded;
 
     @Column
     @Enumerated(EnumType.STRING)

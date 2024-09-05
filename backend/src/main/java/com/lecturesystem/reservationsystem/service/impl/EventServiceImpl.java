@@ -2,12 +2,10 @@ package com.lecturesystem.reservationsystem.service.impl;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
+import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.DeleteEventDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.DisableEventDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.SearchEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
@@ -77,6 +75,7 @@ public class EventServiceImpl implements EventService {
                         if (eventDTO.getQrCodeQuestions() != null) {
                             event.setQrCodeQuestions(new SerialBlob(eventDTO.getQrCodeQuestions().getBytes()));
                         }
+                        event.setFeedbackForm(new ArrayList<>());
                         event.setRoom(room);
                         addGuests(event, eventDTO);
                         event.setOrganizer(eventDTO.getUser());
@@ -144,6 +143,7 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
+        deleteEventForAllUsers(event);
         eventRepository.deleteById(event.getId());
     }
 
@@ -182,6 +182,49 @@ public class EventServiceImpl implements EventService {
         }
         user.getEvents().removeIf(userEvent -> userEvent.getName().equals(event.getName()));
         userRepository.save(user);
+    }
+
+    @Override
+    public void addFeedback(AddFeedbackFormDTO addFeedbackFormDTO) throws CustomEventException, CustomUserException {
+        if (addFeedbackFormDTO == null) {
+            return;
+        }
+        User user = userRepository.getUserByUsername(addFeedbackFormDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        Event event = eventRepository.findEventByName(addFeedbackFormDTO.getEvent());
+        if (event == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        FeedbackForm.FeedbackFormBuilder feedbackFormBuilder = FeedbackForm.builder()
+                .description(addFeedbackFormDTO.getDescription())
+                .isAnonymous(addFeedbackFormDTO.isAnonymous())
+                .lectorRating(addFeedbackFormDTO.getLectorRating())
+                .lectureRating(addFeedbackFormDTO.getLectureRating())
+                .username(addFeedbackFormDTO.getUsername());
+        if (!addFeedbackFormDTO.isAnonymous() && !addFeedbackFormDTO.getUsername().equals("")) {
+            feedbackFormBuilder.name(addFeedbackFormDTO.getName());
+        }
+        event.getFeedbackForm().add(feedbackFormBuilder.build());
+        eventRepository.save(event);
+    }
+
+    @Override
+    public void endEvent(EndEventDTO endEventDTO) throws CustomEventException {
+        Event event = eventRepository.findEventByName(endEventDTO.getName());
+        if (event == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        event.setHasEnded(true);
+        eventRepository.save(event);
+    }
+
+    private void deleteEventForAllUsers(Event event) {
+        for (User user : event.getUsers()) {
+            user.getEvents().remove(event);
+            userRepository.save(user);
+        }
     }
 
     private void addSeatForOrganizer(String user, Event event) {

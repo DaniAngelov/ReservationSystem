@@ -78,7 +78,7 @@ body {
 .custom-card-body {
   position: absolute;
   top: -5%;
-  left: 30%;
+  left: 27%;
   height: 95%;
   width: 60%;
 }
@@ -107,40 +107,7 @@ body {
 
 }
 
-.btn-item-dashboard {
-  position: absolute;
-  left: 5%;
-  width: 90%;
-  top: 34%;
-  height: 7%;
-  color: #475f7b;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-}
 
-.btn-item-dashboard:hover {
-  transition: all .2s ease-in-out;
-  box-shadow: 0 0 5px white inset;
-}
-
-
-.btn-item-your-created-events {
-  position: absolute;
-  left: 5%;
-  top: 43%;
-  width: 90%;
-  height: 7%;
-  color: #475f7b;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-item-your-created-events:hover {
-  transition: all .2s ease-in-out;
-  box-shadow: 0 0 5px white inset;
-}
 
 .btn-item-authentication-types {
   position: absolute;
@@ -159,6 +126,39 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
+.btn-item-dashboard {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  top: 34%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-dashboard:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-item-your-created-events {
+  position: absolute;
+  left: 5%;
+  top: 43%;
+  width: 90%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-your-created-events:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
 
 
 .btn-item-add-link {
@@ -178,11 +178,28 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
+.btn-feedback-form {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  top: 66%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-feedback-form:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
 .btn-item-home {
   position: absolute;
   left: 5%;
   width: 90%;
-  top: 77%;
+  top: 75%;
   height: 7%;
   color: #475f7b;
   border-radius: 4px;
@@ -197,10 +214,10 @@ body {
 
 .btn-item-enable-two-factor {
   position: absolute;
-  left: 41%;
-  width: 30%;
+  left: 25%;
+  width: 50%;
   top: 32%;
-  height: 9%;
+  height: 15%;
   color: #475f7b;
   border-radius: 4px;
   cursor: pointer;
@@ -214,10 +231,10 @@ body {
 
 .btn-item-disable-two-factor {
   position: absolute;
-  left: 41%;
-  width: 30%;
-  top: 45%;
-  height: 9%;
+  left: 25%;
+  width: 50%;
+  top: 55%;
+  height: 15%;
   color: #475f7b;
   border-radius: 4px;
   cursor: pointer;
@@ -231,10 +248,10 @@ body {
 
 .btn-item-one-time-pass-auth {
   position: absolute;
-  left: 41%;
-  width: 30%;
-  top: 58%;
-  height: 9%;
+  left: 25%;
+  width: 50%;
+  top: 78%;
+  height: 15%;
   color: #475f7b;
   border-radius: 4px;
   cursor: pointer;
@@ -245,7 +262,6 @@ body {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
-
 
 .custom-form {
   position: absolute;
@@ -304,6 +320,12 @@ input {
   left: 50%;
 }
 
+.btn-delete-event {
+  position: absolute;
+  bottom: 12%;
+  left: 49%;
+}
+
 .btn-disable-events {
   position: absolute;
   bottom: 2%;
@@ -326,6 +348,22 @@ input {
   top: 4%;
   width: 8%;
   height: 11%;
+}
+
+.btn-close-fa-event-form {
+  position: absolute;
+  right: 2%;
+  top: 2%;
+  width: 6%;
+  height: 7%;
+}
+
+.btn-close-authentication-types-event-form {
+  position: absolute;
+  right: 2%;
+  top: 2%;
+  width: 6%;
+  height: 7%;
 }
 
 .sidebar-settings-right {
@@ -378,11 +416,11 @@ input {
 
 .authentication-types-header {
   position: absolute;
-  top: 15%;
-  left: 42%;
+  top: 8%;
+  left: 16%;
 }
 
-.add-resources-link-div{
+.add-resources-link-div {
   position: absolute;
   width: 45%;
   height: 60%;
@@ -393,7 +431,7 @@ input {
 }
 
 
-.add-resources-link-form{
+.add-resources-link-form {
   position: absolute;
   width: 60%;
   height: 100%;
@@ -418,13 +456,13 @@ input {
   box-shadow: 0 0 5px white inset;
 }
 
-.input-resource-link-icon{
+.input-resource-link-icon {
   position: absolute;
   top: 0.5%;
   left: -12%;
 }
 
-.btn-close-add-resources-link-form{
+.btn-close-add-resources-link-form {
   position: absolute;
   right: 3%;
   top: 3%;
@@ -432,6 +470,71 @@ input {
   height: 11%;
 }
 
-.button-link-organizer{
+.button-link-organizer {
   z-index: 1;
+}
+
+.card-body-feedback {
+  position: absolute;
+  border-radius: 12px;
+  left: 30%;
+  top: 2%;
+  width: 55%;
+  height: 95%;
+}
+
+.btn-close-feedback-form {
+  position: absolute;
+  right: 2%;
+  top: 2%;
+  width: 7%;
+  height: 7%;
+}
+
+.btn-add-feedback{
+  position: absolute;
+  bottom: 2%;
+  right: 25%;
+}
+
+.finished-events-div{
+  position: absolute;
+  border-radius: 12px;
+  left: 30%;
+  top: 20%;
+  width: 55%;
+  height: 70%;
+}
+
+.finished-events-list{
+  position: absolute;
+  top:20%;
+  left: 40%;
+}
+
+.btn-finished-event {
+  margin-left: 23%;
+  width: 50%;
+  height: 10%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-finished-event:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+li { list-style-type: none; }
+
+
+.card-body-div-authentication-types {
+  position: absolute;
+  border-radius: 12px;
+  left: 25%;
+  top: 5%;
+  width: 60%;
+  height:90%;
 }

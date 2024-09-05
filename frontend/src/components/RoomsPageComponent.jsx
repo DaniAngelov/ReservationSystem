@@ -50,9 +50,9 @@ const RoomsPageComponent = (parentRoom) => {
   // Seats
   const [event, setEvent] = useState([]);
 
-  const guests = []
+  const [guests, setGuests] = useState([]);
 
-  const guestDTO = [];
+  const [guestDTO, setGuestDTO] = useState([]);
 
   const [chosenSeat, setChosenSeat] = useState('');
 
@@ -71,6 +71,8 @@ const RoomsPageComponent = (parentRoom) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
 
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const [chosenTakenSeat, setChosenTakenSeat] = useState('');
 
   const [users, setUsers] = useState([]);
 
@@ -97,6 +99,10 @@ const RoomsPageComponent = (parentRoom) => {
     setUpdateSeatsToggle(!updateSeatsToggle);
   }
 
+  const closeUpdateSeats = () => {
+    setUpdateSeatsToggle(false);
+  }
+
   const toggleGuestList = (e) => {
     e.preventDefault();
     return setGuestListEnabled(!guestListEnabled);
@@ -107,13 +113,17 @@ const RoomsPageComponent = (parentRoom) => {
     return isOpen === true ? setIsopen(false) : setIsopen(true);
   }
 
+  const closeSidebar = () => {
+    return setIsopen(false);
+  }
+
   useEffect(() => {
     getUsers(token)
       .then((response) => {
         const newUsers = [];
-        response.data.map(user => {
-          if (user.role == 'LECTOR') {
-            newUsers.push(user);
+        response.data.map(newUser => {
+          if (newUser.role == 'LECTOR' && user != newUser.username) {
+            newUsers.push(newUser);
           }
         });
         setUsers(newUsers);
@@ -155,6 +165,10 @@ const RoomsPageComponent = (parentRoom) => {
 
   const updateFilterForm = () => {
     setFilterForm(!filterForm);
+  }
+
+  const closeFilterForm = () => {
+    setFilterForm(false);
   }
 
   const OpenDatePicker = () => {
@@ -569,6 +583,8 @@ const RoomsPageComponent = (parentRoom) => {
 
     const showEventIfEnabled = (event) => {
       setEvent(event)
+      closeShowForm();
+      closeFilterForm()
       toggleUpdateSeats();
     }
 
@@ -614,13 +630,23 @@ const RoomsPageComponent = (parentRoom) => {
 
             <div className="sd-body">
 
-              <div className='mt'>
+              <div>
                 {role != 'USER' && <button className="btn btn-events-add btn-primary 
-                                  text-light p-2 w-75 text-center mt-1" onClick={updateShowForm}>
+                                  text-light p-2 w-75 text-center mt-1" onClick={() => {
+                    closeFilterForm();
+                    closeSidebar();
+                    closeUpdateSeats();
+                    updateShowForm()
+                  }}>
                   Add event
                 </button>}
                 <button className="btn btn-events-filter btn-danger 
-                                   text-light p-2 w-75 text-center mt-2" onClick={updateFilterForm}>
+                                   text-light p-2 w-75 text-center mt-2" onClick={() => {
+                    closeShowForm()
+                    closeSidebar();
+                    closeUpdateSeats();
+                    updateFilterForm()
+                  }}>
                   Filter events
                 </button>
                 <button class=" btn btn-events-sort btn-secondary text-light p-2 w-75 mt-5 text-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -669,6 +695,7 @@ const RoomsPageComponent = (parentRoom) => {
         if (seat.userThatOccupiedSeat == user) {
           ToggleReleaseSeats();
         } else {
+          setChosenTakenSeat(seat);
           ToggleSeatTakenEventForm();
         }
 
@@ -682,7 +709,7 @@ const RoomsPageComponent = (parentRoom) => {
         <div className="container-fluid">
           <div className={`${event.seats.length > 20 ? 'seats-div-custom' : 'seats-div-custom-lower-seats-count'} border-primary row text-center`}>
             <div className='lectors-div-guests row'>
-              {event.seats.map((seat,idx) =>
+              {event.seats.map((seat, idx) =>
                 <div className='col'>
                   {(seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <button
                     className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
@@ -808,6 +835,17 @@ const RoomsPageComponent = (parentRoom) => {
         {chosenSeat.userThatOccupiedSeat}!</Button>
     </div>)
   }
+
+  const callSeatTakenEventForChosenAdmin = () => {
+    return (<div className='chosen-seat-taken-for-user-div bg-primary'>
+      <Button className='bg-primary'>This seat is for
+        <img src={userIcon} width={40} height={40} alt='Responsive image' className='img-fluid mr-2 ml-2' />
+        lectors only!</Button>
+    </div>)
+  }
+
+
+
 
   return (
     <>

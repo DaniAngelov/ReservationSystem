@@ -12,28 +12,32 @@ export const getEvents = (token) => axios.get(REST_API_EVENTS_BASE_URL, {
   headers: { "Authorization": `Bearer ${token}` }
 });
 
-export const getEventsForUser = (username,token) => axios.get(REST_API_EVENTS_BASE_URL + '/user',{
+export const getEventsForUser = (username, token) => axios.get(REST_API_EVENTS_BASE_URL + '/user', {
   params: {
     username: username
   },
   headers: { "Authorization": `Bearer ${token}` }
 });
 
-export const getEventsForOrganizer = (organizer,token) => axios.get(REST_API_EVENTS_BASE_URL + '/organizer',{
+export const getEventsForOrganizer = (organizer, token) => axios.get(REST_API_EVENTS_BASE_URL + '/organizer', {
   params: {
     organizer: organizer
   },
   headers: { "Authorization": `Bearer ${token}` }
 });
 
-export const addEvent = (event,token) => axios.post(REST_API_EVENTS_BASE_URL, event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+export const addEvent = (request, token) => axios.post(REST_API_EVENTS_BASE_URL, request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
-export const searchNewEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/search', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+export const searchNewEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/search', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const uploadFile = (formData, token) => axios.post(REST_API_BASE_URL + '/upload', formData, { headers: { 'Content-Type': 'multipart/form-data', "Authorization": `Bearer ${token}` } });
 
-export const disableUserEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/disable', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+export const disableUserEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/disable', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
-export const deleteUserEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/user', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+export const deleteUserEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/user', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
-export const deleteEvent = (event,token) => axios.put(REST_API_EVENTS_BASE_URL + '/delete-inactive-event', event, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+export const deleteEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/delete-inactive-event', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const endEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/event-end', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const addFeedbackForm = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/feedback', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

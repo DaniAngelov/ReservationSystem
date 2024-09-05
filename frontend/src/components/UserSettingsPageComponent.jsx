@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import './UserSettingsPageComponent.css'
 import userIcon from '../assets/user-icon.png';
+import oneStarEmoji from '../assets/1-star-emoji.png';
+import twoStarEmoji from '../assets/2-star-emoji.png';
+import threeStarEmoji from '../assets/3-star-emoji.png';
+import fourStarEmoji from '../assets/4-star-emoji.png';
+import fiveStarEmoji from '../assets/5-star-emoji.png';
 import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage } from '../services/UserService';
 import { BsShieldLockFill } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom';
-import { getEventsForUser, getEventsForOrganizer,deleteUserEvent } from '../services/FloorService';
+import { getEventsForUser, getEventsForOrganizer, deleteUserEvent, deleteEvent, addFeedbackForm } from '../services/FloorService';
 import { Carousel, Button } from "react-bootstrap";
 import { MdEventAvailable } from "react-icons/md";
 import { disableUserEvent } from '../services/FloorService';
@@ -14,6 +19,8 @@ import { HiLightBulb } from "react-icons/hi";
 import { FaHome } from "react-icons/fa";
 import { FaUserPen } from "react-icons/fa6";
 import { GrDocumentText } from "react-icons/gr";
+import { MdAutoDelete } from "react-icons/md";
+import { VscFeedback } from "react-icons/vsc";
 
 const UserSettingsPageComponent = () => {
 
@@ -39,11 +46,26 @@ const UserSettingsPageComponent = () => {
 
   const [organizerEvents, setOrganizerEvents] = useState([]);
 
+  const [lectureRating, setLectureRating] = useState(0);
+  const [lectorRating, setLectorRating] = useState(0);
+
+  const [deleteEventEnabled, setDeleteEventEnabled] = useState(false);
+
   const [disableEvent, setDisableEvent] = useState(false);
   const [disableEventForm, setDisableEventForm] = useState(false);
   const [disableEventReason, setDisableEventReason] = useState('');
 
+  const [feedbackForm, setFeedbackForm] = useState(false);
+
   const [linkResources, setLinkResources] = useState('')
+
+  const [username, setUsername] = useState('');
+  const [description, setDescription] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(true);
+
+  const [finishedEvents, setFinishedEvents] = useState([]);
+  const [finishedEventsForm, setFinishedEventsForm] = useState(false);
+  const [chosenFinishedEvent, setChosenFinishedEvent] = useState([]);
 
   const [digit1, setDigit1] = useState('');
   const [digit2, setDigit2] = useState('');
@@ -66,10 +88,28 @@ const UserSettingsPageComponent = () => {
     getEventsForUser(user, token)
       .then((response) => {
         const newEvents = [];
+        const newFinishedEvents = [];
         response.data.map(event => {
-          newEvents.push(event);
+
+          if (event.hasEnded == true) {
+            let includesUser = false;
+            event.feedbackForm.map(feedbackForm => {
+
+              if (feedbackForm.username == user) {
+                console.log("FInished event");
+                includesUser = true;
+                console.log(event);
+              }
+            })
+            if (includesUser == false) {
+              newFinishedEvents.push(event);
+            }
+          } else {
+            newEvents.push(event);
+          }
         });
         setNewUserEvents(newEvents);
+        setFinishedEvents(newFinishedEvents);
       }).catch(error => {
         console.error(error);
       })
@@ -91,23 +131,62 @@ const UserSettingsPageComponent = () => {
   }
 
   const toggleDisableEvent = () => {
+    toggleDeleteEvent()
     return setDisableEvent(!disableEvent);
+  }
+
+
+  const toggleDeleteEvent = () => {
+    return setDeleteEventEnabled(!deleteEventEnabled);
   }
 
   const toggleDashboard = () => {
     return setDashBoard(!dashboard);
   }
 
+  const closeDashboard = () => {
+    return setDashBoard(false);
+  }
+
+  const toggleFeedbackForm = () => {
+    return setFeedbackForm(!feedbackForm);
+  }
+
+  const closeFeedbackForm = () => {
+    return setFeedbackForm(false);
+  }
+
+  const toggleFinishedEventsForm = () => {
+    return setFinishedEventsForm(!finishedEventsForm);
+  }
+
+  const closeFinishedEventsForm = () => {
+    return setFinishedEventsForm(!finishedEventsForm);
+  }
+
   const toggleCreatedEventsDashboard = () => {
     return setCreatedEventsDashBoard(!createdEventsDashboard);
+  }
+
+  const closeCreatedEventsDashboard = () => {
+    return setCreatedEventsDashBoard(false);
   }
 
   const toggleFaEventForm = () => {
     return setFaEventForm(!faEventForm);
   }
 
+  const closeFaEventForm = () => {
+    return setFaEventForm(false);
+  }
+
+
   const toggleAuthenticationForm = () => {
     return setAuthenticationForm(!authenticationForm);
+  }
+
+  const closeAuthenticationForm = () => {
+    return setAuthenticationForm(false);
   }
 
   const toggleAddResourcesForm = () => {
@@ -164,6 +243,7 @@ const UserSettingsPageComponent = () => {
     return (
       <>
         <div className='card-body custom-card-body text-center bg-secondary p-5 mt-5 text-light'>
+          <button className="btn-close-fa-event-form btn btn-danger" onClick={(e) => closeFaEventForm(e)}>x</button>
           <h1 className='text-center mb-2 text-light font-weight-bold'>
             <BsShieldLockFill size={100} className='mr-3' />
             Setup Two-Factor Authentication</h1>
@@ -202,6 +282,7 @@ const UserSettingsPageComponent = () => {
 
 
   const enableTwoFactorAuthentication = () => {
+    toggleAuthenticationForm();
     const request = {
       "username": user,
       "enabled": true
@@ -245,33 +326,35 @@ const UserSettingsPageComponent = () => {
 
   }
 
-  const checkIfEventStillContinues = (event,endDate) => {
-    
+  const checkIfEventStillContinues = (event, endDate) => {
+
     const nowTime = new Date(Date.now());
     const newEndDate = new Date(endDate);
-    
-    if(Date.parse(nowTime) > Date.parse(newEndDate)){
+
+    if (Date.parse(nowTime) > Date.parse(newEndDate)) {
       const request = {
         "username": user,
         "eventName": event.name,
         "organizer": event.organizer
       }
       console.log(JSON.stringify(request))
-      deleteUserEvent(JSON.stringify(request),token).then((response) => {
-        alert(`Event "${event.name}" has ended! Please give your feedback to help improve our quality service! Thank you!`);
-        console.log("response");
-        console.log(response.data);
-      }).catch((error) => {
-        console.log("error");
-        console.log(error);
-      })
+      // deleteUserEvent(JSON.stringify(request), token).then((response) => {
+      //   alert(`Event "${event.name}" has ended! Please give your feedback to help improve our quality service! Thank you!`);
+      //   console.log("response");
+      //   console.log(response.data);
+      // }).catch((error) => {
+      //   console.log("error");
+      //   console.log(error);
+      // })
     }
   }
 
   const showEvent = (event, idx) => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
-    checkIfEventStillContinues(event,newEndDate);
+    checkIfEventStillContinues(event, newEndDate);
+    console.log("HEREE EVENT")
+    console.log(event)
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
       <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} >
         <MdEventAvailable size={30} />
@@ -324,14 +407,14 @@ const UserSettingsPageComponent = () => {
   const showCreatedEvent = (event, idx) => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
-    checkIfEventStillContinues(event,newEndDate);
+    checkIfEventStillContinues(event, newEndDate);
     console.log(event);
     console.log(event.enabled);
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
       <div>
         <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={(e) => {
-          setActiveIndex(idx)
-          event.enabled == true && showEventIfEnabled(e, event)
+          setActiveIndex(idx);
+          event.enabled == true && showEventIfEnabled(e, event);
         }
         }>
           <MdEventAvailable size={30} />
@@ -353,7 +436,6 @@ const UserSettingsPageComponent = () => {
           <br />
           {!event.enabled && <small>
             Cancelled due to {event.disableEventReason}</small>}
-          {console.log(event.linkToPage)}
         </button>
       </div></Carousel.Item>;
   }
@@ -383,6 +465,7 @@ const UserSettingsPageComponent = () => {
     )
   }
 
+
   const disableNewEvent = (e, disableReason) => {
     e.preventDefault();
     const disableEventDTO = {
@@ -403,6 +486,35 @@ const UserSettingsPageComponent = () => {
     })
   }
 
+  const deleteChosenEvent = (e) => {
+    e.preventDefault();
+    const deleteEventDTO = {
+      "name": chosenEvent.name
+    }
+    console.log("DELETE EVENT:");
+    console.log(JSON.stringify(deleteEventDTO));
+    deleteEvent(JSON.stringify(deleteEventDTO), token).then((response) => {
+      console.log("response");
+      console.log(response);
+      alert("You have successfully deleted this event!")
+      setDisableEvent(false);
+      setDeleteEventEnabled(false);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
+  const callDeleteEventButton = () => {
+    return (
+      <button className='btn-delete-event btn btn-outline-danger my-2 my-sm-0' onClick={(e) => {
+        deleteChosenEvent(e);
+      }} >
+        <MdAutoDelete size={30} /> Delete this event ?
+      </button>
+    )
+  }
+
 
   const navigateToHome = () => {
     navigator('/welcome')
@@ -410,24 +522,30 @@ const UserSettingsPageComponent = () => {
 
   const callAuthenticationForm = () => {
     return (
-      <ul>
-        <h1 className='text-light authentication-types-header font-weight-bold'>Authentication types</h1>
-        <li>
-          <button className='btn btn-secondary btn-item-enable-two-factor text-light' onClick={() => { enableTwoFactorAuthentication() }}>
-            Enable Two-Factor Authentication
-          </button>
-        </li>
-        <li>
-          <button className='btn  btn-secondary btn-item-disable-two-factor text-light' onClick={() => { disableTwoFactorAuthentication() }}>
-            Disable Two-Factor Authentication
-          </button>
-        </li>
-        <li>
-          <button className='btn  btn-secondary btn-item-one-time-pass-auth text-light' onClick={() => { enableOrDisableOneTimePass() }}>
-            One Time Pass Authentication
-          </button>
-        </li>
-      </ul>
+
+      <div className=' bg-success card-body-div-authentication-types '>
+        <button className="btn-close-authentication-types-event-form btn btn-danger" onClick={(e) => closeAuthenticationForm(e)}>x</button>
+        <ul>
+          <h1 className='text-light authentication-types-header text-center font-weight-bold'>
+            <BsShieldLockFill size={90} className='mr-5 mb-2' /> Authentication types
+          </h1>
+          <li>
+            <button className='btn btn-secondary btn-item-enable-two-factor text-light' onClick={() => { enableTwoFactorAuthentication() }}>
+              Enable Two-Factor Authentication
+            </button>
+          </li>
+          <li>
+            <button className='btn  btn-secondary btn-item-disable-two-factor text-light' onClick={() => { disableTwoFactorAuthentication() }}>
+              Disable Two-Factor Authentication
+            </button>
+          </li>
+          <li>
+            <button className='btn  btn-secondary btn-item-one-time-pass-auth text-light' onClick={() => { enableOrDisableOneTimePass() }}>
+              One Time Pass Authentication
+            </button>
+          </li>
+        </ul>
+      </div>
     )
   }
 
@@ -441,23 +559,53 @@ const UserSettingsPageComponent = () => {
             </div>
             <ul className='text-center m-2'>
               <li>
-                <button className='btn btn-item-authentication-types btn-primary text-light' onClick={() => { toggleAuthenticationForm() }}>
+                <button className='btn btn-item-authentication-types btn-secondary text-light' onClick={() => {
+                  closeDashboard();
+                  closeCreatedEventsDashboard();
+                  closeFaEventForm();
+                  closeAddResourcesLinkForm();
+                  toggleAuthenticationForm() }}>
                   Authentication
                 </button>
               </li>
               <li>
-                <button className='btn btn-item-dashboard btn-primary text-light' onClick={() => { toggleDashboard() }}>
+                <button className='btn btn-item-dashboard btn-success text-light' onClick={() => {
+                  closeCreatedEventsDashboard();
+                  closeAuthenticationForm();
+                  closeFaEventForm();
+                  closeAddResourcesLinkForm();
+                  toggleDashboard()
+                }}>
                   Dashboard
                 </button>
               </li>
               {role != 'USER' && <li>
-                <button className='btn btn-item-your-created-events btn-primary text-light' onClick={() => { toggleCreatedEventsDashboard() }}>
+                <button className='btn btn-item-your-created-events btn-success text-light' onClick={() => {
+                  closeDashboard();
+                  closeAuthenticationForm();
+                  closeAddResourcesLinkForm();
+                  closeFaEventForm();
+                  toggleCreatedEventsDashboard()
+                }}>
                   Your created events
                 </button>
               </li>}
-              {role != 'USER' && <li><button className='btn btn-item-add-link btn-primary text-light' onClick={() => { toggleAddResourcesForm() }}>
+              {role != 'USER' && <li><button className='btn btn-item-add-link btn-success text-light' onClick={() => {
+                closeDashboard();
+                closeCreatedEventsDashboard();
+                closeAuthenticationForm();
+                closeFaEventForm();
+                toggleAddResourcesForm();
+              }}>
                 Add link to your resources
               </button></li>}
+              {console.log(finishedEvents.length)}
+              {console.log(finishedEvents)}
+              {finishedEvents.length > 0 && <li>
+                <button className='btn btn-feedback-form btn-primary text-light' onClick={() => { toggleFinishedEventsForm() }}>
+                  Feedback
+                </button>
+              </li>}
               <li>
                 <button className='btn btn-item-home btn-primary text-light' onClick={() => { navigateToHome() }}>
                   <FaHome size={35} className='mr-2 mb-1' />
@@ -471,7 +619,7 @@ const UserSettingsPageComponent = () => {
     )
   }
 
-  const SidebarRightComponent = () => {
+  const sidebarRightComponent = () => {
     return (
       <>
         <div className="container-fluid mt-3">
@@ -558,17 +706,116 @@ const UserSettingsPageComponent = () => {
     )
   }
 
+  const callSetRatingType = (ratingType, rate) => {
+    if (ratingType == "lector") {
+      setLectorRating(rate);
+    } else if (ratingType == "lecture") {
+      setLectureRating(rate);
+    }
+  }
+
+  const callInputForm = (ratingType, newRatingType) => {
+
+    return (<div>
+      <Button className={`btn-light ${newRatingType == 1 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 1) }}><img src={oneStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`btn-light ${newRatingType == 2 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 2) }}><img src={twoStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`btn-light ${newRatingType == 3 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 3) }}><img src={threeStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`btn-light ${newRatingType == 4 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 4) }}><img src={fourStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`btn-light ${newRatingType == 5 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 5) }}><img src={fiveStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+    </div>)
+  }
+
+  const submitFeedback = (e, newEvent) => {
+    e.preventDefault();
+    const feedbackDTO = {
+      "name": username,
+      "isAnonymous": isAnonymous,
+      "lectureRating": lectureRating,
+      "lectorRating": lectorRating,
+      "description": description,
+      "event": newEvent,
+      "username": user
+    }
+    console.log("Feedback");
+    console.log(JSON.stringify(feedbackDTO));
+    addFeedbackForm(JSON.stringify(feedbackDTO), token).then((response) => {
+      console.log("response");
+      console.log(response);
+      alert("Thank you for your feedback!");
+      setFeedbackForm(false);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    });
+  }
+
+  const callFeedbackForm = () => {
+    return (
+      <>
+        <div className='card-body-feedback text-center text-black bg-light p-5'>
+          <form>
+            <button className="btn-close-feedback-form btn btn-danger" onClick={(e) => setFeedbackForm(false)}>x</button>
+
+            <h1 className='text-center'><VscFeedback size={60} className='mr-4' /> Feedback for event "{chosenFinishedEvent}"</h1>
+            <p className='mb-3 text-secondary'>Hope you liked this event! Share your feedback with us!</p>
+            {console.log("Finished events")}
+            {console.log(finishedEvents)}
+            <h3 className='form-label text-dark font-weight-bold mb-2'>Lecture Rating</h3>
+            {callInputForm("lecture", lectureRating)}
+            <h3 className='form-label text-dark font-weight-bold mb-2 mt-3'>Lector Rating</h3>
+            {callInputForm("lector", lectorRating)}
+            <div class="form-floating text-start mb-3 mt-4">
+              <textarea class="form-control text-start" id="floatingInput2" placeholder="Enter additional feedback" value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
+              <label className="floatingInput2 text-secondary">Share your thoughts</label>
+            </div>
+            <div class="form-floating text-start mb-3 mt-4">
+              <input type="text" class="form-control text-start" id="floatingInput" placeholder="Enter Name" value={username}
+                onChange={(e) => {
+                  setIsAnonymous(false)
+                  setUsername(e.target.value)
+                }} />
+              <label className="floatingInput text-secondary">Enter Name (optional)</label>
+            </div>
+            <button className='btn-add-feedback btn text-center btn-primary mt-4 w-50' onClick={(event) => submitFeedback(event, chosenFinishedEvent)}>Submit!</button>
+          </form>
+        </div>
+      </>
+    )
+  }
+
+  const callFinishedEventsForm = () => {
+    return (
+      <div className='finished-events-div bg-light p-4'>
+        <h1 className='text-center text-dark mt-2'>Finished events</h1>
+        <p className='mb-3 text-secondary text-center mt-3'>These events already ended. Choose event to give your feedback!</p>
+        <ul>
+
+          {finishedEvents.length > 0 && finishedEvents.map((finishedEvent, idx) => {
+            return <li><button className='btn btn-primary btn-finished-event text-light mb-3' key={idx} onClick={() => {
+              setChosenFinishedEvent(finishedEvent.name);
+              toggleFeedbackForm();
+              setFinishedEventsForm(false);
+            }}>{finishedEvent.name}</button></li>
+
+          })}
+        </ul>
+      </div>)
+  }
+
 
   return (
     <>
       <SidebarLeftComponent />
-      <SidebarRightComponent />
+      {sidebarRightComponent()}
       {dashboard && <ShowAllEventsForUser />}
       {createdEventsDashboard && <ShowAllCreatedEventsForUser />}
       {faEventForm && callEventForm()}
       {authenticationForm && callAuthenticationForm()}
       {disableEvent && callDisableEventButton()}
+      {deleteEventEnabled && callDeleteEventButton()}
       {addResourcesLinkForm && callAddResourcesNewForm()}
+      {finishedEventsForm && callFinishedEventsForm()}
+      {feedbackForm && callFeedbackForm()}
       <OpenUserSettings />
     </>
   )

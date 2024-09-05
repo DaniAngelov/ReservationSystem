@@ -2,10 +2,8 @@ package com.lecturesystem.reservationsystem.service;
 
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.event.DeleteEventDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.DisableEventDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.EventDTO;
-import com.lecturesystem.reservationsystem.model.dto.event.SearchEventDTO;
+import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
+import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
 
@@ -29,5 +27,9 @@ public interface EventService {
     void disableEvent(DisableEventDTO disableEventDTO) throws CustomEventException;
 
     void deleteEventForUser(UserDeleteEventDTO userDeleteEventDTO) throws CustomUserException, CustomEventException;
+
+    void addFeedback(AddFeedbackFormDTO addFeedbackFormDTO) throws CustomEventException, CustomUserException;
+
+    void endEvent(EndEventDTO endEventDTO) throws CustomEventException;
 
 }
