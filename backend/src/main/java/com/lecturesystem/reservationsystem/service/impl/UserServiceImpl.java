@@ -31,8 +31,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -71,6 +73,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
         user.setRole(Role.USER);
+        user.setPoints(1);
         user.setLastActive(LocalDateTime.now());
         user.setIsPasswordChangeEnabled(false);
         userRepository.save(user);
@@ -149,6 +152,7 @@ public class UserServiceImpl implements UserService {
         seatRepository.save(chosenSeat);
         user.setEvents(addEvent(user, user.getEvents(), event));
         user.setLastActive(LocalDateTime.now());
+        user.setPoints(user.getPoints() + 1);
         userRepository.save(user);
     }
 
@@ -325,6 +329,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public User getUserByUsername(String username) throws CustomUserException {
+        User user = userRepository.getUserByUsername(username);
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        return user;
+    }
+
+    @Override
+    public List<User> searchUser(SearchGuestDTO searchGuestDTO) {
+        List<User> newUserList = new ArrayList<>();
+        List<User> allUsers = userRepository.findAll();
+        for (User user : allUsers) {
+            if (user.getUsername().toUpperCase().contains(searchGuestDTO.getUsername().toUpperCase())) {
+                newUserList.add(user);
+            }
+        }
+        return newUserList.stream().sorted(Comparator.comparing(User::getUsername)).collect(Collectors.toList());
     }
 
     @Override

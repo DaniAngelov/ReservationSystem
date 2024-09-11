@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { releaseSpot, reserveSpot, getUsers } from '../services/UserService'
+import { releaseSpot, reserveSpot, getUsers, searchNewGuest } from '../services/UserService'
 import { addEvent, getEvents, searchNewEvent } from '../services/FloorService';
 import { useNavigate, useParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
@@ -14,6 +14,8 @@ import { MdEventAvailable } from "react-icons/md";
 import { jwtDecode } from 'jwt-decode'
 import { IoMdSearch } from "react-icons/io";
 import { BsPersonCheckFill } from "react-icons/bs";
+import { BsFillDoorOpenFill } from "react-icons/bs";
+
 
 const RoomsPageComponent = (parentRoom) => {
   const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
@@ -33,6 +35,7 @@ const RoomsPageComponent = (parentRoom) => {
   const [dateOption, setDateOption] = useState('');
 
   const [searchField, setSearchField] = useState('');
+  const [guestSearchField, setGuestSearchField] = useState('');
 
   const token = localStorage.getItem('token');
 
@@ -191,16 +194,11 @@ const RoomsPageComponent = (parentRoom) => {
     a.readAsDataURL(blob);
   }
 
-  const addNewEvent = (e, name, description, eventType, startDate, endDate, numberOfSeats) => {
+  const addNewEvent = (e, name, description, eventType, startDate, endDate) => {
     e.preventDefault();
     const floorNumber = floorId;
     const roomNumber = roomId;
     const faculty = parentRoom.faculty;
-    const seats = [];
-
-    for (let i = 1; i <= numberOfSeats; i++) {
-      seats.push({ seatNumber: `T${i}`, seatTaken: false });
-    }
 
     const eventDTO = {
       "name": name,
@@ -209,7 +207,6 @@ const RoomsPageComponent = (parentRoom) => {
       "facultyName": faculty,
       "floorNumber": floorNumber,
       "roomNumber": roomNumber,
-      "seats": seats,
       "user": user,
       "duration": {
         "startDate": startDate,
@@ -289,12 +286,6 @@ const RoomsPageComponent = (parentRoom) => {
                   <textarea class="form-control text-start" id="floatingInput2" placeholder="Enter Event Description" value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
                   <label for="floatingInput2 text-light">Enter Description</label>
                 </div>
-
-                <div class="form-floating text-start mb-3 mt-4">
-                  <input type="number" class="form-control text-start" id="floatingInput3" placeholder="Enter Number of seats" value={seatsNumber} onChange={(e) => setSeatsNumber(e.target.value)} />
-                  <label for="floatingInput3 text-light">Enter Seats Number</label>
-                </div>
-
               </div>
               <div className='col'>
 
@@ -319,23 +310,29 @@ const RoomsPageComponent = (parentRoom) => {
                 </div>
               </div>
               <div className='col'>
-                <button class=" btn btn-light text-dark p-3 w-100 mt-4 text-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" >
-                  Add guest
-                </button>
-                <ul class="dropdown-menu w-100">
-                  {users.map((user, idx) => {
-                    return <li key={idx}><a className="dropdown-item p-2 text-center" onClick={(e) => {
-                      {
-                        addGuest(user.username);
-                        toggleGuestList(e);
-                      }
-                    }} >
-                      {user.username}
-                    </a></li>
-                  })}
+                <form class="custom-form-search-bar-guests form-floating form-inline">
+                  <input class="form-control mr-sm-2 text-start" type="search" placeholder="Search for user" id="floatingInput9" aria-label="Search" value={guestSearchField}
+                    data-bs-toggle="dropdown" aria-expanded="false" onChange={(e) => {
+                      setGuestSearchField(e.target.value)
+                      findGuest(e, e.target.value);
+                    }
+                    } />
+                  <label for="floatingInput9 text-light ml-5 text-start">Search guest</label>
+                  <ul class="dropdown-menu w-100">
+                    {users.map((user, idx) => {
+                      return <li key={idx}><a className="dropdown-item p-2" onClick={(e) => {
+                        {
+                          addGuest(user.username);
+                          toggleGuestList(e);
+                        }
+                      }} >
+                        {user.username}
+                      </a></li>
+                    })}
 
-                </ul>
-                {updateGuestList()}
+                  </ul>
+                  {updateGuestList()}
+                </form>
               </div>
               <div className='col'>
 
@@ -355,7 +352,7 @@ const RoomsPageComponent = (parentRoom) => {
               </div>
 
             </div>
-            <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate, seatsNumber)}>Add event!</button>
+            <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate)}>Add event!</button>
           </form>
         </div>
       </>)
@@ -396,6 +393,7 @@ const RoomsPageComponent = (parentRoom) => {
     return (
       <>
         <div className='card-body-filter text-center bg-secondary p-5 mt-5'>
+          <button className="btn-close-filter-event-form btn btn-danger" onClick={(e) => closeFilterForm(e)}>x</button>
           <h1 className='text-center mb-4 text-light font-weight-bold'>Filter events</h1>
           <form>
             <div className='form-group text-start mb-2'>
@@ -531,14 +529,26 @@ const RoomsPageComponent = (parentRoom) => {
         <div className="container-fluid mt-3">
           <div className={`sidebar ${isOpen == true ? 'active' : ''}`}>
             <div className="sd-body text-center row">
-              <Button className='mt-2'>
-                <MdEventAvailable size={30} />
-                <h5 className='mt-3 text-light'>{`Event chosen: ${chosenEvent.name}`}</h5>
-              </Button>
-              <Button className='mt-2'>
-                <PiOfficeChairFill size={30} />
-                <h5 className='mt-3 text-light'>{`Seat chosen: ${chosenSeat.seatNumber}`}</h5>
-              </Button>
+              <div>
+                <Button className='mt-2 mb-2'>
+                  <MdEventAvailable size={30} />
+                  <h5 className='mt-3 text-light'>{`Event: ${chosenEvent.name}`}</h5>
+                </Button>
+              </div>
+              <div className='col'>
+                <Button className='mt-2'>
+                  <BsFillDoorOpenFill size={30} />
+                  <h5 className='mt-3 text-light'>{`Room ${parentRoom.room.roomNumber}`}</h5>
+                </Button>
+              </div>
+              <div className='col'>
+                <Button className='mt-2'>
+                  <PiOfficeChairFill size={30} />
+                  <h5 className='mt-3 text-light'>{`Seat ${chosenSeat.seatNumber}`}</h5>
+                </Button>
+              </div>
+
+
 
 
               {console.log("room Type: " + parentRoom.room.roomType)};
@@ -793,6 +803,24 @@ const RoomsPageComponent = (parentRoom) => {
     </div></>)
   }
 
+  const findGuest = (e, searchField) => {
+    e.preventDefault();
+    const userSearchGuestDTO = {
+      "username": searchField
+    }
+    console.log(JSON.stringify(userSearchGuestDTO))
+
+    searchNewGuest(JSON.stringify(userSearchGuestDTO), token).then((response) => {
+      console.log("response");
+      console.log(response.data);
+      setUsers(response.data);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
+
   const findEvent = (e, searchField) => {
     e.preventDefault();
     const facultyName = parentRoom.faculty;
@@ -836,15 +864,18 @@ const RoomsPageComponent = (parentRoom) => {
     </div>)
   }
 
-  const callSeatTakenEventForChosenAdmin = () => {
-    return (<div className='chosen-seat-taken-for-user-div bg-primary'>
-      <Button className='bg-primary'>This seat is for
-        <img src={userIcon} width={40} height={40} alt='Responsive image' className='img-fluid mr-2 ml-2' />
-        lectors only!</Button>
-    </div>)
+  const logOut = () => {
+    localStorage.clear();
+    navigator('/login');
   }
 
-
+  const callLogOut = () => {
+    return (<div>
+      <button className='btn btn-logout btn-danger text-light' onClick={() => { logOut() }}>
+        Log out
+      </button>
+    </div>)
+  }
 
 
   return (
@@ -856,6 +887,7 @@ const RoomsPageComponent = (parentRoom) => {
       {filterForm && callFilterForm()}
       {releaseSeat && releaseSeats()}
       <OpenUserSettings />
+      {callLogOut()}
       {callSearchBar()}
       {seatTakenEventForm && callSeatTakenEventForChosenUser()}
     </>

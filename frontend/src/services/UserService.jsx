@@ -29,3 +29,12 @@ export const verifyOneTimePass = (request,token) => axios.put(REST_API_BASE_URL 
 export const addLinkToPage = (request,token) => axios.put(REST_API_BASE_URL + '/add-link-to-page', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const getUsers = (token) => axios.get(REST_API_BASE_URL + '/get-users', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const getUserByUsername = (user, token) => axios.get(REST_API_BASE_URL + '/user-points', {
+  params: {
+    username: user
+  },
+  headers: { "Authorization": `Bearer ${token}` }
+});
+
+export const searchNewGuest = (request, token) => axios.put(REST_API_BASE_URL + '/search', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

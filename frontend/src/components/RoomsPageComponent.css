@@ -56,6 +56,10 @@ body {
   right: -1.5%;
 }
 
+.btn-2{
+  z-index: 1;
+}
+
 .btn-2:hover,
 .btn-2:focus,
 .btn-2:hover,
@@ -130,10 +134,10 @@ body {
 }
 
 .card-body-filter {
-  width: 30%;
+  width: 40%;
   border-radius: 10%;
   position: absolute;
-  left: 38%;
+  left: 34%;
   bottom: 10.5%;
   height: 75%;
 }
@@ -313,6 +317,14 @@ body {
   height: 9%;
 }
 
+.btn-close-filter-event-form{
+  position: absolute;
+  right: 4%;
+  top: 4%;
+  width: 7%;
+  height: 9%;
+}
+
 .seats-div-custom {
   position: absolute;
   bottom: 12%;
@@ -340,4 +352,8 @@ body {
   right:4%;
   top:26%;
   width: 100%;
+}
+
+.custom-form-search-bar-guests{
+  margin-top: 11%;
 }

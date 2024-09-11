@@ -4,7 +4,6 @@ import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
-import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
@@ -67,7 +66,7 @@ public class EventServiceImpl implements EventService {
                         event.setDescription(eventDTO.getDescription());
                         event.setEventType(eventDTO.getEventType());
                         event.setDuration(getDuration(eventDTO.getDuration()));
-                        event.setSeats(getSeats(eventDTO.getSeats(), new ArrayList<>()));
+                        event.setSeats(getSeats(room.getSeatsNumber()));
                         event.setFloorNumber(eventDTO.getFloorNumber());
                         event.setRoomNumber(eventDTO.getRoomNumber());
                         event.setDisableEventReason(null);
@@ -197,6 +196,7 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new CustomEventException("There is no such event!");
         }
+        user.setPoints(user.getPoints() + 1);
         FeedbackForm.FeedbackFormBuilder feedbackFormBuilder = FeedbackForm.builder()
                 .description(addFeedbackFormDTO.getDescription())
                 .isAnonymous(addFeedbackFormDTO.isAnonymous())
@@ -327,27 +327,15 @@ public class EventServiceImpl implements EventService {
         return duration;
     }
 
-    private List<Seat> getSeats(List<SeatDTO> seatDTOS, List<Seat> seats) {
-        for (SeatDTO seatDTO : seatDTOS) {
-            boolean seatFound = false;
-            for (Seat seat : seats) {
-                if (seat.getSeatNumber().equals(seatDTO.getSeatNumber())) {
-                    seatFound = true;
-                    break;
-                }
-            }
-            if (!seatFound) {
-                Seat newSeat = new Seat();
-                newSeat.setSeatNumber(seatDTO.getSeatNumber());
-                newSeat.setSeatTaken(false);
-                if (seatDTO.getSeatType() != null) {
-                    newSeat.setSeatType(seatDTO.getSeatType());
-                } else {
-                    newSeat.setSeatType(SeatType.NORMAL);
-                }
-                newSeat.setUserThatOccupiedSeat("");
-                seats.add(seatRepository.save(newSeat));
-            }
+    private List<Seat> getSeats(int seatsNumber) {
+        List<Seat> seats = new ArrayList<>();
+        for (int i = 0; i < seatsNumber; i++) {
+            Seat newSeat = new Seat();
+            newSeat.setSeatNumber("T" + (i + 1));
+            newSeat.setSeatTaken(false);
+            newSeat.setSeatType(SeatType.NORMAL);
+            newSeat.setUserThatOccupiedSeat("");
+            seats.add(seatRepository.save(newSeat));
         }
         return seats.stream()
                 .sorted(Comparator.comparing(Seat::getSeatNumber))

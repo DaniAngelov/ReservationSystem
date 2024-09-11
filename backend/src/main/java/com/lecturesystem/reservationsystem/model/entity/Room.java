@@ -22,6 +22,9 @@ public class Room implements Serializable {
     @Column(name = "room_number")
     private int roomNumber;
 
+    @Column(name = "seats_number")
+    private int seatsNumber;
+
     @ManyToOne
     @JoinColumn(name = "floor_id")
     private Floor floor;

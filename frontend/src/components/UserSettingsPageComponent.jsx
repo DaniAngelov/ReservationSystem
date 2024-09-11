@@ -7,11 +7,11 @@ import twoStarEmoji from '../assets/2-star-emoji.png';
 import threeStarEmoji from '../assets/3-star-emoji.png';
 import fourStarEmoji from '../assets/4-star-emoji.png';
 import fiveStarEmoji from '../assets/5-star-emoji.png';
-import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage } from '../services/UserService';
+import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage, getUserByUsername } from '../services/UserService';
 import { BsShieldLockFill } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom';
-import { getEventsForUser, getEventsForOrganizer, deleteUserEvent, deleteEvent, addFeedbackForm } from '../services/FloorService';
+import { getEventsForUser, getEventsForOrganizer, deleteEvent, addFeedbackForm } from '../services/FloorService';
 import { Carousel, Button } from "react-bootstrap";
 import { MdEventAvailable } from "react-icons/md";
 import { disableUserEvent } from '../services/FloorService';
@@ -21,6 +21,11 @@ import { FaUserPen } from "react-icons/fa6";
 import { GrDocumentText } from "react-icons/gr";
 import { MdAutoDelete } from "react-icons/md";
 import { VscFeedback } from "react-icons/vsc";
+import { GiPresent } from "react-icons/gi";
+import hatReward from '../assets/hat.jpg';
+import tshirtReward from '../assets/tshirt.jpg';
+import keyHolderReward from '../assets/keyholder.jpg';
+import ImageZoom from "react-image-zooom";
 
 const UserSettingsPageComponent = () => {
 
@@ -37,6 +42,8 @@ const UserSettingsPageComponent = () => {
   const [authenticationForm, setAuthenticationForm] = useState(false);
 
   const [addResourcesLinkForm, setaddResourcesLinkForm] = useState(false);
+
+  const [rewardsMenu, setRewardsMenu] = useState(false);
 
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -67,6 +74,16 @@ const UserSettingsPageComponent = () => {
   const [finishedEventsForm, setFinishedEventsForm] = useState(false);
   const [chosenFinishedEvent, setChosenFinishedEvent] = useState([]);
 
+  const keyholderPoints = 20;
+  const tshirtPoints = 60;
+  const hatPoints = 40;
+
+  const [rewardPath, setRewardPath] = useState('');
+
+  const [generateBiggerImageCheck, setGenerateBiggerImageCheck] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState([]);
+
   const [digit1, setDigit1] = useState('');
   const [digit2, setDigit2] = useState('');
   const [digit3, setDigit3] = useState('');
@@ -83,6 +100,17 @@ const UserSettingsPageComponent = () => {
   const role = decodedToken.role;
 
   const navigator = useNavigate();
+
+  useEffect(() => {
+    getUserByUsername(user, token).then((response) => {
+      console.log("response")
+      console.log(response.data);
+      setCurrentUser(response.data);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }, []);
 
   useEffect(() => {
     getEventsForUser(user, token)
@@ -152,15 +180,19 @@ const UserSettingsPageComponent = () => {
     return setFeedbackForm(!feedbackForm);
   }
 
-  const closeFeedbackForm = () => {
-    return setFeedbackForm(false);
+  const toggleRewardMenu = () => {
+    return setRewardsMenu(!rewardsMenu);
+  }
+
+  const closeRewardMenu = () => {
+    return setRewardsMenu(false);
+  }
+
+  const toggleGenerateBiggerImage = () => {
+    return setGenerateBiggerImageCheck(!generateBiggerImageCheck);
   }
 
   const toggleFinishedEventsForm = () => {
-    return setFinishedEventsForm(!finishedEventsForm);
-  }
-
-  const closeFinishedEventsForm = () => {
     return setFinishedEventsForm(!finishedEventsForm);
   }
 
@@ -202,12 +234,15 @@ const UserSettingsPageComponent = () => {
   }
 
   const OpenUserSettings = () => {
-    return (<><div className='container'>
-      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={navigateToUserSettings}>
-        <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
-        <h4 className='header-user-icon'>{user}</h4>
-      </button>
-    </div></>)
+    return (<>
+      <div className='container'>
+        <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
+          navigateToUserSettings()
+        }}>
+          <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
+          <h4 className='header-user-icon'>{user}</h4>
+        </button>
+      </div></>)
   }
 
   const verifySecret = (e) => {
@@ -527,7 +562,7 @@ const UserSettingsPageComponent = () => {
         <button className="btn-close-authentication-types-event-form btn btn-danger" onClick={(e) => closeAuthenticationForm(e)}>x</button>
         <ul>
           <h1 className='text-light authentication-types-header text-center font-weight-bold'>
-            <BsShieldLockFill size={90} className='mr-5 mb-2' /> Authentication types
+            <BsShieldLockFill size={90} className='mr-3 mb-2' /> Authentication types
           </h1>
           <li>
             <button className='btn btn-secondary btn-item-enable-two-factor text-light' onClick={() => { enableTwoFactorAuthentication() }}>
@@ -564,7 +599,10 @@ const UserSettingsPageComponent = () => {
                   closeCreatedEventsDashboard();
                   closeFaEventForm();
                   closeAddResourcesLinkForm();
-                  toggleAuthenticationForm() }}>
+                  closeRewardMenu();
+
+                  toggleAuthenticationForm()
+                }}>
                   Authentication
                 </button>
               </li>
@@ -574,6 +612,7 @@ const UserSettingsPageComponent = () => {
                   closeAuthenticationForm();
                   closeFaEventForm();
                   closeAddResourcesLinkForm();
+                  closeRewardMenu();
                   toggleDashboard()
                 }}>
                   Dashboard
@@ -585,6 +624,7 @@ const UserSettingsPageComponent = () => {
                   closeAuthenticationForm();
                   closeAddResourcesLinkForm();
                   closeFaEventForm();
+                  closeRewardMenu();
                   toggleCreatedEventsDashboard()
                 }}>
                   Your created events
@@ -595,6 +635,7 @@ const UserSettingsPageComponent = () => {
                 closeCreatedEventsDashboard();
                 closeAuthenticationForm();
                 closeFaEventForm();
+                closeRewardMenu();
                 toggleAddResourcesForm();
               }}>
                 Add link to your resources
@@ -604,6 +645,18 @@ const UserSettingsPageComponent = () => {
               {finishedEvents.length > 0 && <li>
                 <button className='btn btn-feedback-form btn-primary text-light' onClick={() => { toggleFinishedEventsForm() }}>
                   Feedback
+                </button>
+              </li>}
+              {rewardsMenu == false && <li>
+                <button className='btn btn-item-rewards btn-info text-light' onClick={() => {
+                  closeCreatedEventsDashboard();
+                  closeAuthenticationForm();
+                  closeFaEventForm();
+                  closeAddResourcesLinkForm();
+                  closeDashboard();
+                  toggleRewardMenu();
+                }}>
+                  Rewards
                 </button>
               </li>}
               <li>
@@ -791,22 +844,114 @@ const UserSettingsPageComponent = () => {
         <ul>
 
           {finishedEvents.length > 0 && finishedEvents.map((finishedEvent, idx) => {
+            { console.log("Are bee finishedEvent") }
+            { console.log(finishedEvent) }
             return <li><button className='btn btn-primary btn-finished-event text-light mb-3' key={idx} onClick={() => {
               setChosenFinishedEvent(finishedEvent.name);
               toggleFeedbackForm();
               setFinishedEventsForm(false);
-            }}>{finishedEvent.name}</button></li>
-
+            }}>Event "{finishedEvent.name}" (Floor {finishedEvent.floorNumber}, Room {finishedEvent.roomNumber}, Started: {finishedEvent.duration.startDate.replace('T', ' ')}, Ended: {finishedEvent.duration.endDate.replace('T', ' ')})</button></li>
           })}
         </ul>
       </div>)
   }
 
+  const generateBiggerImage = (imgPath) => {
+    console.log("HERE BBYYY");
+    console.log(imgPath);
+    return (
+      <div className='generate-image-container'>
+        <button className="btn-close-generate-image btn btn-danger" onClick={() => setGenerateBiggerImageCheck(false)}>x</button>
+        <Button className='p-5 bg-light'>
+          <ImageZoom
+            src={imgPath}
+            alt="Zoom-images"
+            zoom="250"
+          />
+        </Button>
+      </div>
+    )
+  }
+
+  const getUserPrize = () => {
+    return (
+      <div>
+
+      </div>)
+  }
+
+  const callRewardsMenu = () => {
+    return (<div className='reward-menu-div bg-light p-4'>
+      <button className="btn-close-rewards-menu btn btn-danger" onClick={() => setRewardsMenu(false)}>x</button>
+      <h1 className='text-center text-dark mt-2'><GiPresent size={80} className='mb-4 ml-3' /> Win Prizes</h1>
+      <p className='mb-3 text-secondary text-center mt-3'>Collect points from using our app and get rewards!<br /><strong> Current points: {currentUser.points}</strong></p>
+      <ul>
+        <li><button className='btn btn-light btn-reward-item-1 text-light' onClick={() => {
+          setRewardPath(keyHolderReward);
+          toggleGenerateBiggerImage();
+        }
+        }>
+          <img src={keyHolderReward} width={200} height={200} alt='Responsive image' className='img-fluid text-center mb-4 mt-2' />
+          <p className='mb-3 text-secondary text-center mb-3'>Key holder <br /> <strong> points: {keyholderPoints}</strong> </p>
+        </button>
+          <button className={`btn ${currentUser.points < keyholderPoints ? 'disabled' : ''}  btn-get-item-3 text-center btn-primary`} onClick={() => {
+            getUserPrize();
+          }}>Take prize!</button>
+        </li>
+        <li><button className={'btn  btn-light btn-reward-item-2 text-light'} onClick={() => {
+          setRewardPath(hatReward);
+          toggleGenerateBiggerImage();
+        }
+        } >
+          <img src={hatReward} width={200} height={200} alt='Responsive image' className='img-fluid text-center mb-4 mt-2' />
+          <p className='mb-3 text-secondary text-center  mb-3'>Hat <br /> <strong> points: {hatPoints}</strong> </p>
+        </button>
+          <button className={`btn ${currentUser.points < hatPoints ? 'disabled' : ''} btn-get-item-2 text-center btn-primary`} onClick={() => {
+            getUserPrize();
+          }}>Take prize!</button>
+        </li>
+        <div>
+          <li>
+            <button className='btn btn-light btn-reward-item-3 text-light' onClick={() => {
+              setRewardPath(tshirtReward);
+              toggleGenerateBiggerImage();
+            }
+            }>
+              <img src={tshirtReward} width={200} height={200} alt='Responsive image' className='img-fluid text-center mb-4 mt-2' />
+              <p className='mb-3 text-secondary text-center mb-3'>T shirt <br /> <strong> points: {tshirtPoints}</strong></p>
+            </button>
+            <button className={`btn ${currentUser.points < tshirtPoints ? 'disabled' : ''} btn-get-item text-center btn-primary`} onClick={() => {
+              getUserPrize();
+            }}>Take prize!</button>
+          </li>
+
+
+        </div>
+      </ul>
+    </div>)
+
+  }
+
+  const logOut = () => {
+    localStorage.clear();
+    navigator('/login');
+  }
+
+  const callLogOut = () => {
+    return (<div>
+      <button className='btn btn-logout btn-danger text-light' onClick={() => { logOut() }}>
+        Log out
+      </button>
+    </div>)
+  }
 
   return (
     <>
+      {console.log("user points")}
+      {console.log(currentUser.points)};
       <SidebarLeftComponent />
       {sidebarRightComponent()}
+      {callLogOut()}
       {dashboard && <ShowAllEventsForUser />}
       {createdEventsDashboard && <ShowAllCreatedEventsForUser />}
       {faEventForm && callEventForm()}
@@ -816,6 +961,8 @@ const UserSettingsPageComponent = () => {
       {addResourcesLinkForm && callAddResourcesNewForm()}
       {finishedEventsForm && callFinishedEventsForm()}
       {feedbackForm && callFeedbackForm()}
+      {rewardsMenu && callRewardsMenu()}
+      {generateBiggerImageCheck && generateBiggerImage(rewardPath)}
       <OpenUserSettings />
     </>
   )

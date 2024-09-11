@@ -81,25 +81,28 @@ body {
   max-height: calc(100vh - 67px);
   overflow-x: hidden;
 }
-.sd-body ul{
-    display: inline-block;
-    width: 100%;
-    margin-bottom: 0;
-    padding: 0;
+
+.sd-body ul {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0;
 }
-.sd-body ul li{
-    list-style: none;
-    margin-bottom: 8px;
+
+.sd-body ul li {
+  list-style: none;
+  margin-bottom: 8px;
 }
-.sd-body ul li .sd-link{
-    display: inline-block;
-    width: 100%;
-    padding: 10px 16px;
-    color: #475f7b;
-    background-color: #e5e8ec;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
+
+.sd-body ul li .sd-link {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 16px;
+  color: #475f7b;
+  background-color: #e5e8ec;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .submitButton {
@@ -159,11 +162,75 @@ h1 {
   width: 80%;
 }
 
-.example-rooms{
+.example-rooms {
   position: absolute;
   right: 1%;
   top: 25%;
   z-index: 1;
   border-radius: 10px;
   width: 15%;
+}
+
+.rooms-container {
+  position: absolute;
+  top: 17%;
+  left: 26%;
+  width: 55%;
+  height: 70%;
+}
+
+.stairs-icon-start {
+  position: absolute;
+  left: 26%;
+  top: 48%;
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+}
+
+.stairs-icon-end {
+  position: absolute;
+  right: 21%;
+  top: 48%;
+}
+
+.room-item-button {
+  position: absolute;
+  width: 15% !important;
+  left: 7%;
+  z-index: 1;
+}
+
+.lines-icon {
+  position: absolute;
+  left: 30%;
+  top: 39%;
+}
+
+.lines-for-path-first {
+  border-top: 15px solid #fff;
+  margin-left: 32.5%;
+  margin-top: 21.5%;
+  width: 40%;
+}
+
+.lines-for-path-second {
+  border-top: 15px solid #fff;
+  margin-left: 32.5%;
+  margin-top: 5%;
+  width: 40%;
+}
+
+.person-walking-icon{
+  position: absolute;
+  left: 32.5%;
+  top: 47.5%;
+}
+
+.header-floor-position{
+  position: absolute;
+  left: 25%;
+  top: 11%;
 }

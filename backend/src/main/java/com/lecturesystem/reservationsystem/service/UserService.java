@@ -38,4 +38,9 @@ public interface UserService {
     void addLinkToPage(AddLinkToPageDTO addLinkToPageDTO) throws CustomUserException;
 
     List<User> getAllUsers();
+
+    User getUserByUsername(String user) throws CustomUserException;
+
+    List<User> searchUser(SearchGuestDTO searchGuestDTO);
+
 }

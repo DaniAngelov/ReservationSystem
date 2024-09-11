@@ -127,4 +127,21 @@ public class UserController {
         List<GetUserDTO> userDTOS = users.stream().map(event -> modelMapper.map(event, GetUserDTO.class)).collect(toList());
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
+
+    @GetMapping("/user-points")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'USER', 'ADMIN')")
+    public ResponseEntity<UserPointsDTO> getUserWithPoints(@RequestParam String username) throws CustomUserException {
+        User user = userService.getUserByUsername(username);
+        UserPointsDTO userDTO = modelMapper.map(user, UserPointsDTO.class);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
+
+    @PutMapping("/search")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    public ResponseEntity<List<UserPointsDTO>> searchEvent(@RequestBody SearchGuestDTO searchUserDTO) {
+        List<User> users = userService.searchUser(searchUserDTO);
+        List<UserPointsDTO> userDTOS = users.stream().map(user -> modelMapper.map(user, UserPointsDTO.class)).collect(toList());
+        return new ResponseEntity<>(userDTOS, HttpStatus.OK);
+    }
+
 }

@@ -38,8 +38,17 @@ body {
   position: absolute;
   text-align: center;
   left: 32%;
-  bottom: 4%;
+  bottom: 0%;
   width: 15vh;
+  z-index: 1;
+}
+
+.btn-user-settings-3 {
+  position: absolute;
+  left: 3%;
+  bottom: 2%;
+  width: 30vh;
+  text-align: start;
   z-index: 1;
 }
 
@@ -104,10 +113,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
-
 }
-
-
 
 .btn-item-authentication-types {
   position: absolute;
@@ -160,6 +166,41 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
+.btn-logout {
+  position: absolute;
+  left: 21%;
+  bottom: 1%;
+  width: 10%;
+  height: 8%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-logout:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+
+.btn-item-rewards {
+  position: absolute;
+  left: 390%;
+  bottom: 1%;
+  width: 90%;
+  height: 8%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-rewards:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
 
 .btn-item-add-link {
   position: absolute;
@@ -417,7 +458,7 @@ input {
 .authentication-types-header {
   position: absolute;
   top: 8%;
-  left: 16%;
+  left: 10%;
 }
 
 .add-resources-link-div {
@@ -491,13 +532,30 @@ input {
   height: 7%;
 }
 
-.btn-add-feedback{
+.btn-close-generate-image {
+  position: absolute;
+  right: 1%;
+  top: 4%;
+  width: 7%;
+  z-index: 1;
+  height: 20%;
+}
+
+.btn-close-rewards-menu {
+  position: absolute;
+  right: 2%;
+  top: 3%;
+  width: 7%;
+  height: 7%;
+}
+
+.btn-add-feedback {
   position: absolute;
   bottom: 2%;
   right: 25%;
 }
 
-.finished-events-div{
+.finished-events-div {
   position: absolute;
   border-radius: 12px;
   left: 30%;
@@ -506,9 +564,9 @@ input {
   height: 70%;
 }
 
-.finished-events-list{
+.finished-events-list {
   position: absolute;
-  top:20%;
+  top: 20%;
   left: 40%;
 }
 
@@ -527,14 +585,87 @@ input {
   box-shadow: 0 0 5px white inset;
 }
 
-li { list-style-type: none; }
+li {
+  list-style-type: none;
+}
 
 
 .card-body-div-authentication-types {
   position: absolute;
+  border-radius: 20px;
+  left: 30%;
+  top: 5%;
+  width: 50%;
+  height: 80%;
+}
+
+.reward-menu-div {
+  position: absolute;
   border-radius: 12px;
   left: 25%;
+  top: 6%;
+  width: 65%;
+  height: 85%;
+}
+
+.btn-reward-item-1 {
+  position: absolute;
+  height: 41%;
+  width: 30%;
+  left: 5%;
+}
+
+.btn-reward-item-2 {
+  position: absolute;
+  height: 41%;
+  left: 35%;
+  width: 30%;
+}
+
+.btn-reward-item-3 {
+  position: absolute;
+  height: 41%;
+  left: 65%;
+  width: 30%;
+}
+
+.bigger-image-div {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  left: 35%;
+  top: 8%;
+  z-index: 1;
+  box-shadow: 0px 4px 8px rgb(0 0 0 / 16%);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.generate-image-container {
+  position: absolute;
+  left: 35%;
+  width: 40%;
+  height: 30%;
   top: 5%;
-  width: 60%;
-  height:90%;
+  z-index: 1;
+}
+
+.btn-get-item {
+  position: absolute;
+  right: 10%;
+  bottom: 3%;
+  width: 20%;
+}
+
+.btn-get-item-2 {
+  position: absolute;
+  right: 40%;
+  bottom: 3%;
+  width: 20%;
+}
+
+.btn-get-item-3 {
+  position: absolute;
+  right: 70%;
+  bottom: 3%;
+  width: 20%;
 }

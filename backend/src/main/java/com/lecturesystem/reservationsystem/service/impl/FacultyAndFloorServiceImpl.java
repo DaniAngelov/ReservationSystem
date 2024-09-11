@@ -93,6 +93,7 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
             for (Room room : rooms) {
                 if (room.getRoomNumber() == roomDTO.getRoomNumber()) {
                     room.setEvents(new ArrayList<>());
+                    room.setSeatsNumber(roomDTO.getSeatsNumber());
                     roomRepository.save(room);
                     roomFound = true;
                     break;
@@ -101,6 +102,7 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
             if (!roomFound) {
                 Room newRoom = new Room();
                 newRoom.setRoomNumber(roomDTO.getRoomNumber());
+                newRoom.setSeatsNumber(roomDTO.getSeatsNumber());
                 newRoom.setEvents(new ArrayList<>());
                 newRoom.setRoomType(roomDTO.getRoomType());
                 rooms.add(roomRepository.save(newRoom));

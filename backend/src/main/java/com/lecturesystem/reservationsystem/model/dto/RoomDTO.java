@@ -15,4 +15,5 @@ public class RoomDTO {
     private Integer roomNumber;
     private List<EventDTO> events;
     private RoomType roomType;
+    private int seatsNumber;
 }

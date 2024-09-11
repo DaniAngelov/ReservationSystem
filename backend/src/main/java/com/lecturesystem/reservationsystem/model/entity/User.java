@@ -66,6 +66,9 @@ public class User implements Serializable, UserDetails {
     @Column
     private String linkToPage;
 
+    @Column
+    private Integer points;
+
     @Override
     public String getUsername() {
         return this.username;

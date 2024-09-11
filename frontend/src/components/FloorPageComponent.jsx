@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import userIcon from '../assets/user-icon.png';
-import { getFloors, uploadFile,getEvents , endEvent} from '../services/FloorService';
+import { getFloors, uploadFile, getEvents, endEvent } from '../services/FloorService';
 import { BsFillDoorOpenFill } from "react-icons/bs";
 
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'
+import { Gi3dStairs } from "react-icons/gi";
+import { FaPersonWalkingDashedLineArrowRight } from "react-icons/fa6";
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -17,6 +19,9 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [events, setEvents] = useState([]);
   const token = localStorage.getItem('token');
   const decodedToken = jwtDecode(token);
+  const [generateRoomsEnabled, setGenerateRoomsEnabled] = useState(false);
+  const [chosenFaculty, setChosenFaculty] = useState('');
+  const [chosenFloor, setChosenFloor] = useState('');
 
   const user = decodedToken.sub;
 
@@ -87,6 +92,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </div></>)
   }
 
+  const toggleGenerateRoomsEnabled = () => {
+    return setGenerateRoomsEnabled(!generateRoomsEnabled);
+  }
+
   const showRooms = (floorNumber, facultyName) => {
     const newMap = [];
 
@@ -117,16 +126,35 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     }
 
     const GenerateRooms = () => {
-      return (
-        <div className="container">
-          <div className="position-absolute top-50 start-50 translate-middle">
-            {isOpen && newRooms.map((floorAndRoom, idx) =>
-              <button
-                className={`btn-${floorAndRoom.roomColor} m-4 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
-                <BsFillDoorOpenFill size={30} className='mr-2' />
-                {floorAndRoom.room.roomNumber}</button>)}
 
+      const newRoomsPartOne = newRooms.slice(0, newRooms.length / 2);
+      const newRoomsPartTwo = newRooms.slice(newRooms.length / 2, newRooms.length);
+
+      return (
+
+        <div>
+          <h2 className='text-light header-floor-position'>{chosenFaculty}, Floor {chosenFloor}</h2>
+          <Gi3dStairs size={70} className='stairs-icon-start text-light' />
+
+          <div className="rooms-container border row align-items-start">
+            {isOpen && newRoomsPartOne.map((floorAndRoom, idx) => <button
+              className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
+              <BsFillDoorOpenFill size={30} className='mr-2' />
+              {floorAndRoom.room.roomNumber}</button>)}
           </div>
+
+          <div className='lines-for-path-first'></div>
+          <div className='lines-for-path-second'></div>
+          <FaPersonWalkingDashedLineArrowRight size={70} className='person-walking-icon text-light' />
+          <Gi3dStairs size={70} className='stairs-icon-end text-light' />
+
+          <div className="rooms-container border row align-items-end">
+            {isOpen && newRoomsPartTwo.map((floorAndRoom, idx) => <button
+              className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
+              <BsFillDoorOpenFill size={30} className='mr-2' />
+              {floorAndRoom.room.roomNumber}</button>)}
+          </div>
+
           <ul className='example-rooms bg-dark text-light p-2'>
             Types of rooms:
             <li
@@ -151,9 +179,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
     return (
       <div>
-        <h1 class='header-title'
-          className='text-center display-1 fw-bold text-light font-weight-bold position-absolute top-0 start-50 translate-middle mt-5'>FMI DeskSpot</h1>
-        <GenerateRooms />
+        {generateRoomsEnabled && <GenerateRooms />}
       </div>
     )
   }
@@ -174,8 +200,14 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               <ul class="dropdown-menu dropdown-floors-item dropdown-menu-dark text-center">
 
                 {floorNumbers.map((floor, idx) => {
-                  return <li key={idx}><a className="dropdown-item" onClick={() => showRooms(floor.floorNumber, floor.facultyName)}>
-                  {floor.facultyName}- Floor {floor.floorNumber}</a></li>
+                  return <li key={idx}><a className="dropdown-item" onClick={() => {
+                    setChosenFaculty(floor.facultyName);
+                    setChosenFloor(floor.floorNumber);
+                    { generateRoomsEnabled == false && toggleGenerateRoomsEnabled() }
+                    showRooms(floor.floorNumber, floor.facultyName);
+                  }
+                  }>
+                    {floor.facultyName}- Floor {floor.floorNumber}</a></li>
                 })
                 }
               </ul>
@@ -220,12 +252,12 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       let eventEndDate = event.duration.endDate.replace('T', ' ');
       const nowTime = new Date(Date.now());
       const newEndDate = new Date(eventEndDate);
-      if(Date.parse(nowTime) > Date.parse(newEndDate)){
+      if (Date.parse(nowTime) > Date.parse(newEndDate)) {
         const request = {
           "name": event.name
         }
         console.log(JSON.stringify(request))
-        endEvent(JSON.stringify(request),token).then((response) => {
+        endEvent(JSON.stringify(request), token).then((response) => {
           console.log("response");
           console.log(response.data);
         }).catch((error) => {
@@ -234,10 +266,21 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         })
       }
     })
-   
-    
-    
   }
+
+  const logOut = () => {
+    localStorage.clear();
+    navigator('/login');
+  }
+
+  const callLogOut = () => {
+    return (<div>
+      <button className='btn btn-logout btn-danger text-light' onClick={() => { logOut() }}>
+        Log out
+      </button>
+    </div>)
+  }
+
 
   return (
     <>
@@ -245,6 +288,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       <SeatsComponent />
       <UploadFile />
       <OpenUserSettings />
+      {callLogOut()}
       {checkIfEventStillContinues()}
     </>
   )
