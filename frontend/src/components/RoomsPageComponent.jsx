@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { releaseSpot, reserveSpot, getUsers, searchNewGuest } from '../services/UserService'
-import { addEvent, getEvents, searchNewEvent } from '../services/FloorService';
+import { addEvent, getEvents, searchNewEvent, getEventsForOrganizer } from '../services/FloorService';
 import { useNavigate, useParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
@@ -15,12 +15,15 @@ import { jwtDecode } from 'jwt-decode'
 import { IoMdSearch } from "react-icons/io";
 import { BsPersonCheckFill } from "react-icons/bs";
 import { BsFillDoorOpenFill } from "react-icons/bs";
+import { addDays } from '@progress/kendo-date-math';
+import { IoFilterCircle } from "react-icons/io5";
+import { RiLogoutBoxLine } from "react-icons/ri";
+import { IoSettingsSharp } from "react-icons/io5";
 
 
 const RoomsPageComponent = (parentRoom) => {
   const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
   const [events, setEvents] = useState([]);
-  const eventSortFieldOptions = ['name', 'eventType', 'date', 'duration']
   const [isOpen, setIsopen] = useState(false);
 
   const { floorId, roomId } = useParams();
@@ -30,12 +33,12 @@ const RoomsPageComponent = (parentRoom) => {
   const [eventType, setEventType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [seatsNumber, setSeatsNumber] = useState('');
 
   const [dateOption, setDateOption] = useState('');
 
   const [searchField, setSearchField] = useState('');
   const [guestSearchField, setGuestSearchField] = useState('');
+  const [organizerSearchField, setOrganizerSearchField] = useState('');
 
   const token = localStorage.getItem('token');
 
@@ -49,6 +52,7 @@ const RoomsPageComponent = (parentRoom) => {
 
   const [qrQuestionsInputEnable, setQrQuestionsInputEnable] = useState(true);
 
+  const [newUserEvents, setNewUserEvents] = useState([]);
 
   // Seats
   const [event, setEvent] = useState([]);
@@ -65,11 +69,11 @@ const RoomsPageComponent = (parentRoom) => {
 
   const [releaseSeat, setReleaseSeat] = useState(false);
 
-  const [showSortEvents, setShowSortEvents] = useState(false);
-
   const [seatTakenEventForm, setSeatTakenEventForm] = useState(false);
 
   const [guestListEnabled, setGuestListEnabled] = useState(false);
+
+  const [userPreferenceForm, setUserPreferenceForm] = useState(false);
 
   const [filteredEvents, setFilteredEvents] = useState([]);
 
@@ -86,16 +90,28 @@ const RoomsPageComponent = (parentRoom) => {
     return setQrQuestionsInputEnable(!qrQuestionsInputEnable);
   }
 
-  const toggleShowSortEvents = () => {
-    return setShowSortEvents(!showSortEvents);
+  const toggleUserPreferencesForm = () => {
+    return setUserPreferenceForm(!userPreferenceForm);
+  }
+
+  const closeUserPreferencesForm = () => {
+    return setUserPreferenceForm(false);
   }
 
   const ToggleSeatTakenEventForm = () => {
     return setSeatTakenEventForm(!seatTakenEventForm);
   }
 
+  const closeSeatTakenEventForm = () => {
+    return setSeatTakenEventForm(false);
+  }
+
   const ToggleReleaseSeats = () => {
     return setReleaseSeat(!releaseSeat);
+  }
+
+  const closeReleaseSeats = () => {
+    return setReleaseSeat(false);
   }
 
   const toggleUpdateSeats = () => {
@@ -158,7 +174,7 @@ const RoomsPageComponent = (parentRoom) => {
   const [showForm, setShowForm] = useState(false);
   const [filterForm, setFilterForm] = useState(false);
 
-  const updateShowForm = () => {
+  const toggleShowForm = () => {
     setShowForm(!showForm);
   }
 
@@ -382,6 +398,11 @@ const RoomsPageComponent = (parentRoom) => {
       newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() == nowTime.getUTCDate()) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() == nowTime.getUTCDate()))
     } else if (dateOption == 'Tomorrow') {
       newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() == nowTime.getUTCDate() + 1) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() == nowTime.getUTCDate() + 1))
+    } else if (dateOption == 'This week') {
+      let newNowTime = addDays(nowTime, 1 - (nowTime.getUTCDay()));
+      newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() >= newNowTime.getUTCDate()) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() <= newNowTime.getUTCDate() + 7))
+    } else if (dateOption == 'This month') {
+      newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCMonth() == nowTime.getUTCMonth()) && (new Date(Date.parse(event.duration.endDate)).getUTCMonth() == nowTime.getUTCMonth()))
     }
     console.log('filtered events after:');
     console.log(newFilteredEvents);
@@ -394,7 +415,7 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         <div className='card-body-filter text-center bg-secondary p-5 mt-5'>
           <button className="btn-close-filter-event-form btn btn-danger" onClick={(e) => closeFilterForm(e)}>x</button>
-          <h1 className='text-center mb-4 text-light font-weight-bold'>Filter events</h1>
+          <h1 className='text-center mb-2 text-light font-weight-bold mr-4'><IoFilterCircle className='mr-2 mb-2' size={70} />Filter events</h1>
           <form>
             <div className='form-group text-start mb-2'>
               <label className='form-label text-light'>Event Type</label>
@@ -416,6 +437,9 @@ const RoomsPageComponent = (parentRoom) => {
                 }}>
                 <option>Today</option>
                 <option>Tomorrow</option>
+                <option>This week</option>
+                <option>This month</option>
+                <option>All events for this room</option>
                 <option>Specify date</option>
               </select>
             </div>
@@ -426,8 +450,6 @@ const RoomsPageComponent = (parentRoom) => {
         </div>
       </>)
   };
-
-
 
   const SidebarRightComponent = () => {
 
@@ -538,7 +560,7 @@ const RoomsPageComponent = (parentRoom) => {
               <div className='col'>
                 <Button className='mt-2'>
                   <BsFillDoorOpenFill size={30} />
-                  <h5 className='mt-3 text-light'>{`Room ${parentRoom.room.roomNumber}`}</h5>
+                  <h5 className='mt-3 text-light'>{`Room ${chosenEvent.roomNumber}`}</h5>
                 </Button>
               </div>
               <div className='col'>
@@ -547,9 +569,6 @@ const RoomsPageComponent = (parentRoom) => {
                   <h5 className='mt-3 text-light'>{`Seat ${chosenSeat.seatNumber}`}</h5>
                 </Button>
               </div>
-
-
-
 
               {console.log("room Type: " + parentRoom.room.roomType)};
               {openComputerRoomSpecs(parentRoom.room.roomType)}
@@ -573,28 +592,13 @@ const RoomsPageComponent = (parentRoom) => {
 
   const SidebarLeftComponent = () => {
 
-    const updateEvents = (filterOption) => {
-      console.log(filterOption);
-      axios.get(REST_API_BASE_URL + '/events', {
-        params: {
-          sortField: filterOption
-        },
-        headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` }
-      }).then((response) => {
-        const newEvents = [];
-        response.data.map(event => {
-          newEvents.push(event);
-        });
-        setEvents(newEvents);
-      }).catch(error => {
-        console.error(error);
-      });
-    }
-
     const showEventIfEnabled = (event) => {
       setEvent(event)
       closeShowForm();
       closeFilterForm()
+      closeReleaseSeats();
+      closeUserPreferencesForm();
+      closeSeatTakenEventForm();
       toggleUpdateSeats();
     }
 
@@ -603,8 +607,8 @@ const RoomsPageComponent = (parentRoom) => {
       let newStartDate = event.duration.startDate.replace('T', ' ');
       let newEndDate = event.duration.endDate.replace('T', ' ');
 
-      return <Carousel.Item key={idx}>
-        <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={() => {
+      return <Carousel.Item key={idx} className='carousel-item'>
+        <button className={`custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={() => {
           setActiveIndex(idx)
           event.enabled == true && showEventIfEnabled(event)
         }}>
@@ -628,10 +632,8 @@ const RoomsPageComponent = (parentRoom) => {
 
     }
 
-
     return (
       <>
-        <h1 className='header text-center display-2 text-light font-weight-bold position-absolute top-0 start-50 translate-middle mt-5'>FMI DeskSpot</h1>
         <div className="container-fluid mt-3">
           <div className="sidebar-left">
             <div className="sd-header">
@@ -646,7 +648,10 @@ const RoomsPageComponent = (parentRoom) => {
                     closeFilterForm();
                     closeSidebar();
                     closeUpdateSeats();
-                    updateShowForm()
+                    closeReleaseSeats();
+                    closeUserPreferencesForm();
+                    closeSeatTakenEventForm();
+                    toggleShowForm()
                   }}>
                   Add event
                 </button>}
@@ -655,28 +660,16 @@ const RoomsPageComponent = (parentRoom) => {
                     closeShowForm()
                     closeSidebar();
                     closeUpdateSeats();
+                    closeReleaseSeats();
+                    closeUserPreferencesForm();
+                    closeSeatTakenEventForm();
                     updateFilterForm()
                   }}>
                   Filter events
                 </button>
-                <button class=" btn btn-events-sort btn-secondary text-light p-2 w-75 mt-5 text-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Sort Events
-                </button>
-                <ul class="dropdown-menu">
-                  {eventSortFieldOptions.map((option, idx) => {
-                    return <li key={idx}><a className="dropdown-item" onClick={() => {
-                      { toggleShowSortEvents }
-                      { updateEvents(option) }
-                    }} >
-                      {option}
-                    </a></li>
-                  })}
-                </ul>
 
                 <Carousel size={150} width={150} height={200} className='p-5 mt-5' defaultActiveIndex={activeIndex}>
                   {filteredEvents.map((event, idx) => {
-
-
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
                       return showEvent(event, idx);
                     }
@@ -703,9 +696,13 @@ const RoomsPageComponent = (parentRoom) => {
         ToggleSidebar()
       } else {
         if (seat.userThatOccupiedSeat == user) {
+          closeSeatTakenEventForm();
+          closeUserPreferencesForm();
           ToggleReleaseSeats();
         } else {
           setChosenTakenSeat(seat);
+          closeReleaseSeats();
+          closeUserPreferencesForm();
           ToggleSeatTakenEventForm();
         }
 
@@ -774,7 +771,6 @@ const RoomsPageComponent = (parentRoom) => {
     releaseSpot(JSON.stringify(userReleaseSpotDTO), token).then((response) => {
       ToggleReleaseSeats();
       alert('Spot successfully released!');
-
     }).catch((error) => {
       console.log(error);
       alert(error.response.data);
@@ -796,7 +792,12 @@ const RoomsPageComponent = (parentRoom) => {
 
   const OpenUserSettings = () => {
     return (<><div className='container'>
-      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={navigateToUserSettings}>
+      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
+        closeReleaseSeats();
+        closeSeatTakenEventForm();
+        toggleUserPreferencesForm();
+      }
+      }>
         <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
         <h4 className='header-user-icon'>{user}</h4>
       </button>
@@ -846,12 +847,40 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         <nav class="custom-navbar navbar justify-content-between">
           <form class="custom-form-search-bar form-inline">
-            <IoMdSearch size={40} className='text-secondary search-bar-icon' />
+            <IoMdSearch size={35} className='text-secondary search-bar-icon' />
             <input class="form-control mr-sm-2" type="search" placeholder="Search for event" aria-label="Search" value={searchField}
               onChange={(e) => setSearchField(e.target.value)} />
             <button class="btn btn-outline-success my-2 my-sm-0" onClick={(e) => findEvent(e, searchField)}>Search</button>
           </form>
         </nav>
+      </>
+    )
+  }
+
+  const findEventsForOrganizer = (e, username) => {
+    e.preventDefault();
+    getEventsForOrganizer(username, token)
+      .then((response) => {
+        const newEvents = [];
+        response.data.map(event => {
+          newEvents.push(event);
+        });
+        setNewUserEvents(newEvents);
+        setFilteredEvents(newEvents);
+      }).catch(error => {
+        console.error(error);
+      })
+  }
+
+  const callSearchBarForOrganizer = () => {
+    return (
+      <>
+        <form class="custom-form-search-bar-organizer form-inline">
+          <IoMdSearch size={35} className='search-icon-organizer text-secondary search-bar-icon' />
+          <input class="input-organizer-events form-control mr-sm-2" type="search" placeholder="Events for lector" aria-label="Search" value={organizerSearchField}
+            onChange={(e) => setOrganizerSearchField(e.target.value)} />
+          <button class="btn-organizer-events btn btn-outline-success my-2 my-sm-0" onClick={(e) => findEventsForOrganizer(e, organizerSearchField)}>Search</button>
+        </form>
       </>
     )
   }
@@ -871,12 +900,26 @@ const RoomsPageComponent = (parentRoom) => {
 
   const callLogOut = () => {
     return (<div>
-      <button className='btn btn-logout btn-danger text-light' onClick={() => { logOut() }}>
+      <button className='btn btn-danger text-light' onClick={() => { logOut() }}>
         Log out
       </button>
     </div>)
   }
 
+  const callUserPreferenceForm = () => {
+    return (<div>
+      <button className='btn-navigate-user-settings-rooms btn btn-outline-success my-2 my-sm-0' onClick={() => {
+        navigateToUserSettings();
+      }}>
+        <IoSettingsSharp size={30} /> Settings
+      </button>
+      <button className='btn-user-logout-setting-rooms btn btn-outline-info my-2 my-sm-0' onClick={() => {
+        logOut();
+      }}>
+        <RiLogoutBoxLine size={30} /> Log out
+      </button>
+    </div>)
+  }
 
   return (
     <>
@@ -889,7 +932,9 @@ const RoomsPageComponent = (parentRoom) => {
       <OpenUserSettings />
       {callLogOut()}
       {callSearchBar()}
+      {callSearchBarForOrganizer()}
       {seatTakenEventForm && callSeatTakenEventForChosenUser()}
+      {userPreferenceForm && callUserPreferenceForm()}
     </>
   )
 }

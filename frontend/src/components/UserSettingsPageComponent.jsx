@@ -26,6 +26,9 @@ import hatReward from '../assets/hat.jpg';
 import tshirtReward from '../assets/tshirt.jpg';
 import keyHolderReward from '../assets/keyholder.jpg';
 import ImageZoom from "react-image-zooom";
+import { addDays } from '@progress/kendo-date-math';
+import axios from 'axios';
+import { RiLogoutBoxLine } from "react-icons/ri";
 
 const UserSettingsPageComponent = () => {
 
@@ -43,6 +46,8 @@ const UserSettingsPageComponent = () => {
 
   const [addResourcesLinkForm, setaddResourcesLinkForm] = useState(false);
 
+  const [userEventsFiltered, setUserEventsFiltered] = useState(false);
+
   const [rewardsMenu, setRewardsMenu] = useState(false);
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -58,11 +63,17 @@ const UserSettingsPageComponent = () => {
 
   const [deleteEventEnabled, setDeleteEventEnabled] = useState(false);
 
+  const [userPreferenceForm, setUserPreferenceForm] = useState(false);
+
   const [disableEvent, setDisableEvent] = useState(false);
   const [disableEventForm, setDisableEventForm] = useState(false);
   const [disableEventReason, setDisableEventReason] = useState('');
 
+  const [qrCodeQuestions, setQrCodeQuestions] = useState('');
+
   const [feedbackForm, setFeedbackForm] = useState(false);
+
+  const [filteredEvents, setFilteredEvents] = useState([]);
 
   const [linkResources, setLinkResources] = useState('')
 
@@ -124,9 +135,7 @@ const UserSettingsPageComponent = () => {
             event.feedbackForm.map(feedbackForm => {
 
               if (feedbackForm.username == user) {
-                console.log("FInished event");
                 includesUser = true;
-                console.log(event);
               }
             })
             if (includesUser == false) {
@@ -148,6 +157,7 @@ const UserSettingsPageComponent = () => {
       console.log("response");
       console.log(response.data);
       setOrganizerEvents(response.data);
+      setFilteredEvents(response.data);
     }).catch((error) => {
       console.log("error");
       console.log(error);
@@ -180,6 +190,10 @@ const UserSettingsPageComponent = () => {
     return setFeedbackForm(!feedbackForm);
   }
 
+  const closeFeedbackForm = () => {
+    return setFeedbackForm(false);
+  }
+
   const toggleRewardMenu = () => {
     return setRewardsMenu(!rewardsMenu);
   }
@@ -195,6 +209,11 @@ const UserSettingsPageComponent = () => {
   const toggleFinishedEventsForm = () => {
     return setFinishedEventsForm(!finishedEventsForm);
   }
+
+  const closeFinishedEventsForm = () => {
+    return setFinishedEventsForm(false);
+  }
+
 
   const toggleCreatedEventsDashboard = () => {
     return setCreatedEventsDashBoard(!createdEventsDashboard);
@@ -229,15 +248,30 @@ const UserSettingsPageComponent = () => {
     return setaddResourcesLinkForm(false);
   }
 
-  const navigateToUserSettings = () => {
-    navigator('/settings');
+  const toggleUserPreferencesForm = () => {
+    return setUserPreferenceForm(!userPreferenceForm);
+  }
+
+  const logOut = () => {
+    localStorage.clear();
+    navigator('/login');
+  }
+
+  const callUserPreferenceForm = () => {
+    return (<div>
+      <button className='btn-user-logout-setting-2 btn btn-outline-info my-2 my-sm-0' onClick={() => {
+        logOut();
+      }}>
+        <RiLogoutBoxLine size={30} /> Log out
+      </button>
+    </div>)
   }
 
   const OpenUserSettings = () => {
     return (<>
       <div className='container'>
         <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
-          navigateToUserSettings()
+          toggleUserPreferencesForm();
         }}>
           <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
           <h4 className='header-user-icon'>{user}</h4>
@@ -388,8 +422,6 @@ const UserSettingsPageComponent = () => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
     checkIfEventStillContinues(event, newEndDate);
-    console.log("HEREE EVENT")
-    console.log(event)
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
       <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} >
         <MdEventAvailable size={30} />
@@ -416,17 +448,47 @@ const UserSettingsPageComponent = () => {
   }
 
   const ShowAllEventsForUser = () => {
-    console.log("events:");
-    console.log(newUserEvents);
     return (
       <>
-        <div>
-          <Carousel className='carousel-2 p-5 mt-5'>
-            {newUserEvents.map((event, idx) => {
-              return showEvent(event, idx);
-            })}
+        <div className='p-4 mt-5'>
+          <div className='row carousel-buttons'>
+            <div className='col'>
+              <Button className='btn-today-events btn-primary p-3' onClick={(e) => {
+                setUserEventsFiltered(true);
+                filterEvents(e, 'Today', newUserEvents);
+              }}>Today</Button>
+            </div>
+            <div className='col' >
+              <Button className='btn-this-week-events btn-primary p-3 mr-5' onClick={(e) => {
+                setUserEventsFiltered(true);
+                filterEvents(e, 'This week', newUserEvents);
+              }}>This week</Button>
+            </div>
+            <div className='col'>
+              <Button className='btn-this-month-events btn-primary p-3' onClick={(e) => {
+                setUserEventsFiltered(true);
+                filterEvents(e, 'This month', newUserEvents);
+              }}>This month</Button>
+            </div>
+            <div className='col'>
+              <Button className='btn-all-events btn-primary p-3' onClick={(e) => {
+                setUserEventsFiltered(true);
+                filterEvents(e, 'All', newUserEvents);
+              }}>All events</Button>
+            </div>
+          </div>
+          {userEventsFiltered == true ?
+            <Carousel className='carousel-2 p-5 mt-5'>
+              {filteredEvents.map((event, idx) => {
+                return showEvent(event, idx);
+              })}</Carousel>
+            : <Carousel className='carousel-2 p-5 mt-5'>
+              {newUserEvents.map((event, idx) => {
+                return showEvent(event, idx);
+              })}
 
-          </Carousel>
+            </Carousel>
+          }
         </div>
       </>
     )
@@ -444,7 +506,6 @@ const UserSettingsPageComponent = () => {
     let newEndDate = event.duration.endDate.replace('T', ' ');
     checkIfEventStillContinues(event, newEndDate);
     console.log(event);
-    console.log(event.enabled);
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
       <div>
         <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={(e) => {
@@ -475,12 +536,62 @@ const UserSettingsPageComponent = () => {
       </div></Carousel.Item>;
   }
 
+  const filterEvents = (e, dateOption, newEvents) => {
+    e.preventDefault();
+
+    const nowTime = new Date(Date.now());
+
+    console.log("organizerEvents before filter");
+    console.log(newEvents);
+    console.log("now time");
+    console.log(nowTime);
+
+    let newFilteredEvents = [];
+
+    if (dateOption == 'Today') {
+      newFilteredEvents = newEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() == nowTime.getUTCDate()) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() == nowTime.getUTCDate()))
+    } else if (dateOption == 'This week') {
+      let newNowTime = addDays(nowTime, 1 - (nowTime.getUTCDay()));
+
+      newFilteredEvents = newEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() >= newNowTime.getUTCDate()) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() <= newNowTime.getUTCDate() + 7))
+    } else if (dateOption == 'This month') {
+
+      newFilteredEvents = newEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCMonth() == nowTime.getUTCMonth()) && (new Date(Date.parse(event.duration.endDate)).getUTCMonth() == nowTime.getUTCMonth()))
+    } else if (dateOption == 'All') {
+      newFilteredEvents = newEvents;
+    }
+    setFilteredEvents(newFilteredEvents);
+  }
+
   const ShowAllCreatedEventsForUser = () => {
     return (
       <>
-        <div>
+        <div className='p-4 mt-5'>
+          <div className='row carousel-buttons'>
+            <div className='col'>
+              <Button className='btn-today-events btn-primary p-3' onClick={(e) => {
+                filterEvents(e, 'Today', organizerEvents);
+              }}>Today</Button>
+            </div>
+            <div className='col' >
+              <Button className='btn-this-week-events btn-primary p-3 mr-5' onClick={(e) => {
+                filterEvents(e, 'This week', organizerEvents);
+              }}>This week</Button>
+            </div>
+            <div className='col'>
+              <Button className='btn-this-month-events btn-primary p-3' onClick={(e) => {
+                filterEvents(e, 'This month', organizerEvents);
+              }}>This month</Button>
+            </div>
+            <div className='col'>
+              <Button className='btn-all-events btn-primary p-3' onClick={(e) => {
+                filterEvents(e, 'All', organizerEvents);
+              }}>All events</Button>
+            </div>
+          </div>
+
           <Carousel className='carousel-2 p-5 mt-5' defaultActiveIndex={activeIndex} >
-            {organizerEvents.map((event, idx) => {
+            {filteredEvents.map((event, idx) => {
               return showCreatedEvent(event, idx);
             })}
           </Carousel>
@@ -598,6 +709,8 @@ const UserSettingsPageComponent = () => {
                   closeDashboard();
                   closeCreatedEventsDashboard();
                   closeFaEventForm();
+                  closeFeedbackForm();
+                  closeFinishedEventsForm();
                   closeAddResourcesLinkForm();
                   closeRewardMenu();
 
@@ -611,6 +724,8 @@ const UserSettingsPageComponent = () => {
                   closeCreatedEventsDashboard();
                   closeAuthenticationForm();
                   closeFaEventForm();
+                  closeFeedbackForm();
+                  closeFinishedEventsForm();
                   closeAddResourcesLinkForm();
                   closeRewardMenu();
                   toggleDashboard()
@@ -624,6 +739,8 @@ const UserSettingsPageComponent = () => {
                   closeAuthenticationForm();
                   closeAddResourcesLinkForm();
                   closeFaEventForm();
+                  closeFeedbackForm();
+                  closeFinishedEventsForm();
                   closeRewardMenu();
                   toggleCreatedEventsDashboard()
                 }}>
@@ -636,14 +753,23 @@ const UserSettingsPageComponent = () => {
                 closeAuthenticationForm();
                 closeFaEventForm();
                 closeRewardMenu();
+                closeFinishedEventsForm();
+                closeFeedbackForm();
                 toggleAddResourcesForm();
               }}>
                 Add link to your resources
               </button></li>}
-              {console.log(finishedEvents.length)}
-              {console.log(finishedEvents)}
               {finishedEvents.length > 0 && <li>
-                <button className='btn btn-feedback-form btn-primary text-light' onClick={() => { toggleFinishedEventsForm() }}>
+                <button className='btn btn-feedback-form btn-primary text-light' onClick={() => {
+                  closeCreatedEventsDashboard();
+                  closeAuthenticationForm();
+                  closeFaEventForm();
+                  closeAddResourcesLinkForm();
+                  closeDashboard();
+                  closeRewardMenu();
+                  closeFeedbackForm();
+                  toggleFinishedEventsForm();
+                }}>
                   Feedback
                 </button>
               </li>}
@@ -654,6 +780,8 @@ const UserSettingsPageComponent = () => {
                   closeFaEventForm();
                   closeAddResourcesLinkForm();
                   closeDashboard();
+                  closeFeedbackForm();
+                  closeFinishedEventsForm();
                   toggleRewardMenu();
                 }}>
                   Rewards
@@ -802,6 +930,29 @@ const UserSettingsPageComponent = () => {
     });
   }
 
+  const blobToDataURL = (blob, callback) => {
+    var a = new FileReader();
+    a.onload = function (e) { callback(e.target.result); }
+    a.readAsDataURL(blob);
+  }
+
+
+  const callTurningToData = (qrCodeQuestions) => {
+    axios({
+      method: 'get',
+      url: qrCodeQuestions,
+      responseType: 'blob'
+    }).then(function (response) {
+      var reader = new FileReader();
+      reader.readAsDataURL(response.data);
+      blobToDataURL(response.data, function (dataurl) {
+        console.log(dataurl);
+        return setQrCodeQuestions(dataurl);
+      });
+
+    })
+  }
+
   const callFeedbackForm = () => {
     return (
       <>
@@ -809,10 +960,17 @@ const UserSettingsPageComponent = () => {
           <form>
             <button className="btn-close-feedback-form btn btn-danger" onClick={(e) => setFeedbackForm(false)}>x</button>
 
-            <h1 className='text-center'><VscFeedback size={60} className='mr-4' /> Feedback for event "{chosenFinishedEvent}"</h1>
-            <p className='mb-3 text-secondary'>Hope you liked this event! Share your feedback with us!</p>
+            <h1 className='text-center'><VscFeedback size={60} className='mr-4' /> Feedback for event "{chosenFinishedEvent.name}"</h1>
+            <p className='mb-2 text-secondary'>We hope you liked this event! Share your feedback with us! If you want to give additional feedback, you can scan the QR code below and add comments!</p>
             {console.log("Finished events")}
             {console.log(finishedEvents)}
+            <div>
+              {console.log("Chosen finished event")}
+              {console.log(chosenFinishedEvent)}
+              {callTurningToData(chosenFinishedEvent.qrCodeQuestions)}
+              {chosenFinishedEvent.qrCodeQuestions != '' &&
+                <img src={qrCodeQuestions} className='qr-code-client-feedback-questions' />}
+            </div>
             <h3 className='form-label text-dark font-weight-bold mb-2'>Lecture Rating</h3>
             {callInputForm("lecture", lectureRating)}
             <h3 className='form-label text-dark font-weight-bold mb-2 mt-3'>Lector Rating</h3>
@@ -829,7 +987,8 @@ const UserSettingsPageComponent = () => {
                 }} />
               <label className="floatingInput text-secondary">Enter Name (optional)</label>
             </div>
-            <button className='btn-add-feedback btn text-center btn-primary mt-4 w-50' onClick={(event) => submitFeedback(event, chosenFinishedEvent)}>Submit!</button>
+            {console.log(chosenEvent)};
+            <button className='btn-add-feedback btn text-center btn-primary mt-4 w-50' onClick={(event) => submitFeedback(event, chosenFinishedEvent.name)}>Submit!</button>
           </form>
         </div>
       </>
@@ -839,15 +998,14 @@ const UserSettingsPageComponent = () => {
   const callFinishedEventsForm = () => {
     return (
       <div className='finished-events-div bg-light p-4'>
+        <button className="btn-close-finished-events-form btn btn-danger" onClick={() => closeFinishedEventsForm()}>x</button>
         <h1 className='text-center text-dark mt-2'>Finished events</h1>
         <p className='mb-3 text-secondary text-center mt-3'>These events already ended. Choose event to give your feedback!</p>
         <ul>
 
           {finishedEvents.length > 0 && finishedEvents.map((finishedEvent, idx) => {
-            { console.log("Are bee finishedEvent") }
-            { console.log(finishedEvent) }
             return <li><button className='btn btn-primary btn-finished-event text-light mb-3' key={idx} onClick={() => {
-              setChosenFinishedEvent(finishedEvent.name);
+              setChosenFinishedEvent(finishedEvent);
               toggleFeedbackForm();
               setFinishedEventsForm(false);
             }}>Event "{finishedEvent.name}" (Floor {finishedEvent.floorNumber}, Room {finishedEvent.roomNumber}, Started: {finishedEvent.duration.startDate.replace('T', ' ')}, Ended: {finishedEvent.duration.endDate.replace('T', ' ')})</button></li>
@@ -857,8 +1015,6 @@ const UserSettingsPageComponent = () => {
   }
 
   const generateBiggerImage = (imgPath) => {
-    console.log("HERE BBYYY");
-    console.log(imgPath);
     return (
       <div className='generate-image-container'>
         <button className="btn-close-generate-image btn btn-danger" onClick={() => setGenerateBiggerImageCheck(false)}>x</button>
@@ -924,34 +1080,16 @@ const UserSettingsPageComponent = () => {
               getUserPrize();
             }}>Take prize!</button>
           </li>
-
-
         </div>
       </ul>
     </div>)
 
   }
 
-  const logOut = () => {
-    localStorage.clear();
-    navigator('/login');
-  }
-
-  const callLogOut = () => {
-    return (<div>
-      <button className='btn btn-logout btn-danger text-light' onClick={() => { logOut() }}>
-        Log out
-      </button>
-    </div>)
-  }
-
   return (
     <>
-      {console.log("user points")}
-      {console.log(currentUser.points)};
       <SidebarLeftComponent />
       {sidebarRightComponent()}
-      {callLogOut()}
       {dashboard && <ShowAllEventsForUser />}
       {createdEventsDashboard && <ShowAllCreatedEventsForUser />}
       {faEventForm && callEventForm()}
@@ -964,6 +1102,7 @@ const UserSettingsPageComponent = () => {
       {rewardsMenu && callRewardsMenu()}
       {generateBiggerImageCheck && generateBiggerImage(rewardPath)}
       <OpenUserSettings />
+      {userPreferenceForm && callUserPreferenceForm()}
     </>
   )
 }

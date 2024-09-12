@@ -166,11 +166,29 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
-.btn-logout {
+.btn-navigate-user-settings {
   position: absolute;
-  left: 21%;
-  bottom: 1%;
-  width: 10%;
+  left: 18%;
+  bottom: 8%;
+  width: 11%;
+  height: 6%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-navigate-user-settings:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-user-logout-setting-2 {
+  position: absolute;
+  left: 18%;
+  bottom: 3.5%;
+  width: 11%;
   height: 8%;
   color: #475f7b;
   border-radius: 4px;
@@ -179,17 +197,19 @@ body {
   text-decoration: none;
 }
 
-.btn-logout:hover {
+.btn-user-logout-setting-2:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
 
 
+
+
 .btn-item-rewards {
   position: absolute;
-  left: 390%;
+  left: 435%;
   bottom: 1%;
-  width: 90%;
+  width: 50%;
   height: 8%;
   color: #475f7b;
   border-radius: 4px;
@@ -347,7 +367,7 @@ input {
   height: 480px;
   position: absolute !important;
   left: 45%;
-  top: 0%;
+  top: 7%;
 }
 
 .carousel-new-item-2 {
@@ -357,13 +377,14 @@ input {
 
 .btn-disable {
   position: absolute;
-  top: 12%;
+  top: 25%;
   left: 50%;
+  z-index: 1;
 }
 
 .btn-delete-event {
   position: absolute;
-  bottom: 12%;
+  bottom: 9%;
   left: 49%;
 }
 
@@ -558,8 +579,8 @@ input {
 .finished-events-div {
   position: absolute;
   border-radius: 12px;
-  left: 30%;
-  top: 20%;
+  left: 28%;
+  top: 14%;
   width: 55%;
   height: 70%;
 }
@@ -669,3 +690,31 @@ li {
   bottom: 3%;
   width: 20%;
 }
+
+.carousel-buttons{
+  position: absolute;
+  top: 10%;
+  width: 40%;
+  height: 30%;
+  left: 37%;
+  z-index: 1;
+}
+
+.btn-this-week-events,.btn-this-month-events,.btn-today-events{
+  width: 100%;
+}
+
+.qr-code-client-feedback-questions{
+  position: absolute;
+  top: 41%;
+  left: 7%;
+}
+
+.btn-close-finished-events-form {
+  position: absolute;
+  right: 2%;
+  top: 3%;
+  width: 7%;
+  height: 8%;
+}
+

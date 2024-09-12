@@ -123,11 +123,14 @@ h1 {
 }
 
 .custom-file-3 {
-  width: 95%;
+  width: 20%;
+  margin-top: 8.5%;
+}
+
+.input-label-file{
   position: absolute;
-  bottom: 15%;
-  left: 2%;
-  z-index: 1;
+  margin-top: 37%;
+  margin-left: 1.5%;
 }
 
 .btn-3:hover,
@@ -233,4 +236,46 @@ h1 {
   position: absolute;
   left: 25%;
   top: 11%;
+}
+
+.room-content-image{
+  position: absolute;
+  bottom: 1%;
+  right:3%;
+}
+
+.btn-user-logout-setting-floors {
+  position: absolute;
+  left: 18%;
+  bottom: 1%;
+  width: 11%;
+  height: 6%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-user-logout-setting-floors:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-navigate-user-settings-floors {
+  position: absolute;
+  left: 18%;
+  bottom: 8%;
+  width: 11%;
+  height: 6%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-navigate-user-settings-floors:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
 }

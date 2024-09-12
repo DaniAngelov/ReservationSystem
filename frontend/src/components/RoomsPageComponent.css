@@ -56,7 +56,7 @@ body {
   right: -1.5%;
 }
 
-.btn-2{
+.btn-2 {
   z-index: 1;
 }
 
@@ -72,7 +72,7 @@ body {
 .logoImage-2 {
   position: absolute;
   top: 1.25%;
-  left: 35%;
+  left: 34%;
 }
 
 .sd-header {
@@ -123,23 +123,23 @@ body {
   border-radius: 2%;
   position: absolute;
   left: 21%;
-  bottom: 11%;
+  bottom: 18%;
   height: 75%;
 }
 
 .btn-filter-events {
   position: absolute;
-  bottom: 2%;
+  bottom: 5%;
   left: 36%;
 }
 
 .card-body-filter {
   width: 40%;
-  border-radius: 10%;
+  border-radius: 5%;
   position: absolute;
-  left: 34%;
-  bottom: 10.5%;
-  height: 75%;
+  left: 33%;
+  bottom: 14.5%;
+  height: 80%;
 }
 
 .sd-body .sd-link {
@@ -163,22 +163,15 @@ body {
 
 .btn-events-add {
   position: absolute;
-  left: 15%;
+  left: 13%;
   top: 17%;
   z-index: 1;
 }
 
 .btn-events-filter {
   position: absolute;
-  left: 15%;
-  top: 24%;
-  z-index: 1;
-}
-
-.btn-events-sort {
-  position: absolute;
-  left: 15%;
-  top: 26%;
+  left: 13%;
+  top: 24.5%;
   z-index: 1;
 }
 
@@ -235,6 +228,7 @@ body {
 
 .custom-event-button-2 {
   border-radius: 20px;
+  width: 100%;
   z-index: 1;
 }
 
@@ -243,8 +237,15 @@ body {
   height: 400px;
   position: absolute !important;
   left: -3%;
-  top: 20%;
+  top: 22%;
   margin: auto;
+}
+
+.carousel-item {
+  position: absolute;
+  width: 100%;
+  height: 80% !important;
+  margin-top: 15%;
 }
 
 .custom-navbar {
@@ -260,9 +261,18 @@ body {
   left: 45%;
 }
 
+.custom-form-search-bar-organizer {
+  position: absolute !important;
+  top: 32%;
+  left: 2.25%;
+  width: 15%;
+  height: 10%;
+  z-index: 1;
+}
+
 .search-bar-icon {
   position: absolute;
-  left: 0
+  left: 1%;
 }
 
 .qr-code-questions-img {
@@ -304,12 +314,12 @@ body {
   z-index: 1;
 }
 
-.add-event-form{
+.add-event-form {
   position: absolute;
   width: 90%;
 }
 
-.btn-close-add-event-form{
+.btn-close-add-event-form {
   position: absolute;
   right: 4%;
   top: 4%;
@@ -317,7 +327,7 @@ body {
   height: 9%;
 }
 
-.btn-close-filter-event-form{
+.btn-close-filter-event-form {
   position: absolute;
   right: 4%;
   top: 4%;
@@ -341,19 +351,79 @@ body {
   height: 20%;
 }
 
-.lectors-div-guests{
+.lectors-div-guests {
   position: absolute;
   top: -105%;
   right: 30%;
 }
 
-.guests-list{
+.guests-list {
   position: absolute;
-  right:4%;
-  top:26%;
+  right: 4%;
+  top: 26%;
   width: 100%;
 }
 
-.custom-form-search-bar-guests{
+.custom-form-search-bar-guests {
   margin-top: 11%;
+}
+
+.btn-organizer-events {
+  position: absolute;
+  width: 101%;
+  height: 62%;
+  margin-left: 1.5%;
+  z-index: 1;
+  top: 92%;
+}
+
+.input-organizer-events {
+  position: absolute !important;
+  width: 101% !important;
+  height: 62% !important;
+  margin-left: 1.5%;
+  margin-bottom: 1%;
+}
+
+.search-icon-organizer {
+  position: absolute;
+  left: 2%;
+  bottom: 24%;
+  z-index: 1;
+}
+
+.btn-user-logout-setting-rooms {
+  position: absolute;
+  left: 18%;
+  bottom: 1%;
+  width: 11%;
+  height: 6%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-user-logout-setting-rooms:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-navigate-user-settings-rooms {
+  position: absolute;
+  left: 18%;
+  bottom: 8%;
+  width: 11%;
+  height: 6%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-navigate-user-settings-rooms:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
 }

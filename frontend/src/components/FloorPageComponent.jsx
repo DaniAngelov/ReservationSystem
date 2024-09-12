@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'
 import { Gi3dStairs } from "react-icons/gi";
 import { FaPersonWalkingDashedLineArrowRight } from "react-icons/fa6";
+import { RiLogoutBoxLine } from "react-icons/ri";
+import { IoSettingsSharp } from "react-icons/io5";
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -16,12 +18,15 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [faculties, setFaculties] = useState([]);
   const [floorNumbers, setFloorNumbers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [roomImage, setRoomImage] = useState(false);
+  const [roomImageContent, setRoomImageContent] = useState('');
   const [events, setEvents] = useState([]);
   const token = localStorage.getItem('token');
   const decodedToken = jwtDecode(token);
   const [generateRoomsEnabled, setGenerateRoomsEnabled] = useState(false);
   const [chosenFaculty, setChosenFaculty] = useState('');
   const [chosenFloor, setChosenFloor] = useState('');
+  const [userPreferenceForm, setUserPreferenceForm] = useState(false);
 
   const user = decodedToken.sub;
 
@@ -85,7 +90,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const OpenUserSettings = () => {
     return (<><div className='container'>
-      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={navigateToUserSettings}>
+      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={toggleUserPreferencesForm}>
         <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
         <h4 className='header-user-icon'>{user}</h4>
       </button>
@@ -94,6 +99,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const toggleGenerateRoomsEnabled = () => {
     return setGenerateRoomsEnabled(!generateRoomsEnabled);
+  }
+
+  const toggleUserPreferencesForm = () => {
+    return setUserPreferenceForm(!userPreferenceForm);
   }
 
   const showRooms = (floorNumber, facultyName) => {
@@ -114,6 +123,13 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
     setNewRooms(newMap);
     setIsOpen(true);
+  }
+
+  const openRoomImage = () => {
+    console.log("HEREE");
+    return (<div>
+      <img className='room-content-image' src={roomImageContent} width={175} height={175}></img>
+    </div>);
   }
 
 
@@ -137,7 +153,13 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           <Gi3dStairs size={70} className='stairs-icon-start text-light' />
 
           <div className="rooms-container border row align-items-start">
-            {isOpen && newRoomsPartOne.map((floorAndRoom, idx) => <button
+            {isOpen && newRoomsPartOne.map((floorAndRoom, idx) => <button onMouseEnter={() => {
+              setRoomImageContent(userIcon);
+              setRoomImage(true)
+            }}
+              onMouseLeave={() => {
+                setRoomImage(false)
+              }}
               className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
               <BsFillDoorOpenFill size={30} className='mr-2' />
               {floorAndRoom.room.roomNumber}</button>)}
@@ -150,6 +172,13 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
           <div className="rooms-container border row align-items-end">
             {isOpen && newRoomsPartTwo.map((floorAndRoom, idx) => <button
+              onMouseEnter={() => {
+                setRoomImageContent(userIcon);
+                setRoomImage(true)
+              }}
+              onMouseLeave={() => {
+                setRoomImage(false)
+              }}
               className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
               <BsFillDoorOpenFill size={30} className='mr-2' />
               {floorAndRoom.room.roomNumber}</button>)}
@@ -237,9 +266,9 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     }
 
     return (<>
-      <div class="custom-file-3 mb-3">
-        <input type="file" class="custom-file-input" id="validatedCustomFile" onChange={handleFileSelected} required />
-        <label class="custom-file-label col-md-2" for="validatedCustomFile">Choose file...</label>
+      <div class="border custom-file-3 mb-3">
+        <input type="file" class="custom-file-input" onChange={handleFileSelected} required />
+        <label class="custom-file-label col-md-2 input-label-file" >Choose file...</label>
       </div>
     </>)
   }
@@ -275,12 +304,26 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const callLogOut = () => {
     return (<div>
-      <button className='btn btn-logout btn-danger text-light' onClick={() => { logOut() }}>
+      <button className='btn btn-danger text-light' onClick={() => { logOut() }}>
         Log out
       </button>
     </div>)
   }
 
+  const callUserPreferenceForm = () => {
+    return (<div>
+      <button className='btn-navigate-user-settings-floors btn btn-outline-success my-2 my-sm-0' onClick={() => {
+        navigateToUserSettings();
+      }}>
+        <IoSettingsSharp size={30} /> Settings
+      </button>
+      <button className='btn-user-logout-setting-floors btn btn-outline-info my-2 my-sm-0' onClick={() => {
+        logOut();
+      }}>
+        <RiLogoutBoxLine size={30} /> Log out
+      </button>
+    </div>)
+  }
 
   return (
     <>
@@ -290,6 +333,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       <OpenUserSettings />
       {callLogOut()}
       {checkIfEventStillContinues()}
+      {roomImage && openRoomImage()}
+      {userPreferenceForm && callUserPreferenceForm()}
     </>
   )
 }
