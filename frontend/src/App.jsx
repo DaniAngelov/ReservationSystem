@@ -29,7 +29,6 @@ function App() {
             <Route index={false} path="/welcome/floors/:floorId/rooms/:roomId" element={<RoomsPageComponent room={room} faculty={faculty} />} />
           </Route>
           <Route path='/settings' element={<UserSettingsPageComponent />} />
-
         </Routes>
       </BrowserRouter>
     </>

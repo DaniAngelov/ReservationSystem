@@ -41,3 +41,5 @@ export const deleteEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_UR
 export const endEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/event-end', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const addFeedbackForm = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/feedback', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const addRoomImage = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/add-room-image', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

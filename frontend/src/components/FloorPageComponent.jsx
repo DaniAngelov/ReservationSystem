@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import userIcon from '../assets/user-icon.png';
-import { getFloors, uploadFile, getEvents, endEvent } from '../services/FloorService';
+import { getFloors, uploadFile, getEvents, endEvent, addRoomImage } from '../services/FloorService';
 import { BsFillDoorOpenFill } from "react-icons/bs";
 
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,8 @@ import { Gi3dStairs } from "react-icons/gi";
 import { FaPersonWalkingDashedLineArrowRight } from "react-icons/fa6";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { IoSettingsSharp } from "react-icons/io5";
+import axios from 'axios';
+import { Button } from "react-bootstrap";
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -18,7 +20,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [faculties, setFaculties] = useState([]);
   const [floorNumbers, setFloorNumbers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [roomImage, setRoomImage] = useState(false);
   const [roomImageContent, setRoomImageContent] = useState('');
   const [events, setEvents] = useState([]);
   const token = localStorage.getItem('token');
@@ -26,13 +27,20 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [generateRoomsEnabled, setGenerateRoomsEnabled] = useState(false);
   const [chosenFaculty, setChosenFaculty] = useState('');
   const [chosenFloor, setChosenFloor] = useState('');
+  const [chosenRoom, setChosenRoom] = useState('');
   const [userPreferenceForm, setUserPreferenceForm] = useState(false);
+
+  const [roomImageInputEnable, setRoomImageInputEnable] = useState(false);
+  const [showRoomImage, setShowRoomImage] = useState(false);
+  const [roomOptionsForm, setRoomOptionsForm] = useState(false);
+  const [roomOptionsFormPart2, setRoomOptionsFormPart2] = useState(false);
+  const [showImageInputField, setShowImageInputField] = useState(true);
 
   const user = decodedToken.sub;
 
+  const role = decodedToken.role;
 
   const navigator = useNavigate();
-
 
   const setButtonColor = (room) => {
     if (room.roomType == 'COMPUTER') {
@@ -50,7 +58,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         console.log("RESPONSE:");
         console.log(response.data);
         const newEvents = [];
-        const newFilteredEvents = [];
         response.data.map(event => {
           newEvents.push(event);
         })
@@ -91,10 +98,46 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const OpenUserSettings = () => {
     return (<><div className='container'>
       <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={toggleUserPreferencesForm}>
-        <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
+        <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid' />
         <h4 className='header-user-icon'>{user}</h4>
       </button>
     </div></>)
+  }
+
+  const closeShowImageInputField = () => {
+    return setShowImageInputField(false);
+  }
+
+  const toggleRoomImageInputEnable = () => {
+    return setRoomImageInputEnable(!roomImageInputEnable);
+  }
+
+  const closeRoomImageInputEnable = () => {
+    return setRoomImageInputEnable(false);
+  }
+
+  const toggleRoomOptionsForm = () => {
+    return setRoomOptionsForm(!roomOptionsForm);
+  }
+
+  const closeRoomOptionsForm = () => {
+    return setRoomOptionsForm(false);
+  }
+
+  const toggleRoomOptionsFormPart2 = () => {
+    return setRoomOptionsFormPart2(!roomOptionsFormPart2);
+  }
+
+  const closeRoomOptionsFormPart2 = () => {
+    return setRoomOptionsFormPart2(false);
+  }
+
+  const toggleShowRoomImage = () => {
+    return setShowRoomImage(!showRoomImage);
+  }
+
+  const closeShowRoomImage = () => {
+    return setShowRoomImage(false);
   }
 
   const toggleGenerateRoomsEnabled = () => {
@@ -126,20 +169,64 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   }
 
   const openRoomImage = () => {
-    console.log("HEREE");
     return (<div>
       <img className='room-content-image' src={roomImageContent} width={175} height={175}></img>
     </div>);
   }
 
+  const onClickOpenRoom = (floor, room, facultyName) => {
+    setRoom(room);
+    setFaculty(facultyName);
+    navigator(`/welcome/floors/${floor}/rooms/${room.roomNumber}`);
+  }
+
+  const addNewRoomImage = (e) => {
+    e.preventDefault();
+    const floorNumber = chosenFloor;
+    const roomNumber = chosenRoom.roomNumber;
+    const faculty = chosenFaculty;
+
+    const requestDTO = {
+      "facultyName": faculty,
+      "floorNumber": floorNumber,
+      "roomNumber": roomNumber,
+      "roomImage": roomImageContent
+    }
+
+    console.log(JSON.stringify(requestDTO));
+    addRoomImage(JSON.stringify(requestDTO), token).then((response) => {
+      alert("Image added successfully!");
+      setShowImageInputField(true);
+      console.log(response.data);
+    }).catch((error) => {
+      alert(error.response.data);
+      console.log(error);
+    });
+  }
+
+  const blobToDataURL = (blob, callback) => {
+    var a = new FileReader();
+    a.onload = function (e) { callback(e.target.result); }
+    a.readAsDataURL(blob);
+  }
+
+  const callTurningToData = (roomImage) => {
+    axios({
+      method: 'get',
+      url: roomImage,
+      responseType: 'blob'
+    }).then(function (response) {
+      var reader = new FileReader();
+      reader.readAsDataURL(response.data);
+      blobToDataURL(response.data, function (dataurl) {
+        return setRoomImageContent(dataurl);
+      });
+
+    })
+  }
 
   const SeatsComponent = () => {
 
-    const onClickOpenRoom = (floor, room, facultyName) => {
-      setRoom(room);
-      setFaculty(facultyName);
-      navigator(`/welcome/floors/${floor}/rooms/${room.roomNumber}`);
-    }
 
     const GenerateRooms = () => {
 
@@ -152,34 +239,57 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           <h2 className='text-light header-floor-position'>{chosenFaculty}, Floor {chosenFloor}</h2>
           <Gi3dStairs size={70} className='stairs-icon-start text-light' />
 
+
           <div className="rooms-container border row align-items-start">
+            {roomOptionsForm && callRoomOptionsForm()}
             {isOpen && newRoomsPartOne.map((floorAndRoom, idx) => <button onMouseEnter={() => {
-              setRoomImageContent(userIcon);
-              setRoomImage(true)
+              if (floorAndRoom.room.roomImage != null) {
+                setRoomImageContent(floorAndRoom.room.roomImage);
+                toggleShowRoomImage();
+              }
+            }} onMouseLeave={() => {
+              closeShowRoomImage();
             }}
-              onMouseLeave={() => {
-                setRoomImage(false)
-              }}
-              className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
+              className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => {
+                if (role == 'ADMIN') {
+                  closeRoomOptionsFormPart2()
+                  toggleRoomOptionsForm();
+                  closeRoomImageInputEnable();
+                  setChosenRoom(floorAndRoom.room);
+                } else {
+                  onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)
+                }
+              }
+              }>
+
               <BsFillDoorOpenFill size={30} className='mr-2' />
               {floorAndRoom.room.roomNumber}</button>)}
           </div>
 
-          <div className='lines-for-path-first'></div>
-          <div className='lines-for-path-second'></div>
           <FaPersonWalkingDashedLineArrowRight size={70} className='person-walking-icon text-light' />
           <Gi3dStairs size={70} className='stairs-icon-end text-light' />
 
           <div className="rooms-container border row align-items-end">
+            {roomOptionsFormPart2 && callRoomOptionsFormPart2()}
             {isOpen && newRoomsPartTwo.map((floorAndRoom, idx) => <button
               onMouseEnter={() => {
-                setRoomImageContent(userIcon);
-                setRoomImage(true)
+                if (floorAndRoom.room.roomImage != null) {
+                  setRoomImageContent(floorAndRoom.room.roomImage);
+                  toggleShowRoomImage();
+                }
+              }} onMouseLeave={() => {
+                closeShowRoomImage();
               }}
-              onMouseLeave={() => {
-                setRoomImage(false)
-              }}
-              className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)}>
+              className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => {
+                if (role == 'ADMIN') {
+                  closeRoomOptionsForm();
+                  toggleRoomOptionsFormPart2();
+                  closeRoomImageInputEnable();
+                  setChosenRoom(floorAndRoom.room);
+                } else {
+                  onClickOpenRoom(floorAndRoom.floorNumber, floorAndRoom.room, floorAndRoom.facultyName)
+                }
+              }}>
               <BsFillDoorOpenFill size={30} className='mr-2' />
               {floorAndRoom.room.roomNumber}</button>)}
           </div>
@@ -202,13 +312,13 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               Normal
             </li>
           </ul>
-        </div>
+        </div >
       )
     }
 
     return (
       <div>
-        {generateRoomsEnabled && <GenerateRooms />}
+        {generateRoomsEnabled && GenerateRooms()}
       </div>
     )
   }
@@ -266,10 +376,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     }
 
     return (<>
-      <div class="border custom-file-3 mb-3">
+      {role == 'ADMIN' && <div class="border custom-file-3 mb-3">
         <input type="file" class="custom-file-input" onChange={handleFileSelected} required />
         <label class="custom-file-label col-md-2 input-label-file" >Choose file...</label>
-      </div>
+      </div>}
     </>)
   }
 
@@ -325,16 +435,67 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </div>)
   }
 
+  const callRoomOptionsForm = () => {
+    return (<div className='row room-options-buttons'>
+
+      <Button className='btn-primary p-2 w-25' onClick={() => {
+        onClickOpenRoom(chosenFloor, chosenRoom, chosenFaculty)
+      }}>Enter</Button>
+
+      <Button className='btn-primary p-2 ml-2 w-25' onClick={() => {
+        toggleRoomImageInputEnable();
+        closeRoomOptionsForm();
+      }}>Add image</Button>
+
+    </div>)
+  }
+
+  const callRoomOptionsFormPart2 = () => {
+    return (<div className='row room-options-buttons'>
+
+      <Button className='btn-primary p-2 w-25' onClick={() => {
+        onClickOpenRoom(chosenFloor, chosenRoom, chosenFaculty)
+      }}>Enter</Button>
+
+      <Button className='btn-primary p-2 ml-2 w-25' onClick={() => {
+        toggleRoomImageInputEnable();
+        closeRoomOptionsFormPart2();
+      }}>Add image</Button>
+
+    </div>)
+  }
+
+  const openImageForm = () => {
+    return <div>
+      {showImageInputField && <div class="form-floating room-img-form text-center mb-3 mt-4 bg-light">
+        <input class="form-control text-center" id="floatingInput10" placeholder="Image insert" onPasteCapture={(e) => {
+          setRoomImageContent(URL.createObjectURL(e.clipboardData.files[0]));
+          closeShowImageInputField();
+        }} />
+        <label for="floatingInput10 text-center mt-3">Paste image</label>
+      </div>}
+      {showImageInputField == false &&
+        <img src={roomImageContent} className='room-content-image-preview' width={175} height={175} />}
+      {callTurningToData(roomImageContent)}
+      {showImageInputField == false && <Button className='btn-add-room-image p-3 btn-success mt-3' onClick={(e) => {
+        toggleRoomImageInputEnable();
+        addNewRoomImage(e)
+      }}>Add new image</Button>}
+
+    </div>
+  }
+
   return (
     <>
       <SidebarLeftComponent />
-      <SeatsComponent />
+      {SeatsComponent()}
       <UploadFile />
       <OpenUserSettings />
       {callLogOut()}
       {checkIfEventStillContinues()}
-      {roomImage && openRoomImage()}
+      {showRoomImage && openRoomImage()}
       {userPreferenceForm && callUserPreferenceForm()}
+      {roomImageInputEnable && openImageForm()}
     </>
   )
 }

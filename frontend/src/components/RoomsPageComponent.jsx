@@ -357,7 +357,7 @@ const RoomsPageComponent = (parentRoom) => {
                     toggleQrQuestionsInputEnable();
                     setQrCodeQuestions(URL.createObjectURL(e.clipboardData.files[0]));
                   }} />}
-                  {qrQuestionsInputEnable && <label for="floatingInput7 mt-3">Slido Code</label>}
+                  {qrQuestionsInputEnable && <label for="floatingInput7 mt-3">Questions Code</label>}
 
                 </div>
                 {qrCodeQuestions != '' &&

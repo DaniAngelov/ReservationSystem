@@ -12,4 +12,5 @@ public class DisableEventDTO {
     private String name;
     private String user;
     private DisableEventReason disableReason;
+    private String disableEventDescription;
 }

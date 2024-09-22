@@ -6,10 +6,7 @@ import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
-import com.lecturesystem.reservationsystem.model.entity.Event;
-import com.lecturesystem.reservationsystem.model.entity.Faculty;
-import com.lecturesystem.reservationsystem.model.entity.Seat;
-import com.lecturesystem.reservationsystem.model.entity.User;
+import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Role;
 import com.lecturesystem.reservationsystem.model.enums.RoomType;
 import com.lecturesystem.reservationsystem.repository.EventRepository;
@@ -75,6 +72,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(Role.USER);
         user.setPoints(1);
         user.setLastActive(LocalDateTime.now());
+        user.setLinkToPage(new ArrayList<>());
         user.setIsPasswordChangeEnabled(false);
         userRepository.save(user);
 
@@ -316,14 +314,8 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new CustomUserException("There is no such user!");
         }
-        user.setLinkToPage(addLinkToPageDTO.getLinkToPage());
+        addLinks(user.getLinkToPage(), addLinkToPageDTO.getLinkToPage());
         userRepository.save(user);
-        for (Event event : eventRepository.findAll()) {
-            if (event.getOrganizer().equals(user.getUsername())) {
-                event.setLinkToOrganizerPage(user.getLinkToPage());
-                eventRepository.save(event);
-            }
-        }
     }
 
     @Override
@@ -372,6 +364,12 @@ public class UserServiceImpl implements UserService {
         newUser.setPassword(passwordEncoder.encode(password));
         newUser.setIsPasswordChangeEnabled(false);
         userRepository.save(newUser);
+    }
+
+    private void addLinks(List<LinkToPage> userLinks, List<String> linkToPageDTOS) {
+        for (String link : linkToPageDTOS) {
+            userLinks.add(LinkToPage.builder().linkToPage(link).build());
+        }
     }
 
     private List<Event> addEvent(User user, List<Event> eventList, Event event) {

@@ -30,8 +30,9 @@ public class AddEventDTO {
     private UserDTO user;
     private List<SeatDTO> seats;
     private String qrCodeQuestions;
-    private String linkToPage;
+    private List<String> linkToPage;
     private List<GuestDTO> guests;
     private boolean hasEnded;
     private List<FeedbackFormDTO> feedbackForm;
+    private String disableEventDescription;
 }

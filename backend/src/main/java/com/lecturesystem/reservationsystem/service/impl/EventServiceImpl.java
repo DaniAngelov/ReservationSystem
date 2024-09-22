@@ -8,6 +8,7 @@ import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
+import com.lecturesystem.reservationsystem.model.enums.DisableEventReason;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
 import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import com.lecturesystem.reservationsystem.repository.*;
@@ -69,6 +70,7 @@ public class EventServiceImpl implements EventService {
                         event.setSeats(getSeats(room.getSeatsNumber()));
                         event.setFloorNumber(eventDTO.getFloorNumber());
                         event.setRoomNumber(eventDTO.getRoomNumber());
+                        event.setDisableEventDescription("");
                         event.setDisableEventReason(null);
                         event.setUsers(new ArrayList<>());
                         if (eventDTO.getQrCodeQuestions() != null) {
@@ -158,6 +160,10 @@ public class EventServiceImpl implements EventService {
         }
         if (event.getOrganizer().equals(user.getUsername())) {
             event.setDisableEventReason(disableEventDTO.getDisableReason());
+            if (disableEventDTO.getDisableReason().equals(DisableEventReason.OTHER) &&
+                    !disableEventDTO.getDisableEventDescription().equals("")) {
+                event.setDisableEventDescription(disableEventDTO.getDisableEventDescription());
+            }
             event.setEnabled(false);
             eventRepository.save(event);
         }
@@ -176,7 +182,6 @@ public class EventServiceImpl implements EventService {
         User organizer = userRepository.getUserByUsername(userDeleteEventDTO.getUsername());
         if (organizer != null && userDeleteEventDTO.getUsername().equals(organizer.getUsername())) {
             event.setOrganizer("");
-            event.setLinkToOrganizerPage("");
             eventRepository.save(event);
         }
         user.getEvents().removeIf(userEvent -> userEvent.getName().equals(event.getName()));

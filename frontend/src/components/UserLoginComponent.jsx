@@ -7,6 +7,7 @@ import { verifyOneTimePass, generateOneTimePass, loginUser, sendMessageToEmail, 
 import { jwtDecode } from 'jwt-decode'
 
 import { TbMailFilled } from "react-icons/tb";
+import codingLogo from '../assets/coding-image-login.jpg';
 
 const UserLoginComponent = () => {
   const navigator = useNavigate();
@@ -14,6 +15,11 @@ const UserLoginComponent = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
+
+  const [errors, setErrors] = useState({});
 
   const token = localStorage.getItem('token');
 
@@ -29,6 +35,7 @@ const UserLoginComponent = () => {
   const [onePassForm, setOnePassForm] = useState(false);
   const [forgottenPass, setForgottenPass] = useState(false);
   const [oneTimePassFinalForm, setOneTimePassFinalForm] = useState(false);
+  const [invalidLoginAlert, setInvalidLoginAlert] = useState(false);
 
   const [showText, setShowText] = useState(false);
 
@@ -36,6 +43,9 @@ const UserLoginComponent = () => {
   const [mfaEnabled, setMfaEnabled] = useState(false);
 
 
+  const toggleInvalidLoginAlert = () => {
+    return setInvalidLoginAlert(true);
+  }
 
   const toggleFaEventForm = () => {
     return setFaEventForm(!faEventForm);
@@ -187,7 +197,7 @@ const UserLoginComponent = () => {
           <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit5} onChange={(e) => setDigit5(e.target.value)} />
           <input className="mr-2 mb-4" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit6} onChange={(e) => setDigit6(e.target.value)} />
           <h5 className='text-info mb-4 mt-2'>We've sent a code to the email to be able to login. Check your email!</h5>
-        
+
         </div>
         <button class="btn mt-5 btn-primary btn-embossed-one-pass" onClick={(e) => { verifyNewOneTimePass(e) }}>Submit</button>
       </div>)
@@ -196,24 +206,47 @@ const UserLoginComponent = () => {
 
   function userLogin(e) {
     e.preventDefault();
-    const user = { username, password };
+    const validationErrors = {};
+    if (!username.trim()) {
+      validationErrors.username = 'Username is required!'
+      setIsUsernameValid(false);
+    } 
 
-    loginUser(user).then((response) => {
-      localStorage.setItem('token', response.data.token);
-      console.log(jwtDecode(response.data.token).oneTimePassEnabled);
-      setOneTimePassEnabled(jwtDecode(response.data.token).oneTimePassEnabled);
-      setMfaEnabled(jwtDecode(response.data.token).faEnabled);
-      if (jwtDecode(response.data.token).faEnabled || jwtDecode(response.data.token).oneTimePassEnabled) {
-        toggleMFaEventForm();
-      } else {
-        navigator('/welcome');
-      }
+    if (!password.trim()) {
+      validationErrors.password = 'Password is required!'
+      setIsPasswordValid(false);
+    }
+
+    setErrors(validationErrors);
+
+    if (!validationErrors.username) {
+      setIsUsernameValid(true);
+    }
+    if (!validationErrors.password) {
+      setIsPasswordValid(true);
+    }
+
+    if (Object.keys(validationErrors).length === 0) {
+      e.preventDefault();
+      const user = { username, password };
+
+      loginUser(user).then((response) => {
+        localStorage.setItem('token', response.data.token);
+        console.log(jwtDecode(response.data.token).oneTimePassEnabled);
+        setOneTimePassEnabled(jwtDecode(response.data.token).oneTimePassEnabled);
+        setMfaEnabled(jwtDecode(response.data.token).faEnabled);
+        if (jwtDecode(response.data.token).faEnabled || jwtDecode(response.data.token).oneTimePassEnabled) {
+          toggleMFaEventForm();
+        } else {
+          navigator('/welcome');
+        }
 
 
-    }).catch((error) => {
-      console.log(error);
-      alert('Wrong credentials!');
-    });
+      }).catch((error) => {
+        toggleInvalidLoginAlert();
+      });
+    }
+
   }
 
   const navigateToRegister = () => {
@@ -305,46 +338,58 @@ const UserLoginComponent = () => {
     )
   }
 
+
+  const showAlertWhenClickedInvalidLogin = () => {
+    return (<div class="login-alert alert alert-danger text-danger text-center" role="alert">
+      Invalid credentials! Please try again!
+    </div>)
+  }
+
   return (
     <>
-      <div className='container'>
+      <div className='body-div-login-page'>
         <div>
-          <img src={logo} width={135} height={135} alt='Responsive image' className='custom-img img-fluid position-absolute mx-6 mt-4' />
-          <br />
-          <h1 className='text-center display-1 fw-bold text-light font-weight-bold mt-3'>FMI DeskSpot</h1>
+          <img src={logo} width={150} height={150} alt='Responsive image' className='custom-img-login-page img-fluid' />
         </div>
-        <h2 className='header-sign-in display-4 fw-normal text-center text-light mb-5'>Sign in</h2>
+        {invalidLoginAlert && showAlertWhenClickedInvalidLogin()}
+        <div className='card-body-login'>
+          <form className='needs-validation login-custom-form p-3 bg-light' noValidate>
+            <h1 className='text-center text-dark mb-4'>Sign in</h1>
+            <p className='text-secondary text-center mb-4'>Welcome! Ready to start booking events? Sign in and let's get started!</p>
+            <div className='form-group text-start mb-2 mt-5'>
+              <label className='form-label text-light'>Username:</label>
+              <input type='text' placeholder='Enter Username' name='username' value={username} className={`form-control ${isUsernameValid == true ? '' : 'is-invalid'}`}
+                onChange={(e) => setUsername(e.target.value)} onKeyDown={(e) => { pressEnter(e) }}>
+              </input>
+              {errors.username && <div class="invalid-feedback">
+                {errors.username}
+              </div>}
+            </div>
 
-        <div className=' mt-5 bg-transparent border-0 position-absolute top-50 start-50 translate-middle'>
-
-          <div className='card-body-login text-center col-md-12'>
-            <form>
-              <div className='form-group text-start mb-2'>
-                <label className='form-label text-light'>Username:</label>
-                <input type='text' placeholder='Enter Username' name='username' value={username} className='form-control'
-                  onChange={(e) => setUsername(e.target.value)} onKeyDown={(e) => { pressEnter(e) }}>
-                </input>
-              </div>
-
-              <div className='form-group text-start'>
-                <label className='form-label text-light'>Password:</label>
-                <input type='password' placeholder='Enter Password' name='password' value={password} className='form-control'
-                  onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => { pressEnter(e) }}
-                >
-                </input>
-                <button className='btn text-light text-center ml-5' onClick={(e) => {
-                  toggleForgottenPass(e);
-                }}>Forgotten password?</button>
-              </div>
-              <button className='btn  btn-success mt-2' onClick={userLogin}>Sign in!</button>
-            </form>
-
-          </div>
+            <div className='form-group text-start'>
+              <label className='form-label text-light'>Password:</label>
+              <input type='password' placeholder='Enter Password' name='password' value={password} className={`form-control ${isPasswordValid == true ? '' : 'is-invalid'}`}
+                onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => { pressEnter(e) }}
+              >
+              </input>
+              <button className='btn btn-forgotten-password-login text-secondary text-center mt-2' onClick={(e) => {
+                toggleForgottenPass(e);
+              }}>Forgotten password?</button>
+              {errors.password && <div class="invalid-feedback">
+                {errors.password}
+              </div>}
+            </div>
+            <button className='btn btn-submit-login btn-success mt-2' onClick={userLogin}>Sign in!</button>
+          </form>
         </div>
 
-        <p className='par-navigator text-light mt-5'>You don't have an account ?
-          <button className='btn btn-primary text-light mb-1 ml-3' onClick={() => { navigateToRegister() }}>Sign up!</button>
-        </p>
+        <div className='coding-image-div-login'>
+          <img src={codingLogo} width={400} height={400} alt='Responsive image' className='img-fluid' />
+          <p className='text-secondary mt-3 ml-5'>You don't have an account ?
+            <button className='btn btn-return-to-sign-up btn-primary text-light mb-1 ml-3' onClick={() => { navigateToRegister() }}>Sign up!</button>
+          </p>
+        </div>
+
       </div>
       {faEventForm && callEventForm()}
       {onePassForm && oneTimePassAddEmailForm()}

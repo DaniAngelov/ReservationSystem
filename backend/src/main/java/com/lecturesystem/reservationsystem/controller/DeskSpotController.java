@@ -5,13 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
-import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
-import com.lecturesystem.reservationsystem.model.dto.FacultyDTO;
-import com.lecturesystem.reservationsystem.model.dto.WrapperDTO;
+import com.lecturesystem.reservationsystem.model.dto.*;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
-import com.lecturesystem.reservationsystem.model.entity.Event;
-import com.lecturesystem.reservationsystem.model.entity.Faculty;
+import com.lecturesystem.reservationsystem.model.entity.*;
+import com.lecturesystem.reservationsystem.model.util.FacultyWrapper;
+import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.EventService;
 import com.lecturesystem.reservationsystem.service.FacultyAndFloorService;
 import lombok.AllArgsConstructor;
@@ -38,6 +37,8 @@ public class DeskSpotController {
 
     private final FacultyAndFloorService facultyAndFloorService;
 
+    private final UserRepository userRepository;
+
     private final EventService eventService;
 
     private final ModelMapper modelMapper = new ModelMapper();
@@ -46,7 +47,7 @@ public class DeskSpotController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException {
+    public ResponseEntity<?> addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException, SQLException {
         facultyAndFloorService.addFaculty(facultyDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -92,7 +93,7 @@ public class DeskSpotController {
     public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) throws SQLException, IOException {
         List<Event> events = eventService.getAllEvents(sortField);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
-        List<AddEventDTO> serializerEventDTOS = serializeDTOS(eventDTOS, events);
+        List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
         return new ResponseEntity<>(serializerEventDTOS, HttpStatus.OK);
     }
 
@@ -101,7 +102,7 @@ public class DeskSpotController {
     public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForUser(@RequestParam String username) throws CustomUserException, SQLException, IOException {
         List<Event> events = eventService.getAllEventsForUser(username);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
-        List<AddEventDTO> serializerEventDTOS = serializeDTOS(eventDTOS, events);
+        List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
         return new ResponseEntity<>(serializerEventDTOS, HttpStatus.OK);
     }
 
@@ -110,14 +111,16 @@ public class DeskSpotController {
     public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForOrganizer(@RequestParam String organizer) throws CustomUserException {
         List<Event> events = eventService.getAllEventsForOrganizer(organizer);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
+        addLinksForEvent(eventDTOS);
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'LECTOR','ADMIN')")
-    public ResponseEntity<List<FacultyDTO>> getAllFloorsWithDetailsSorted() {
+    public ResponseEntity<List<FacultyDTO>> getAllFloorsWithDetailsSorted() throws SQLException, IOException {
         List<Faculty> faculties = facultyAndFloorService.getAllFloors();
         List<FacultyDTO> facultyDTOS = faculties.stream().map(faculty -> modelMapper.map(faculty, FacultyDTO.class)).collect(Collectors.toList());
+        serializeFacultyDTOS(facultyDTOS, faculties);
         return new ResponseEntity<>(facultyDTOS, HttpStatus.OK);
     }
 
@@ -135,6 +138,13 @@ public class DeskSpotController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping("/events/add-room-image")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public ResponseEntity<?> addRoomImage(@RequestBody AddRoomImageDTO addRoomImageDTO) throws SQLException {
+        facultyAndFloorService.addRoomImage(addRoomImageDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping("/upload")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<WrapperDTO> readDataFromFile(@ModelAttribute MultipartFile file) throws IOException, CustomUserException, CustomEventException, SQLException {
@@ -149,7 +159,24 @@ public class DeskSpotController {
         return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
     }
 
-    private List<AddEventDTO> serializeDTOS(List<AddEventDTO> eventDTOS, List<Event> events) throws SQLException, IOException {
+    private void addLinksForEvent(List<AddEventDTO> addEventDTOS) throws CustomUserException {
+        for (AddEventDTO addEventDTO : addEventDTOS) {
+            User organizer = userRepository.getUserByUsername(addEventDTO.getOrganizer());
+            if (organizer == null) {
+                throw new CustomUserException("There is no such user!");
+            }
+            for (LinkToPage linkToPage : organizer.getLinkToPage()) {
+                if (addEventDTO.getLinkToPage() == null) {
+                    addEventDTO.setLinkToPage(new ArrayList<>());
+                    addEventDTO.getLinkToPage().add(linkToPage.getLinkToPage());
+                } else if (!addEventDTO.getLinkToPage().contains(linkToPage.getLinkToPage())) {
+                    addEventDTO.getLinkToPage().add(linkToPage.getLinkToPage());
+                }
+            }
+        }
+    }
+
+    private List<AddEventDTO> serializeEventDTOS(List<AddEventDTO> eventDTOS, List<Event> events) throws SQLException, IOException {
         List<AddEventDTO> serializedEvents = new ArrayList<>();
         for (AddEventDTO eventDTO : eventDTOS) {
             for (Event event : events) {
@@ -163,4 +190,33 @@ public class DeskSpotController {
         }
         return serializedEvents;
     }
+
+    private void serializeFacultyDTOS(List<FacultyDTO> facultyDTOS, List<Faculty> faculties) throws SQLException, IOException {
+        List<FacultyWrapper> wrapperList = new ArrayList<>();
+
+        for (Faculty faculty : faculties) {
+            for (Floor floor : faculty.getFloors()) {
+                for (Room room : floor.getRooms()) {
+                    if (room.getRoomImage() != null) {
+                        wrapperList.add(new FacultyWrapper(faculty.getName(), room, floor.getFloorNumber()));
+                    }
+                }
+            }
+        }
+        for (FacultyWrapper facultyWrapper : wrapperList) {
+            for (FacultyDTO facultyDTO : facultyDTOS) {
+                for (FloorDTO floorDTO : facultyDTO.getFloors()) {
+                    for (RoomDTO roomDTO : floorDTO.getRooms()) {
+                        if (facultyWrapper.getFacultyName().equals(facultyDTO.getName()) &&
+                                facultyWrapper.getFloorNumber().equals(floorDTO.getFloorNumber()) &&
+                                facultyWrapper.getRoom().getRoomNumber() == roomDTO.getRoomNumber()) {
+                            roomDTO.setRoomImage(new String(facultyWrapper.getRoom().getRoomImage().getBinaryStream().readAllBytes()));
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
 }

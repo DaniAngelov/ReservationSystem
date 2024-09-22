@@ -63,8 +63,9 @@ public class User implements Serializable, UserDetails {
     @Column
     private Boolean isPasswordChangeEnabled;
 
-    @Column
-    private String linkToPage;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<LinkToPage> linkToPage;
 
     @Column
     private Integer points;

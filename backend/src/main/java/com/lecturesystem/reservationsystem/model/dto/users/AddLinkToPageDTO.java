@@ -4,10 +4,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class AddLinkToPageDTO {
     private String username;
-    private String linkToPage;
+    private List<String> linkToPage;
 }

@@ -124,10 +124,10 @@ h1 {
 
 .custom-file-3 {
   width: 20%;
-  margin-top: 8.5%;
+  margin-top: 37%;
 }
 
-.input-label-file{
+.input-label-file {
   position: absolute;
   margin-top: 37%;
   margin-left: 1.5%;
@@ -212,36 +212,34 @@ h1 {
   top: 39%;
 }
 
-.lines-for-path-first {
-  border-top: 15px solid #fff;
-  margin-left: 32.5%;
-  margin-top: 21.5%;
-  width: 40%;
-}
-
-.lines-for-path-second {
-  border-top: 15px solid #fff;
-  margin-left: 32.5%;
-  margin-top: 5%;
-  width: 40%;
-}
-
-.person-walking-icon{
+.person-walking-icon {
   position: absolute;
   left: 32.5%;
   top: 47.5%;
 }
 
-.header-floor-position{
+.header-floor-position {
   position: absolute;
   left: 25%;
   top: 11%;
 }
 
-.room-content-image{
+.room-content-image {
+  position: absolute;
+  bottom: 1.5%;
+  right: 2.25%;
+}
+
+.room-content-image-preview{
   position: absolute;
   bottom: 1%;
-  right:3%;
+  right: 3%;
+}
+
+.btn-add-room-image{
+  position: absolute;
+  right: 16%;
+  bottom: 1%;
 }
 
 .btn-user-logout-setting-floors {
@@ -278,4 +276,20 @@ h1 {
 .btn-navigate-user-settings-floors:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
+}
+
+.room-options-buttons {
+  width: 2%;
+  height: 7%;
+  left: 15%;
+  z-index: 1;
+}
+
+.room-img-form{
+  position: absolute !important;
+  height: 8% !important;
+  width: 20%;
+  bottom: 1.5%;
+  right: 20%;
+  border-radius: 15px;
 }

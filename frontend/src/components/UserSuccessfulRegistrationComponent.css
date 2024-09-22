@@ -1,33 +1,26 @@
-html,body{
+html,
+body {
   font-family: Arial, Helvetica, sans-serif;
   height: 100%;
-  background: url('../assets/work-desk-schedule.jpg') no-repeat center center fixed; 
+  background: url('../assets/work-desk-schedule.jpg') no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover
 }
 
-.custom-img{
+.custom-img-successful-registration {
   right: 80%;
 }
 
-.mx-6 {
-  margin-left: -25rem; 
-}
-
-.modal-content-test{
+.modal-content-test {
   width: 50%;
   position: absolute;
-  left:25%;
-  border-radius: 20%;
+  left: 25%;
+  border-radius: 15px;
   bottom: 8%;
 }
 
-.mt-6 {
-  margin-top: 4rem; 
-}
-
-.btn-success {
-  color: black;
+.btn-return-to-login-page {
+  width: 70%;
 }

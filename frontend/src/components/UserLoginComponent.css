@@ -9,26 +9,73 @@ body {
   background-size: cover
 }
 
-.custom-img {
+.card-body-login {
+  border-radius: 8px;
+  width: 80%;
+  position: absolute;
+  background-color: #f6f6f6;
+  left: 10%;
+  bottom: 8%;
+  height: 85%;
+}
+
+.custom-img-login-page {
   right: 80%;
 }
 
-.mx-6 {
-  margin-left: 3rem;
-}
-
-.btn-success {
-  color: black;
-}
-
-.card-body-login {
-  width: 40%;
-  border-radius: 10%;
+.login-custom-form {
   position: absolute;
-  left: 0%;
-  bottom: 3%;
-  height: 95%;
+  left: 17%;
+  height: 80%;
+  top: 12%;
+  width: 40%;
 }
+
+.btn-return-to-sign-up{
+  width: 30%;
+}
+
+.btn-return-to-sign-up:hover{
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.custom-img-login-page {
+  z-index: 1;
+  position: absolute;
+  top: 9%;
+  left: 11.5%;
+}
+
+.btn-submit-login {
+  left: 22%;
+  bottom: -2%;
+  width: 50%;
+  position: absolute;
+}
+
+.btn-submit-login:hover{
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.coding-image-div-login {
+  position: absolute;
+  bottom: 10%;
+  left: 58%;
+}
+
+.btn-forgotten-password-login{
+  position: absolute;
+  left: 58%;
+  top: 80%;
+}
+
+.btn-forgotten-password-login:hover{
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px grey inset;
+}
+
 
 .custom-form-2 {
   position: absolute;
@@ -101,7 +148,7 @@ body {
   height: 10%;
 }
 
-.btn-close-one-time-pass-form{
+.btn-close-one-time-pass-form {
   position: absolute;
   right: 4%;
   top: 4%;
@@ -177,8 +224,15 @@ body {
   text-transform: uppercase;
 }
 
-.mail-image-one-time{
+.mail-image-one-time {
   position: absolute;
   left: 10%;
   bottom: 34%;
+}
+
+.login-alert{
+  width: 25%;
+  left: 27%;
+  margin-top: 18.5%;
+  z-index: 1;
 }

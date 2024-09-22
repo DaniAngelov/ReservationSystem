@@ -202,9 +202,6 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
-
-
-
 .btn-item-rewards {
   position: absolute;
   left: 435%;
@@ -485,11 +482,12 @@ input {
 .add-resources-link-div {
   position: absolute;
   width: 45%;
-  height: 60%;
+  height: 70%;
   top: 18%;
   left: 35%;
   border-radius: 20px;
   z-index: 1;
+  overflow-y: auto;
 }
 
 
@@ -503,10 +501,10 @@ input {
 
 .btn-item-add-resource-in-form {
   position: absolute;
-  left: 22%;
-  width: 55%;
+  left: 33%;
+  width: 35%;
   bottom: 10%;
-  height: 15%;
+  height: 12%;
   color: #475f7b;
   border-radius: 4px;
   cursor: pointer;
@@ -519,9 +517,8 @@ input {
 }
 
 .input-resource-link-icon {
-  position: absolute;
-  top: 0.5%;
-  left: -12%;
+  margin-left: 48%;
+  margin-bottom: 2%;
 }
 
 .btn-close-add-resources-link-form {
@@ -529,7 +526,7 @@ input {
   right: 3%;
   top: 3%;
   width: 7%;
-  height: 11%;
+  height: 8%;
 }
 
 .button-link-organizer {
@@ -691,7 +688,7 @@ li {
   width: 20%;
 }
 
-.carousel-buttons{
+.carousel-buttons {
   position: absolute;
   top: 10%;
   width: 40%;
@@ -700,13 +697,15 @@ li {
   z-index: 1;
 }
 
-.btn-this-week-events,.btn-this-month-events,.btn-today-events{
+.btn-this-week-events,
+.btn-this-month-events,
+.btn-today-events {
   width: 100%;
 }
 
-.qr-code-client-feedback-questions{
+.qr-code-client-feedback-questions {
   position: absolute;
-  top: 41%;
+  top:37%;
   left: 7%;
 }
 
@@ -718,3 +717,16 @@ li {
   height: 8%;
 }
 
+.disable-event-alert {
+  position: absolute;
+  width: 20%;
+  left: 64%;
+  top: 50vh !important;
+}
+
+.resource-link-alert {
+  position: absolute;
+  width: 20%;
+  left: 64%;
+  top: 44vh !important;
+}

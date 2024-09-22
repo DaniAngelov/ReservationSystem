@@ -201,7 +201,7 @@ body {
 
 .header-user-icon {
   position: absolute;
-  left: 50%;
+  left: 40%;
   bottom: 20%;
 }
 
@@ -233,7 +233,7 @@ body {
 }
 
 .carousel {
-  width: 300px;
+  width: 310px;
   height: 400px;
   position: absolute !important;
   left: -3%;

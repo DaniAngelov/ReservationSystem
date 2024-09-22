@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.sql.Blob;
 import java.util.List;
 
 @Entity(name = "rooms")
@@ -34,7 +35,17 @@ public class Room implements Serializable {
     @JoinColumn(name = "room_id", referencedColumnName = "id")
     private List<Event> events;
 
+    @Column(name = "faculty_name")
+    private String facultyName;
+
+    @Column(name = "floor_number")
+    private Integer floorNumber;
+
     @Column
     @Enumerated(EnumType.STRING)
     private RoomType roomType;
+
+    @Column
+    @Lob
+    private Blob roomImage;
 }

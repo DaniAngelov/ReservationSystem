@@ -18,7 +18,6 @@ import { disableUserEvent } from '../services/FloorService';
 import { HiLightBulb } from "react-icons/hi";
 import { FaHome } from "react-icons/fa";
 import { FaUserPen } from "react-icons/fa6";
-import { GrDocumentText } from "react-icons/gr";
 import { MdAutoDelete } from "react-icons/md";
 import { VscFeedback } from "react-icons/vsc";
 import { GiPresent } from "react-icons/gi";
@@ -64,10 +63,13 @@ const UserSettingsPageComponent = () => {
   const [deleteEventEnabled, setDeleteEventEnabled] = useState(false);
 
   const [userPreferenceForm, setUserPreferenceForm] = useState(false);
+  const [disableEventAlert, setDisableEventAlert] = useState(false);
+  const [resourceLinkAlert, setResourceLinkAlert] = useState(false);
 
   const [disableEvent, setDisableEvent] = useState(false);
   const [disableEventForm, setDisableEventForm] = useState(false);
   const [disableEventReason, setDisableEventReason] = useState('');
+  const [disableEventDescription, setDisableEventDescription] = useState('');
 
   const [qrCodeQuestions, setQrCodeQuestions] = useState('');
 
@@ -75,7 +77,7 @@ const UserSettingsPageComponent = () => {
 
   const [filteredEvents, setFilteredEvents] = useState([]);
 
-  const [linkResources, setLinkResources] = useState('')
+  const [linkResources, setLinkResources] = useState(Array(0).fill(''));
 
   const [username, setUsername] = useState('');
   const [description, setDescription] = useState('');
@@ -94,6 +96,10 @@ const UserSettingsPageComponent = () => {
   const [generateBiggerImageCheck, setGenerateBiggerImageCheck] = useState(false);
 
   const [currentUser, setCurrentUser] = useState([]);
+
+  const [currentEvent, setCurrentEvent] = useState([]);
+
+  const [resourceCounter, setResourceCounter] = useState(1);
 
   const [digit1, setDigit1] = useState('');
   const [digit2, setDigit2] = useState('');
@@ -173,6 +179,21 @@ const UserSettingsPageComponent = () => {
     return setDisableEvent(!disableEvent);
   }
 
+  const toggleDisableEventAlert = () => {
+    return setDisableEventAlert(!disableEventAlert);
+  }
+
+  const closeDisableEventAlert = () => {
+    return setDisableEventAlert(false);
+  }
+
+  const toggleResourceLinkAlert = () => {
+    return setResourceLinkAlert(!resourceLinkAlert);
+  }
+
+  const closeResourceLinkAlert = () => {
+    return setResourceLinkAlert(false);
+  }
 
   const toggleDeleteEvent = () => {
     return setDeleteEventEnabled(!deleteEventEnabled);
@@ -439,10 +460,20 @@ const UserSettingsPageComponent = () => {
         <small>Room: {event.roomNumber}</small>
         <br />
         {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
-          <small>Organizer: <a href={`${event.linkToPage}`} onClick={(e) => e.stopPropagation()} > {event.organizer}</a></small>}
+          <small>Organizer: <a href='#' onClick={() => {
+            toggleResourceLinkAlert();
+            closeDisableEventAlert();
+          }} > {event.organizer}</a></small>}
         <br />
-        {!event.enabled && <small>
-          Cancelled due to {event.disableEventReason}</small>}
+        {!event.enabled && (event.disableEventReason == 'OTHER' ?
+          <small>
+            Cancelled due to <a href="#" onClick={(e) => {
+              toggleDisableEventAlert();
+              closeResourceLinkAlert();
+            }}>{event.disableEventReason}</a></small>
+          : <small>
+            Cancelled due to {event.disableEventReason}</small>)}
+
 
       </button></Carousel.Item>;
   }
@@ -500,16 +531,36 @@ const UserSettingsPageComponent = () => {
     toggleDisableEvent();
   }
 
+  const showAlertWhenClickedDisabledReason = () => {
+    return (<div class="disable-event-alert alert alert-primary" role="alert">
+      Disable event description: "{chosenEvent.disableEventDescription}"
+    </div>)
+  }
+
+  const showAlertWhenClickedResourcesLink = () => {
+    return (<div class="resource-link-alert alert alert-success" role="alert">
+      Links:
+      <br />
+      {chosenEvent.linkToPage.map((link, idx) => {
+        return <div><a key={idx} href={link} title={link}>Link {idx + 1}</a><br /></div>
+      })}
+    </div>)
+  }
+
+
 
   const showCreatedEvent = (event, idx) => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
     checkIfEventStillContinues(event, newEndDate);
+
+
     console.log(event);
-    return <Carousel.Item key={idx} className='carousel-new-item-2'>
+    return <Carousel.Item key={idx} className='carousel-new-item-2' onMouseEnter={setCurrentEvent(event)}>
       <div>
         <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={(e) => {
           setActiveIndex(idx);
+          setChosenEvent(event)
           event.enabled == true && showEventIfEnabled(e, event);
         }
         }>
@@ -527,11 +578,22 @@ const UserSettingsPageComponent = () => {
           <br />
           <small>Room: {event.roomNumber}</small>
           <br />
+          {console.log(event)}
           {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
-            <small>Organizer: <a href={`${event.linkToPage}`} onClick={(e) => e.stopPropagation()} > {event.organizer}</a></small>}
+            <small>Organizer: <a href='#' onClick={() => {
+              toggleResourceLinkAlert();
+              closeDisableEventAlert();
+            }} > {event.organizer}</a></small>}
           <br />
-          {!event.enabled && <small>
-            Cancelled due to {event.disableEventReason}</small>}
+          {!event.enabled && (event.disableEventReason == 'OTHER' ?
+            <small>
+              Cancelled due to <a href="#" onClick={(e) => {
+                toggleDisableEventAlert();
+                closeResourceLinkAlert();
+              }}>{event.disableEventReason}</a></small>
+            : <small>
+              Cancelled due to {event.disableEventReason}</small>)}
+
         </button>
       </div></Carousel.Item>;
   }
@@ -616,6 +678,7 @@ const UserSettingsPageComponent = () => {
     e.preventDefault();
     const disableEventDTO = {
       "disableReason": disableReason,
+      "disableEventDescription": disableEventDescription,
       "user": user,
       "name": chosenEvent.name
     }
@@ -800,14 +863,18 @@ const UserSettingsPageComponent = () => {
     )
   }
 
+  const callDisableEventDescriptionForm = () => {
+    return (<div class="form-floating text-start mb-3 mt-4 bg-light">
+      <textarea class="form-control text-start h-100" id="floatingInput11" placeholder="Enter additional feedback" value={disableEventDescription} rows="5" onChange={(e) => setDisableEventDescription(e.target.value)} />
+      <label className="floatingInput11 text-secondary">Specify reason</label>
+    </div>)
+  }
+
   const sidebarRightComponent = () => {
     return (
       <>
         <div className="container-fluid mt-3">
           <div className={`sidebar-settings-right ${isOpen == true ? 'active' : ''}`}>
-            <div className="sd-header">
-              <h1 className='text-center mb-4 text-light font-weight-bold'>Disable event</h1>
-            </div>
             <div className="sd-body text-center">
               <ul>
                 <li>
@@ -836,6 +903,9 @@ const UserSettingsPageComponent = () => {
                   </Button>
                 </li>
                 <li>
+                  {disableEventReason == 'Other' && callDisableEventDescriptionForm()}
+                </li>
+                <li>
                   <button className='btn btn-disable-events btn-outline-success my-2 my-sm-0  mt-2 sd-link-settings-button' onClick={(e) => disableNewEvent(e, disableEventReason.toUpperCase())}>Disable event!</button>
                 </li>
               </ul>
@@ -849,9 +919,10 @@ const UserSettingsPageComponent = () => {
   }
 
   const addResourceLinkForUser = () => {
+    const newLinkResources = linkResources.filter(resource => resource != '')
     const request = {
       "username": user,
-      "linkToPage": linkResources
+      "linkToPage": newLinkResources
     };
     console.log(JSON.stringify(request));
 
@@ -860,29 +931,54 @@ const UserSettingsPageComponent = () => {
       console.log("response");
       console.log(response);
       toggleAddResourcesForm();
+      setLinkResources(Array(0).fill(''))
+      setResourceCounter(1);
     }).catch((error) => {
       console.log("error");
       console.log(error);
     })
   }
 
+  const inputChangedHandler = (e, index) => {
+    const inputsUpdated = linkResources.map((input, i) => {
+      console.log("input be")
+      console.log(input)
+      if (i == index) {
+        return e.target.value;
+      } else {
+        return input;
+      }
+    });
+    setLinkResources(inputsUpdated);
+  };
+
   const callAddResourcesNewForm = () => {
     return (
       <div className='add-resources-link-div bg-success p-5'>
-        <button className="btn-close-add-resources-link-form btn btn-danger" onClick={(e) => closeAddResourcesLinkForm(e)}>x</button>
+        <button className="btn-close-add-resources-link-form btn btn-danger" onClick={(e) => {
+          closeAddResourcesLinkForm(e)
+        }}>x</button>
         <h1 className='form-label text-light text-center mb-5 mr-5'> <FaUserPen className='mr-3 mb-2 text-white' size={80} /> Add Resources Link</h1>
-        <form className='add-resources-link-form'>
-          <GrDocumentText size={35} className='input-resource-link-icon text-light' />
-          <div className='form-group text-start mb-2'>
 
-            <input type='text' placeholder='Enter Resources Link' name='linkResources' value={linkResources} className='form-control text-center'
-              onChange={(e) => { setLinkResources(e.target.value) }} />
-          </div>
-
-        </form>
-        <button className='btn btn-item-add-resource-in-form btn-primary text-light' onClick={() => { addResourceLinkForUser() }}>
-          Add!
+        <button className='w-100 p-2 mb-3 btn btn-primary text-light' onClick={() => {
+          setResourceCounter(resourceCounter + 1);
+          setLinkResources(Array(resourceCounter).fill(''))
+        }}>
+          Add resource
         </button>
+
+        <div className='form-group text-start mb-2'>
+          {linkResources.map((input, c) => (
+            <input type='text' placeholder='Enter Resource Link' name='linkResources' value={input} className='w-100 form-control text-center mb-4'
+              onChange={(e) => {
+                inputChangedHandler(e, c)
+              }} />
+          ))}
+
+        </div>
+        {resourceCounter > 1 && <button className='w-100 p-2 mt-1 btn btn-primary text-light' onClick={() => { addResourceLinkForUser() }}>
+          Submit
+        </button>}
       </div>
     )
   }
@@ -1103,6 +1199,8 @@ const UserSettingsPageComponent = () => {
       {generateBiggerImageCheck && generateBiggerImage(rewardPath)}
       <OpenUserSettings />
       {userPreferenceForm && callUserPreferenceForm()}
+      {disableEventAlert && showAlertWhenClickedDisabledReason()}
+      {resourceLinkAlert && showAlertWhenClickedResourcesLink()}
     </>
   )
 }

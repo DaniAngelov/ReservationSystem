@@ -30,9 +30,6 @@ public class Event {
     @Column
     private int floorNumber;
 
-    @Column
-    private String linkToOrganizerPage;
-
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_id", referencedColumnName = "id")
     private List<FeedbackForm> feedbackForm;
@@ -83,6 +80,9 @@ public class Event {
     @Column
     @Enumerated(EnumType.STRING)
     private DisableEventReason disableEventReason;
+
+    @Column
+    private String disableEventDescription;
 
     public String getEventType() {
         return eventType.toString();
