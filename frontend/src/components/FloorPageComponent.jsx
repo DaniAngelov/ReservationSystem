@@ -13,6 +13,7 @@ import { RiLogoutBoxLine } from "react-icons/ri";
 import { IoSettingsSharp } from "react-icons/io5";
 import axios from 'axios';
 import { Button } from "react-bootstrap";
+import { getUserByUsername, getUsers } from '../services/UserService';
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -36,6 +37,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [roomOptionsFormPart2, setRoomOptionsFormPart2] = useState(false);
   const [showImageInputField, setShowImageInputField] = useState(true);
 
+  const [newLanguage, setNewLanguage] = useState('');
+
   const user = decodedToken.sub;
 
   const role = decodedToken.role;
@@ -51,6 +54,17 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       return 'secondary';
     }
   }
+
+  useEffect(() => {
+    getUserByUsername(user, token).then((response) => {
+      console.log("response for current user")
+      console.log(response.data);
+      setNewLanguage(response.data.languagePreferred);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }, []);
 
   useEffect(() => {
     getEvents(token)
@@ -195,7 +209,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
     console.log(JSON.stringify(requestDTO));
     addRoomImage(JSON.stringify(requestDTO), token).then((response) => {
-      alert("Image added successfully!");
+      { newLanguage == 'ENG' && alert("Image added successfully!") }
+      { newLanguage == 'BG' && alert("Изобржанието е добавено!") }
       setShowImageInputField(true);
       console.log(response.data);
     }).catch((error) => {
@@ -236,7 +251,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       return (
 
         <div>
-          <h2 className='text-light header-floor-position'>{chosenFaculty}, Floor {chosenFloor}</h2>
+          <h2 className='text-light header-floor-position'>{chosenFaculty},
+            {newLanguage == 'ENG' && ' Floor '}
+            {newLanguage == 'BG' && ' Етаж '}
+            {chosenFloor}</h2>
           <Gi3dStairs size={70} className='stairs-icon-start text-light' />
 
 
@@ -295,21 +313,25 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           </div>
 
           <ul className='example-rooms bg-dark text-light p-2'>
-            Types of rooms:
+            {newLanguage == 'ENG' && 'Types of rooms:'}
+            {newLanguage == 'BG' && 'Типове стаи:'}
             <li
-              className={`btn-primary m-4 p-3 text-light text-center`} >
+              className={`btn-primary m-3 p-3 text-light text-center`} >
               <BsFillDoorOpenFill size={20} className='mr-2' />
-              Computer
+              {newLanguage == 'ENG' && 'Computer'}
+              {newLanguage == 'BG' && 'Компютърна'}
             </li>
             <li
-              className={`btn-success m-4 p-3 text-light text-center`} >
+              className={`btn-success m-3 p-3 text-light text-center`} >
               <BsFillDoorOpenFill size={20} className='mr-2' />
-              Seminar
+              {newLanguage == 'ENG' && 'Seminar'}
+              {newLanguage == 'BG' && 'Семинарна'}
             </li>
             <li
-              className={`btn-secondary m-4 p-3 text-light text-center`} >
+              className={`btn-secondary m-3 p-3 text-light text-center`} >
               <BsFillDoorOpenFill size={20} className='mr-2' />
-              Normal
+              {newLanguage == 'ENG' && 'Normal'}
+              {newLanguage == 'BG' && 'Нормална'}
             </li>
           </ul>
         </div >
@@ -334,7 +356,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
             <div className="dropdown">
               <a class="btn dropdown-floors btn-secondary dropdown-toggle bt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-theme="dark">
-                Faculty - Floor
+                {newLanguage == 'ENG' && 'Faculty - Floor'}
+                {newLanguage == 'BG' && 'Факултет - Етаж'}
+                {console.log("newLanguage")}
+                {console.log(newLanguage)}
               </a>
               <ul class="dropdown-menu dropdown-floors-item dropdown-menu-dark text-center">
 
@@ -346,7 +371,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
                     showRooms(floor.floorNumber, floor.facultyName);
                   }
                   }>
-                    {floor.facultyName}- Floor {floor.floorNumber}</a></li>
+                    {floor.facultyName} -
+                    {newLanguage == 'ENG' && ' Floor '}
+                    {newLanguage == 'BG' && ' Етаж '}
+                    {floor.floorNumber}</a></li>
                 })
                 }
               </ul>
@@ -378,7 +406,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     return (<>
       {role == 'ADMIN' && <div class="border custom-file-3 mb-3">
         <input type="file" class="custom-file-input" onChange={handleFileSelected} required />
-        <label class="custom-file-label col-md-2 input-label-file" >Choose file...</label>
+        <label class="custom-file-label col-md-2 input-label-file" >
+          {newLanguage == 'ENG' && 'Choose file...'}
+          {newLanguage == 'BG' && 'Избери файл...'}
+        </label>
       </div>}
     </>)
   }
@@ -397,8 +428,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         }
         console.log(JSON.stringify(request))
         endEvent(JSON.stringify(request), token).then((response) => {
-          console.log("response");
-          console.log(response.data);
         }).catch((error) => {
           console.log("error");
           console.log(error);
@@ -415,7 +444,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const callLogOut = () => {
     return (<div>
       <button className='btn btn-danger text-light' onClick={() => { logOut() }}>
-        Log out
+        {newLanguage == 'ENG' && ' Logout '}
+        {newLanguage == 'BG' && ' Логуат '}
       </button>
     </div>)
   }
@@ -425,12 +455,16 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       <button className='btn-navigate-user-settings-floors btn btn-outline-success my-2 my-sm-0' onClick={() => {
         navigateToUserSettings();
       }}>
-        <IoSettingsSharp size={30} /> Settings
+        <IoSettingsSharp size={30} />
+        {newLanguage == 'ENG' && 'Settings'}
+        {newLanguage == 'BG' && 'Настройки'}
       </button>
       <button className='btn-user-logout-setting-floors btn btn-outline-info my-2 my-sm-0' onClick={() => {
         logOut();
       }}>
-        <RiLogoutBoxLine size={30} /> Log out
+        <RiLogoutBoxLine size={30} />
+        {newLanguage == 'ENG' && 'Logout'}
+        {newLanguage == 'BG' && 'Логаут'}
       </button>
     </div>)
   }
@@ -440,12 +474,15 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
       <Button className='btn-primary p-2 w-25' onClick={() => {
         onClickOpenRoom(chosenFloor, chosenRoom, chosenFaculty)
-      }}>Enter</Button>
+      }}>{newLanguage == 'ENG' && 'Еnter'}
+        {newLanguage == 'BG' && 'Влез'}</Button>
 
       <Button className='btn-primary p-2 ml-2 w-25' onClick={() => {
         toggleRoomImageInputEnable();
         closeRoomOptionsForm();
-      }}>Add image</Button>
+      }}>
+        {newLanguage == 'ENG' && 'Add image'}
+        {newLanguage == 'BG' && 'Добави снимка'}</Button>
 
     </div>)
   }
@@ -455,13 +492,16 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
       <Button className='btn-primary p-2 w-25' onClick={() => {
         onClickOpenRoom(chosenFloor, chosenRoom, chosenFaculty)
-      }}>Enter</Button>
+      }}>{newLanguage == 'ENG' && 'Еnter'}
+        {newLanguage == 'BG' && 'Влез'}</Button>
 
       <Button className='btn-primary p-2 ml-2 w-25' onClick={() => {
         toggleRoomImageInputEnable();
         closeRoomOptionsFormPart2();
-      }}>Add image</Button>
-
+      }}>
+        {newLanguage == 'ENG' && 'Add image'}
+        {newLanguage == 'BG' && 'Добави снимка'}
+      </Button>
     </div>)
   }
 
@@ -472,7 +512,10 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           setRoomImageContent(URL.createObjectURL(e.clipboardData.files[0]));
           closeShowImageInputField();
         }} />
-        <label for="floatingInput10 text-center mt-3">Paste image</label>
+        <label for="floatingInput10 text-center mt-3">
+          {newLanguage == 'ENG' && 'Paste image'}
+          {newLanguage == 'BG' && 'Постави снимка'}
+        </label>
       </div>}
       {showImageInputField == false &&
         <img src={roomImageContent} className='room-content-image-preview' width={175} height={175} />}
@@ -480,7 +523,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       {showImageInputField == false && <Button className='btn-add-room-image p-3 btn-success mt-3' onClick={(e) => {
         toggleRoomImageInputEnable();
         addNewRoomImage(e)
-      }}>Add new image</Button>}
+      }}> {newLanguage == 'ENG' && 'Add new image'}
+        {newLanguage == 'BG' && 'Добави нова снимка'}</Button>}
 
     </div>
   }

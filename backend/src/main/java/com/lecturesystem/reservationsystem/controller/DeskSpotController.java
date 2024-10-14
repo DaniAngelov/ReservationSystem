@@ -90,10 +90,11 @@ public class DeskSpotController {
 
     @GetMapping("/events")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
-    public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) throws SQLException, IOException {
+    public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) throws SQLException, IOException, CustomUserException {
         List<Event> events = eventService.getAllEvents(sortField);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
         List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
+        addLinksForEvent(serializerEventDTOS);
         return new ResponseEntity<>(serializerEventDTOS, HttpStatus.OK);
     }
 
@@ -103,6 +104,7 @@ public class DeskSpotController {
         List<Event> events = eventService.getAllEventsForUser(username);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
         List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
+        addLinksForEvent(serializerEventDTOS);
         return new ResponseEntity<>(serializerEventDTOS, HttpStatus.OK);
     }
 
@@ -165,13 +167,9 @@ public class DeskSpotController {
             if (organizer == null) {
                 throw new CustomUserException("There is no such user!");
             }
+            addEventDTO.setLinkToPage(new ArrayList<>());
             for (LinkToPage linkToPage : organizer.getLinkToPage()) {
-                if (addEventDTO.getLinkToPage() == null) {
-                    addEventDTO.setLinkToPage(new ArrayList<>());
-                    addEventDTO.getLinkToPage().add(linkToPage.getLinkToPage());
-                } else if (!addEventDTO.getLinkToPage().contains(linkToPage.getLinkToPage())) {
-                    addEventDTO.getLinkToPage().add(linkToPage.getLinkToPage());
-                }
+                addEventDTO.getLinkToPage().add(linkToPage.getLinkToPage());
             }
         }
     }

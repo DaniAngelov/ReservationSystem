@@ -70,6 +70,9 @@ public class User implements Serializable, UserDetails {
     @Column
     private Integer points;
 
+    @Column
+    private String languagePreferred;
+
     @Override
     public String getUsername() {
         return this.username;

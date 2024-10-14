@@ -43,4 +43,5 @@ public interface UserService {
 
     List<User> searchUser(SearchGuestDTO searchGuestDTO);
 
+    void changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException;
 }

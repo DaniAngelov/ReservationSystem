@@ -187,9 +187,9 @@ body {
 .btn-user-logout-setting-2 {
   position: absolute;
   left: 18%;
-  bottom: 3.5%;
+  bottom: 2%;
   width: 11%;
-  height: 8%;
+  height: 7%;
   color: #475f7b;
   border-radius: 4px;
   cursor: pointer;
@@ -197,7 +197,62 @@ body {
   text-decoration: none;
 }
 
+.btn-user-language-bulgarian:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-user-language-bulgarian {
+  position: absolute;
+  left: 21%;
+  bottom: 14%;
+  width: 11%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-user-language-english:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-user-language-english {
+  position: absolute;
+  left: 21%;
+  bottom: 22%;
+  width: 11%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+
 .btn-user-logout-setting-2:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-user-home-setting-2 {
+  position: absolute;
+  left: 18%;
+  bottom: 9.5%;
+  width: 11%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-user-home-setting-2:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
@@ -253,7 +308,7 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
-.btn-item-home {
+.btn-item-language-settings {
   position: absolute;
   left: 5%;
   width: 90%;
@@ -265,7 +320,7 @@ body {
   text-decoration: none;
 }
 
-.btn-item-home:hover {
+.btn-item-language-settings:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
@@ -361,7 +416,7 @@ input {
 
 .carousel-2 {
   width: 300px;
-  height: 480px;
+  height: 510px;
   position: absolute !important;
   left: 45%;
   top: 7%;
@@ -483,13 +538,21 @@ input {
   position: absolute;
   width: 45%;
   height: 70%;
-  top: 18%;
-  left: 35%;
+  top: 16%;
+  left: 32%;
   border-radius: 20px;
   z-index: 1;
   overflow-y: auto;
 }
 
+.carousel-user-settings {
+  width: 330px;
+  height: 400px;
+  position: absolute !important;
+  left: -5%;
+  top: 22%;
+  margin: auto;
+}
 
 .add-resources-link-form {
   position: absolute;
@@ -611,8 +674,8 @@ li {
 .card-body-div-authentication-types {
   position: absolute;
   border-radius: 20px;
-  left: 30%;
-  top: 5%;
+  left: 29%;
+  top: 10%;
   width: 50%;
   height: 80%;
 }
@@ -697,15 +760,26 @@ li {
   z-index: 1;
 }
 
-.btn-this-week-events,
-.btn-this-month-events,
+
+.btn-all-events {
+  width: 150%;
+}
+
+.btn-this-week-events {
+  width: 100%;
+}
+
+.btn-this-month-events {
+  width: 120%;
+}
+
 .btn-today-events {
   width: 100%;
 }
 
 .qr-code-client-feedback-questions {
   position: absolute;
-  top:37%;
+  top: 37%;
   left: 7%;
 }
 

@@ -7,7 +7,7 @@ import twoStarEmoji from '../assets/2-star-emoji.png';
 import threeStarEmoji from '../assets/3-star-emoji.png';
 import fourStarEmoji from '../assets/4-star-emoji.png';
 import fiveStarEmoji from '../assets/5-star-emoji.png';
-import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage, getUserByUsername } from '../services/UserService';
+import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage, getUserByUsername, updateNewLanguage } from '../services/UserService';
 import { BsShieldLockFill } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +28,7 @@ import ImageZoom from "react-image-zooom";
 import { addDays } from '@progress/kendo-date-math';
 import axios from 'axios';
 import { RiLogoutBoxLine } from "react-icons/ri";
+import { GrLanguage } from "react-icons/gr";
 
 const UserSettingsPageComponent = () => {
 
@@ -63,6 +64,7 @@ const UserSettingsPageComponent = () => {
   const [deleteEventEnabled, setDeleteEventEnabled] = useState(false);
 
   const [userPreferenceForm, setUserPreferenceForm] = useState(false);
+  const [languagePreferenceForm, setLanguagePreferenceForm] = useState(false);
   const [disableEventAlert, setDisableEventAlert] = useState(false);
   const [resourceLinkAlert, setResourceLinkAlert] = useState(false);
 
@@ -78,7 +80,6 @@ const UserSettingsPageComponent = () => {
   const [filteredEvents, setFilteredEvents] = useState([]);
 
   const [linkResources, setLinkResources] = useState(Array(0).fill(''));
-
   const [username, setUsername] = useState('');
   const [description, setDescription] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
@@ -101,6 +102,8 @@ const UserSettingsPageComponent = () => {
 
   const [resourceCounter, setResourceCounter] = useState(1);
 
+  const [newLanguage, setNewLanguage] = useState('');
+
   const [digit1, setDigit1] = useState('');
   const [digit2, setDigit2] = useState('');
   const [digit3, setDigit3] = useState('');
@@ -116,13 +119,16 @@ const UserSettingsPageComponent = () => {
 
   const role = decodedToken.role;
 
+  const [languageCurrentUser, setLanguageCurrentUser] = useState('');
+
   const navigator = useNavigate();
 
   useEffect(() => {
     getUserByUsername(user, token).then((response) => {
       console.log("response")
       console.log(response.data);
-      setCurrentUser(response.data);
+      setLanguageCurrentUser(response.data);
+      setNewLanguage(response.data.languagePreferred);
     }).catch((error) => {
       console.log("error");
       console.log(error);
@@ -179,7 +185,8 @@ const UserSettingsPageComponent = () => {
     return setDisableEvent(!disableEvent);
   }
 
-  const toggleDisableEventAlert = () => {
+  const toggleDisableEventAlert = (event) => {
+    setChosenEvent(event);
     return setDisableEventAlert(!disableEventAlert);
   }
 
@@ -187,7 +194,8 @@ const UserSettingsPageComponent = () => {
     return setDisableEventAlert(false);
   }
 
-  const toggleResourceLinkAlert = () => {
+  const toggleResourceLinkAlert = (event) => {
+    setChosenEvent(event);
     return setResourceLinkAlert(!resourceLinkAlert);
   }
 
@@ -273,6 +281,20 @@ const UserSettingsPageComponent = () => {
     return setUserPreferenceForm(!userPreferenceForm);
   }
 
+  const closeUserPreferencesForm = () => {
+    return setUserPreferenceForm(false);
+  }
+
+  const toggleLanguagePreferencesForm = () => {
+    return setLanguagePreferenceForm(!languagePreferenceForm);
+  }
+
+  const closeLanguagePreferencesForm = () => {
+    return setLanguagePreferenceForm(false);
+  }
+
+
+
   const logOut = () => {
     localStorage.clear();
     navigator('/login');
@@ -280,10 +302,52 @@ const UserSettingsPageComponent = () => {
 
   const callUserPreferenceForm = () => {
     return (<div>
+      <button className='btn-user-home-setting-2 btn btn-outline-primary my-2 my-sm-0' onClick={() => {
+        navigateToHome();
+      }}>
+        <FaHome size={30} /> {newLanguage == 'ENG' && "Home"}
+        {newLanguage == 'BG' && "Начало"}
+      </button>
       <button className='btn-user-logout-setting-2 btn btn-outline-info my-2 my-sm-0' onClick={() => {
         logOut();
       }}>
-        <RiLogoutBoxLine size={30} /> Log out
+        <RiLogoutBoxLine size={30} />  {newLanguage == 'ENG' && "Log out"}
+        {newLanguage == 'BG' && "Логаут"}
+      </button>
+    </div>)
+  }
+
+  const updateLanguage = (language) => {
+    setNewLanguage(language);
+    const updateLanguageDTO = {
+      "username": user,
+      "languagePreferred": language
+    }
+    updateNewLanguage(updateLanguageDTO, token).then((response) => {
+      console.log("response")
+      console.log(response.data);
+      setCurrentUser(response.data);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
+  const callLanguagePreferenceForm = () => {
+    return (<div>
+      <button className='btn-user-language-english btn btn-outline-primary my-2 my-sm-0' onClick={() => {
+        localStorage.setItem('language', 'ENG');
+        closeLanguagePreferencesForm();
+        updateLanguage('ENG');
+      }}>
+        ENG
+      </button>
+      <button className='btn-user-language-bulgarian btn btn-outline-primary my-2 my-sm-0' onClick={() => {
+        localStorage.setItem('language', 'BG');
+        closeLanguagePreferencesForm();
+        updateLanguage('BG');
+      }}>
+        BG
       </button>
     </div>)
   }
@@ -293,6 +357,7 @@ const UserSettingsPageComponent = () => {
       <div className='container'>
         <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
           toggleUserPreferencesForm();
+          closeLanguagePreferencesForm();
         }}>
           <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
           <h4 className='header-user-icon'>{user}</h4>
@@ -311,7 +376,10 @@ const UserSettingsPageComponent = () => {
     verifyTwoFA(request, token).then((response) => {
       console.log("response verify:");
       console.log(response.data);
-      alert("Two Factor Authentication has been enabled! Next time you try to login it will be an option.")
+
+
+      { newLanguage == 'ENG' && alert("Two Factor Authentication has been enabled! Next time you try to login it will be an option.") }
+      { newLanguage == 'BG' && alert("Двуфакторното удостоверяване е включено. При следващото влизане ще бъде опция.") }
       toggleFaEventForm();
       const newRequest = {
         "username": user,
@@ -336,23 +404,40 @@ const UserSettingsPageComponent = () => {
           <button className="btn-close-fa-event-form btn btn-danger" onClick={(e) => closeFaEventForm(e)}>x</button>
           <h1 className='text-center mb-2 text-light font-weight-bold'>
             <BsShieldLockFill size={100} className='mr-3' />
-            Setup Two-Factor Authentication</h1>
+            {newLanguage == 'ENG' && 'Setup Two-Factor Authentication'}
+            {newLanguage == 'BG' && 'Двуфакторно удостоверяване'}
+          </h1>
           <ul className='sd-body text-start mb-5'>
             <li className='sd-link text-start mb-2'>
-              Step 1: Get the Microsoft Authenticator app from the App Store.
+              {newLanguage == 'ENG' && 'Step 1: Get the Microsoft Authenticator app from the App Store.'}
+              {newLanguage == 'BG' && 'Стъпка 1: Инсталиране на приложението Microsoft Authenticator от App Store.'}
             </li>
             <li className='sd-link text-start mb-3 mt-2'>
-              Step 2: In the app select <b>Set up account</b>.
+              {newLanguage == 'ENG' && 'Step 2: In the app select'}
+              {newLanguage == 'BG' && 'Стъпка 2: В приложението изберете'}
+              <b>
+                {newLanguage == 'ENG' && ' Set up account'}
+                {newLanguage == 'BG' && ' Настройка на акаунт'}
+              </b>.
             </li>
             <li className='sd-link text-start mb-3'>
-              Step 3: Choose <b>Scan qrcode</b>.
+              {newLanguage == 'ENG' && 'Step 3: Choose'}
+              {newLanguage == 'BG' && 'Стъпка 3: Изберете'}
+              <b>
+                {newLanguage == 'ENG' && ' Scan qrcode'}
+                {newLanguage == 'BG' && ' Сканиране на QR код'}
+              </b>.
             </li>
             <li className='sd-link text-start mb-3'>
-              Step 4: Scan the code below for the setup!
+              {newLanguage == 'ENG' && 'Step 4: Scan the code below for the setup!'}
+              {newLanguage == 'BG' && 'Стъпка 4: Сканирай кода отдолу за настройването!'}
             </li>
             <li>
               <img src={qrCode} width={190} height={190} alt='Responsive image' className='img-fluid qrImage' />
-              <h5 className='text-end'>Enter the verification code from your Authenticator app! </h5>
+              <h5 className='text-end'>
+                {newLanguage == 'ENG' && 'Enter the verification code from your Authenticator app! '}
+                {newLanguage == 'BG' && 'Въведете кода от вашето Authenticator приложение!'}
+              </h5>
               <div className="custom-form">
                 <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit1} onChange={(e) => setDigit1(e.target.value)} />
                 <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit2} onChange={(e) => setDigit2(e.target.value)} />
@@ -361,7 +446,10 @@ const UserSettingsPageComponent = () => {
                 <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit5} onChange={(e) => setDigit5(e.target.value)} />
                 <input className="mr-2 mb-5" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit6} onChange={(e) => setDigit6(e.target.value)} />
                 <br />
-                <button class="btn mt-3 btn-primary btn-embossed" onClick={(e) => { verifySecret(e) }}>Verify</button>
+                <button class="btn mt-3 btn-primary btn-embossed" onClick={(e) => { verifySecret(e) }}>
+                  {newLanguage == 'ENG' && 'Verify'}
+                  {newLanguage == 'BG' && 'Верифицирай'}
+                </button>
               </div>
             </li>
           </ul>
@@ -393,7 +481,9 @@ const UserSettingsPageComponent = () => {
       "enabled": false
     }
     enableTwoFA(request, token).then((response) => {
-      alert("Two Factor Authentication has been disabled successfully!");
+      ;
+      { newLanguage == 'ENG' && alert("Two Factor Authentication has been disabled successfully!") }
+      { newLanguage == 'BG' && alert("Двуфакторното удостоверяване е изключено!") }
     }).catch((error) => {
       console.log(error.response.data);
     });
@@ -405,15 +495,15 @@ const UserSettingsPageComponent = () => {
     }
     enableOneTimePass(request, token).then((response) => {
       if (response.data.enabled == true) {
-        alert("One Time pass code login has been enabled! Next time you try to login it will be an option.")
+        { newLanguage == 'ENG' && alert("One Time pass code login has been enabled! Next time you try to login it will be an option.") }
+        { newLanguage == 'BG' && alert("Удостоверяването с еднократно парола е включено. При следващото влизане ще бъде опция.") }
       } else {
-        alert("One Time pass code login has been disabled!")
+        { newLanguage == 'ENG' && alert("One Time pass code login has been disabled!") }
+        { newLanguage == 'BG' && alert("Удостоверяването с еднократно парола е изключено!") }
       }
-
     }).catch((error) => {
       console.log(error.response.data);
     });
-
   }
 
   const checkIfEventStillContinues = (event, endDate) => {
@@ -446,35 +536,46 @@ const UserSettingsPageComponent = () => {
     return <Carousel.Item key={idx} className='carousel-new-item-2'>
       <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} >
         <MdEventAvailable size={30} />
-        <h5>Event: {event.name}</h5>
-        <small>Event type: {event.eventType}</small>
+        <h5>{newLanguage == 'ENG' && "Event"}
+          {newLanguage == 'BG' && "Събитие"}: {event.name}</h5>
+        <small>{newLanguage == 'ENG' && "Event Type"}
+          {newLanguage == 'BG' && "Тип на събитие"}: {event.eventType}</small>
         <br />
-        <small class="mb-1 mt-2">Description: {event.description}</small>
+        <small class="mb-1 mt-2">{newLanguage == 'ENG' && "Description"}
+          {newLanguage == 'BG' && "Описание"}: {event.description}</small>
         <br />
-        <small>Start: {newStartDate}</small>
+        <small>{newLanguage == 'ENG' && "Start"}
+          {newLanguage == 'BG' && "Начало"}: {newStartDate}</small>
         <br />
-        <small>End: {newEndDate}</small>
+        <small>{newLanguage == 'ENG' && "Еnd"}
+          {newLanguage == 'BG' && "Край"}: {newEndDate}</small>
         <br />
-        <small>Floor: {event.floorNumber}</small>
+        <small>{newLanguage == 'ENG' && "Floor"}
+          {newLanguage == 'BG' && "Етаж"}: {event.floorNumber}</small>
         <br />
-        <small>Room: {event.roomNumber}</small>
+        <small>{newLanguage == 'ENG' && "Room"}
+          {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
         <br />
-        {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
-          <small>Organizer: <a href='#' onClick={() => {
-            toggleResourceLinkAlert();
-            closeDisableEventAlert();
-          }} > {event.organizer}</a></small>}
+        {event.linkToPage == null ? <small>{newLanguage == 'ENG' && "Organizer"}
+          {newLanguage == 'BG' && "Организатор"}: {event.organizer}</small> :
+          <small>{newLanguage == 'ENG' && "Organizer"}
+            {newLanguage == 'BG' && "Организатор"}: <a href='#' onClick={(e) => {
+              toggleResourceLinkAlert(event);
+              closeDisableEventAlert();
+              e.stopPropagation();
+              setActiveIndex(idx);
+            }} > {event.organizer}</a></small>}
         <br />
         {!event.enabled && (event.disableEventReason == 'OTHER' ?
           <small>
             Cancelled due to <a href="#" onClick={(e) => {
-              toggleDisableEventAlert();
+              toggleDisableEventAlert(event);
               closeResourceLinkAlert();
+              e.stopPropagation();
+              setActiveIndex(idx);
             }}>{event.disableEventReason}</a></small>
           : <small>
             Cancelled due to {event.disableEventReason}</small>)}
-
-
       </button></Carousel.Item>;
   }
 
@@ -487,25 +588,37 @@ const UserSettingsPageComponent = () => {
               <Button className='btn-today-events btn-primary p-3' onClick={(e) => {
                 setUserEventsFiltered(true);
                 filterEvents(e, 'Today', newUserEvents);
-              }}>Today</Button>
+              }}>
+                {newLanguage == 'ENG' && 'Today'}
+                {newLanguage == 'BG' && 'Днес'}
+              </Button>
             </div>
             <div className='col' >
               <Button className='btn-this-week-events btn-primary p-3 mr-5' onClick={(e) => {
                 setUserEventsFiltered(true);
                 filterEvents(e, 'This week', newUserEvents);
-              }}>This week</Button>
+              }}>
+                {newLanguage == 'ENG' && 'This week'}
+                {newLanguage == 'BG' && 'Тази седмица'}
+              </Button>
             </div>
             <div className='col'>
               <Button className='btn-this-month-events btn-primary p-3' onClick={(e) => {
                 setUserEventsFiltered(true);
                 filterEvents(e, 'This month', newUserEvents);
-              }}>This month</Button>
+              }}>
+                {newLanguage == 'ENG' && 'This month'}
+                {newLanguage == 'BG' && 'Този месец'}
+              </Button>
             </div>
             <div className='col'>
-              <Button className='btn-all-events btn-primary p-3' onClick={(e) => {
+              <Button className='btn-all-events btn-primary ml-3 p-3' onClick={(e) => {
                 setUserEventsFiltered(true);
                 filterEvents(e, 'All', newUserEvents);
-              }}>All events</Button>
+              }}>
+                {newLanguage == 'ENG' && 'All events'}
+                {newLanguage == 'BG' && 'Всички събития'}
+              </Button>
             </div>
           </div>
           {userEventsFiltered == true ?
@@ -547,8 +660,6 @@ const UserSettingsPageComponent = () => {
     </div>)
   }
 
-
-
   const showCreatedEvent = (event, idx) => {
     let newStartDate = event.duration.startDate.replace('T', ' ');
     let newEndDate = event.duration.endDate.replace('T', ' ');
@@ -565,31 +676,44 @@ const UserSettingsPageComponent = () => {
         }
         }>
           <MdEventAvailable size={30} />
-          <h5>Event: {event.name}</h5>
-          <small>Event type: {event.eventType}</small>
+          <h5>{newLanguage == 'ENG' && "Event"}
+            {newLanguage == 'BG' && "Събитие"}: {event.name}</h5>
+          <small>{newLanguage == 'ENG' && "Event Type"}
+            {newLanguage == 'BG' && "Тип на събитие"}: {event.eventType}</small>
           <br />
-          <small class="mb-1 mt-2">Description: {event.description}</small>
+          <small class="mb-1 mt-2">{newLanguage == 'ENG' && "Description"}
+            {newLanguage == 'BG' && "Описание"}: {event.description}</small>
           <br />
-          <small>Start: {newStartDate}</small>
+          <small>{newLanguage == 'ENG' && "Start"}
+            {newLanguage == 'BG' && "Начало"}: {newStartDate}</small>
           <br />
-          <small>End: {newEndDate}</small>
+          <small>{newLanguage == 'ENG' && "Еnd"}
+            {newLanguage == 'BG' && "Край"}: {newEndDate}</small>
           <br />
-          <small>Floor: {event.floorNumber}</small>
+          <small>{newLanguage == 'ENG' && "Floor"}
+            {newLanguage == 'BG' && "Етаж"}: {event.floorNumber}</small>
           <br />
-          <small>Room: {event.roomNumber}</small>
+          <small>{newLanguage == 'ENG' && "Room"}
+            {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
           <br />
           {console.log(event)}
-          {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
-            <small>Organizer: <a href='#' onClick={() => {
-              toggleResourceLinkAlert();
-              closeDisableEventAlert();
-            }} > {event.organizer}</a></small>}
+          {event.linkToPage == null ? <small>{newLanguage == 'ENG' && "Organizer"}
+            {newLanguage == 'BG' && "Организатор"}: {event.organizer}</small> :
+            <small>{newLanguage == 'ENG' && "Organizer"}
+              {newLanguage == 'BG' && "Организатор"}: <a href='#' onClick={(e) => {
+                toggleResourceLinkAlert(event);
+                closeDisableEventAlert();
+                e.stopPropagation();
+                setActiveIndex(idx);
+              }} > {event.organizer}</a></small>}
           <br />
           {!event.enabled && (event.disableEventReason == 'OTHER' ?
             <small>
               Cancelled due to <a href="#" onClick={(e) => {
-                toggleDisableEventAlert();
+                toggleDisableEventAlert(event);
                 closeResourceLinkAlert();
+                e.stopPropagation();
+                setActiveIndex(idx);
               }}>{event.disableEventReason}</a></small>
             : <small>
               Cancelled due to {event.disableEventReason}</small>)}
@@ -633,22 +757,35 @@ const UserSettingsPageComponent = () => {
             <div className='col'>
               <Button className='btn-today-events btn-primary p-3' onClick={(e) => {
                 filterEvents(e, 'Today', organizerEvents);
-              }}>Today</Button>
+              }}>
+                {newLanguage == 'ENG' && 'Today'}
+                {newLanguage == 'BG' && 'Днес'}
+
+              </Button>
             </div>
             <div className='col' >
               <Button className='btn-this-week-events btn-primary p-3 mr-5' onClick={(e) => {
                 filterEvents(e, 'This week', organizerEvents);
-              }}>This week</Button>
+              }}>
+                {newLanguage == 'ENG' && 'This week'}
+                {newLanguage == 'BG' && 'Тази седмица'}
+              </Button>
             </div>
             <div className='col'>
               <Button className='btn-this-month-events btn-primary p-3' onClick={(e) => {
                 filterEvents(e, 'This month', organizerEvents);
-              }}>This month</Button>
+              }}>
+                {newLanguage == 'ENG' && 'This month'}
+                {newLanguage == 'BG' && 'Този месец'}
+              </Button>
             </div>
             <div className='col'>
-              <Button className='btn-all-events btn-primary p-3' onClick={(e) => {
+              <Button className='btn-all-events btn-primary ml-3 p-3' onClick={(e) => {
                 filterEvents(e, 'All', organizerEvents);
-              }}>All events</Button>
+              }}>
+                {newLanguage == 'ENG' && 'All events'}
+                {newLanguage == 'BG' && 'Всички събития'}
+              </Button>
             </div>
           </div>
 
@@ -668,7 +805,8 @@ const UserSettingsPageComponent = () => {
         toggleDisableEvent();
         ToggleSidebar();
       }} >
-        Disable this event ?
+        {newLanguage == 'ENG' && 'Disable this event?'}
+        {newLanguage == 'BG' && 'Прекрати това събитие?'}
       </button>
     )
   }
@@ -686,7 +824,9 @@ const UserSettingsPageComponent = () => {
     disableUserEvent(JSON.stringify(disableEventDTO), token).then((response) => {
       console.log("response");
       console.log(response);
-      alert("You have successfully disabled this event!")
+
+      { newLanguage == 'ENG' && alert("You have successfully disabled this event!") }
+      { newLanguage == 'BG' && alert("Успешно прекратихте това събитие!") }
       setDisableEvent(false);
       setDisableEventForm(false);
     }).catch((error) => {
@@ -719,7 +859,9 @@ const UserSettingsPageComponent = () => {
       <button className='btn-delete-event btn btn-outline-danger my-2 my-sm-0' onClick={(e) => {
         deleteChosenEvent(e);
       }} >
-        <MdAutoDelete size={30} /> Delete this event ?
+        <MdAutoDelete size={30} />
+        {newLanguage == 'ENG' && 'Delete this event?'}
+        {newLanguage == 'BG' && 'Изтрий това събитие?'}
       </button>
     )
   }
@@ -736,21 +878,26 @@ const UserSettingsPageComponent = () => {
         <button className="btn-close-authentication-types-event-form btn btn-danger" onClick={(e) => closeAuthenticationForm(e)}>x</button>
         <ul>
           <h1 className='text-light authentication-types-header text-center font-weight-bold'>
-            <BsShieldLockFill size={90} className='mr-3 mb-2' /> Authentication types
+            <BsShieldLockFill size={90} className='mr-3 mb-2' />
+            {newLanguage == 'ENG' && 'Authentication types'}
+            {newLanguage == 'BG' && 'Типове удостоверяване'}
           </h1>
           <li>
             <button className='btn btn-secondary btn-item-enable-two-factor text-light' onClick={() => { enableTwoFactorAuthentication() }}>
-              Enable Two-Factor Authentication
+              {newLanguage == 'ENG' && 'Enable Two-Factor Authentication'}
+              {newLanguage == 'BG' && 'Включи Двуфакторно удостоверяване'}
             </button>
           </li>
           <li>
             <button className='btn  btn-secondary btn-item-disable-two-factor text-light' onClick={() => { disableTwoFactorAuthentication() }}>
-              Disable Two-Factor Authentication
+              {newLanguage == 'ENG' && 'Disable Two-Factor Authentication'}
+              {newLanguage == 'BG' && 'Изключи Двуфакторно удостоверяване'}
             </button>
           </li>
           <li>
             <button className='btn  btn-secondary btn-item-one-time-pass-auth text-light' onClick={() => { enableOrDisableOneTimePass() }}>
-              One Time Pass Authentication
+              {newLanguage == 'ENG' && 'One Time Pass Authentication'}
+              {newLanguage == 'BG' && 'Удостоверяване с еднократна парола'}
             </button>
           </li>
         </ul>
@@ -779,7 +926,8 @@ const UserSettingsPageComponent = () => {
 
                   toggleAuthenticationForm()
                 }}>
-                  Authentication
+                  {newLanguage == 'ENG' && 'Authentication'}
+                  {newLanguage == 'BG' && 'Удостоверяване'}
                 </button>
               </li>
               <li>
@@ -793,7 +941,8 @@ const UserSettingsPageComponent = () => {
                   closeRewardMenu();
                   toggleDashboard()
                 }}>
-                  Dashboard
+                  {newLanguage == 'ENG' && 'Dashboard'}
+                  {newLanguage == 'BG' && 'Запазени събития'}
                 </button>
               </li>
               {role != 'USER' && <li>
@@ -807,7 +956,8 @@ const UserSettingsPageComponent = () => {
                   closeRewardMenu();
                   toggleCreatedEventsDashboard()
                 }}>
-                  Your created events
+                  {newLanguage == 'ENG' && 'Your created events'}
+                  {newLanguage == 'BG' && 'Твоите създадени събития'}
                 </button>
               </li>}
               {role != 'USER' && <li><button className='btn btn-item-add-link btn-success text-light' onClick={() => {
@@ -820,7 +970,8 @@ const UserSettingsPageComponent = () => {
                 closeFeedbackForm();
                 toggleAddResourcesForm();
               }}>
-                Add link to your resources
+                {newLanguage == 'ENG' && 'Add link to your resources'}
+                {newLanguage == 'BG' && 'Добави линк към ресурси'}
               </button></li>}
               {finishedEvents.length > 0 && <li>
                 <button className='btn btn-feedback-form btn-primary text-light' onClick={() => {
@@ -833,7 +984,8 @@ const UserSettingsPageComponent = () => {
                   closeFeedbackForm();
                   toggleFinishedEventsForm();
                 }}>
-                  Feedback
+                  {newLanguage == 'ENG' && 'Feedback'}
+                  {newLanguage == 'BG' && 'Обратна връзка'}
                 </button>
               </li>}
               {rewardsMenu == false && <li>
@@ -847,13 +999,18 @@ const UserSettingsPageComponent = () => {
                   closeFinishedEventsForm();
                   toggleRewardMenu();
                 }}>
-                  Rewards
+                  {newLanguage == 'ENG' && 'Rewards'}
+                  {newLanguage == 'BG' && 'Награди'}
                 </button>
               </li>}
               <li>
-                <button className='btn btn-item-home btn-primary text-light' onClick={() => { navigateToHome() }}>
-                  <FaHome size={35} className='mr-2 mb-1' />
-                  Home
+                <button className='btn btn-item-language-settings btn-primary text-light' onClick={() => {
+                  toggleLanguagePreferencesForm()
+                  closeUserPreferencesForm();
+                }}>
+                  <GrLanguage size={35} className='mr-2 mb-1' />
+                  {newLanguage == 'ENG' && 'Language'}
+                  {newLanguage == 'BG' && 'Език'}
                 </button>
               </li>
             </ul>
@@ -866,7 +1023,10 @@ const UserSettingsPageComponent = () => {
   const callDisableEventDescriptionForm = () => {
     return (<div class="form-floating text-start mb-3 mt-4 bg-light">
       <textarea class="form-control text-start h-100" id="floatingInput11" placeholder="Enter additional feedback" value={disableEventDescription} rows="5" onChange={(e) => setDisableEventDescription(e.target.value)} />
-      <label className="floatingInput11 text-secondary">Specify reason</label>
+      <label className="floatingInput11 text-secondary">
+        {newLanguage == 'ENG' && 'Specify reason'}
+        {newLanguage == 'BG' && 'Избери причина'}
+      </label>
     </div>)
   }
 
@@ -880,7 +1040,10 @@ const UserSettingsPageComponent = () => {
                 <li>
                   <Button className='mt-2 mb-4'>
                     <MdEventAvailable size={30} />
-                    <h5 className='mt-3 text-light'>{`Event chosen: ${chosenEvent.name}`}</h5>
+                    <h5 className='mt-3 text-light'>
+                      {newLanguage == 'ENG' && 'Event chosen: '}
+                      {newLanguage == 'BG' && 'Избрано събитие: '}
+                      {`${chosenEvent.name}`}</h5>
                   </Button>
                 </li>
                 <li>
@@ -888,13 +1051,28 @@ const UserSettingsPageComponent = () => {
                     <HiLightBulb size={60} />
                     <form className='mt-2'>
                       <div className='form-group text-start mb-2'>
-                        <h5 className='form-label text-light text-center'>Reason for disabling event</h5>
+                        <h5 className='form-label text-light text-center'>
+                          {newLanguage == 'ENG' && 'Reason for disabling event'}
+                          {newLanguage == 'BG' && 'Причина за прекратяване на събитие'}
+                        </h5>
                         <select type='text' placeholder='Enter Reason' name='disableEventReason' value={disableEventReason} className='form-control text-center'
                           onChange={(e) => { setDisableEventReason(e.target.value) }}>
-                          <option>Health problems</option>
-                          <option>Emergency</option>
-                          <option>Absence</option>
-                          <option>Other</option>
+                          <option>
+                            {newLanguage == 'ENG' && 'Health problems'}
+                            {newLanguage == 'BG' && 'Здравни проблеми'}
+                          </option>
+                          <option>
+                            {newLanguage == 'ENG' && 'Emergency'}
+                            {newLanguage == 'BG' && 'Спешност'}
+                          </option>
+                          <option>
+                            {newLanguage == 'ENG' && 'Absence'}
+                            {newLanguage == 'BG' && 'Отсъствие'}
+                          </option>
+                          <option>
+                            {newLanguage == 'ENG' && 'Other'}
+                            {newLanguage == 'BG' && 'Друго'}
+                          </option>
                         </select>
                       </div>
                       {disableEventReason == '' && setDisableEventReason('HEALTH_PROBLEMS')}
@@ -906,7 +1084,10 @@ const UserSettingsPageComponent = () => {
                   {disableEventReason == 'Other' && callDisableEventDescriptionForm()}
                 </li>
                 <li>
-                  <button className='btn btn-disable-events btn-outline-success my-2 my-sm-0  mt-2 sd-link-settings-button' onClick={(e) => disableNewEvent(e, disableEventReason.toUpperCase())}>Disable event!</button>
+                  <button className='btn btn-disable-events btn-outline-success my-2 my-sm-0  mt-2 sd-link-settings-button' onClick={(e) => disableNewEvent(e, disableEventReason.toUpperCase())}>
+                    {newLanguage == 'ENG' && 'Disable event!'}
+                    {newLanguage == 'BG' && 'Прекрати събитие'}
+                  </button>
                 </li>
               </ul>
 
@@ -957,19 +1138,25 @@ const UserSettingsPageComponent = () => {
       <div className='add-resources-link-div bg-success p-5'>
         <button className="btn-close-add-resources-link-form btn btn-danger" onClick={(e) => {
           closeAddResourcesLinkForm(e)
+          setLinkResources(Array(0).fill(''))
+          setResourceCounter(1);
         }}>x</button>
-        <h1 className='form-label text-light text-center mb-5 mr-5'> <FaUserPen className='mr-3 mb-2 text-white' size={80} /> Add Resources Link</h1>
+        <h1 className='form-label text-light text-center mb-5 mr-5'> <FaUserPen className='mr-3 mb-2 text-white' size={80} />
+          {newLanguage == 'ENG' && 'Add Resources Links'}
+          {newLanguage == 'BG' && 'Линкове към ресурс'}
+        </h1>
 
         <button className='w-100 p-2 mb-3 btn btn-primary text-light' onClick={() => {
           setResourceCounter(resourceCounter + 1);
           setLinkResources(Array(resourceCounter).fill(''))
         }}>
-          Add resource
+          {newLanguage == 'ENG' && 'Add resource'}
+          {newLanguage == 'BG' && 'Добави ресурс'}
         </button>
 
         <div className='form-group text-start mb-2'>
           {linkResources.map((input, c) => (
-            <input type='text' placeholder='Enter Resource Link' name='linkResources' value={input} className='w-100 form-control text-center mb-4'
+            <input type='text' placeholder={`${newLanguage == 'ENG' ? 'Enter Resource Link' : 'Въведи линк към ресурс'}`} name='linkResources' value={input} className='w-100 form-control text-center mb-4'
               onChange={(e) => {
                 inputChangedHandler(e, c)
               }} />
@@ -977,7 +1164,8 @@ const UserSettingsPageComponent = () => {
 
         </div>
         {resourceCounter > 1 && <button className='w-100 p-2 mt-1 btn btn-primary text-light' onClick={() => { addResourceLinkForUser() }}>
-          Submit
+          {newLanguage == 'ENG' && 'Submit!'}
+          {newLanguage == 'BG' && 'Запиши!'}
         </button>}
       </div>
     )
@@ -1056,8 +1244,14 @@ const UserSettingsPageComponent = () => {
           <form>
             <button className="btn-close-feedback-form btn btn-danger" onClick={(e) => setFeedbackForm(false)}>x</button>
 
-            <h1 className='text-center'><VscFeedback size={60} className='mr-4' /> Feedback for event "{chosenFinishedEvent.name}"</h1>
-            <p className='mb-2 text-secondary'>We hope you liked this event! Share your feedback with us! If you want to give additional feedback, you can scan the QR code below and add comments!</p>
+            <h1 className='text-center'><VscFeedback size={60} className='mr-4' />
+              {newLanguage == 'ENG' && 'Feedback for event '}
+              {newLanguage == 'BG' && 'Обратна връзка за събитие '}
+              "{chosenFinishedEvent.name}"</h1>
+            <p className='mb-2 text-secondary'>
+              {newLanguage == 'ENG' && 'We hope you liked this event! Share your feedback with us! If you want to give additional feedback, you can scan the QR code below and add comments!'}
+              {newLanguage == 'BG' && 'Надяваме се, че харесахте събитието! Споделете обратна връзка! Ако искате да дадете допълнителни коментари, може да сканирате QR кода по-долу!'}
+            </p>
             {console.log("Finished events")}
             {console.log(finishedEvents)}
             <div>
@@ -1067,13 +1261,22 @@ const UserSettingsPageComponent = () => {
               {chosenFinishedEvent.qrCodeQuestions != '' &&
                 <img src={qrCodeQuestions} className='qr-code-client-feedback-questions' />}
             </div>
-            <h3 className='form-label text-dark font-weight-bold mb-2'>Lecture Rating</h3>
+            <h3 className='form-label text-dark font-weight-bold mb-2'>
+              {newLanguage == 'ENG' && 'Lecture Rating'}
+              {newLanguage == 'BG' && 'Оценка на лекция'}
+            </h3>
             {callInputForm("lecture", lectureRating)}
-            <h3 className='form-label text-dark font-weight-bold mb-2 mt-3'>Lector Rating</h3>
+            <h3 className='form-label text-dark font-weight-bold mb-2 mt-3'>
+              {newLanguage == 'ENG' && 'Lector Rating'}
+              {newLanguage == 'BG' && 'Оценка на лектор'}
+            </h3>
             {callInputForm("lector", lectorRating)}
             <div class="form-floating text-start mb-3 mt-4">
               <textarea class="form-control text-start" id="floatingInput2" placeholder="Enter additional feedback" value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
-              <label className="floatingInput2 text-secondary">Share your thoughts</label>
+              <label className="floatingInput2 text-secondary">
+                {newLanguage == 'ENG' && 'Share your thoughts'}
+                {newLanguage == 'BG' && 'Сподели мнение'}
+              </label>
             </div>
             <div class="form-floating text-start mb-3 mt-4">
               <input type="text" class="form-control text-start" id="floatingInput" placeholder="Enter Name" value={username}
@@ -1081,10 +1284,16 @@ const UserSettingsPageComponent = () => {
                   setIsAnonymous(false)
                   setUsername(e.target.value)
                 }} />
-              <label className="floatingInput text-secondary">Enter Name (optional)</label>
+              <label className="floatingInput text-secondary">
+                {newLanguage == 'ENG' && 'Enter Name (optional)'}
+                {newLanguage == 'BG' && 'Въведи име (опционално)'}
+              </label>
             </div>
             {console.log(chosenEvent)};
-            <button className='btn-add-feedback btn text-center btn-primary mt-4 w-50' onClick={(event) => submitFeedback(event, chosenFinishedEvent.name)}>Submit!</button>
+            <button className='btn-add-feedback btn text-center btn-primary mt-4 w-50' onClick={(event) => submitFeedback(event, chosenFinishedEvent.name)}>
+              {newLanguage == 'ENG' && 'Submit!'}
+              {newLanguage == 'BG' && 'Запиши!'}
+            </button>
           </form>
         </div>
       </>
@@ -1095,8 +1304,15 @@ const UserSettingsPageComponent = () => {
     return (
       <div className='finished-events-div bg-light p-4'>
         <button className="btn-close-finished-events-form btn btn-danger" onClick={() => closeFinishedEventsForm()}>x</button>
-        <h1 className='text-center text-dark mt-2'>Finished events</h1>
-        <p className='mb-3 text-secondary text-center mt-3'>These events already ended. Choose event to give your feedback!</p>
+        <h1 className='text-center text-dark mt-2'>
+          {newLanguage == 'ENG' && 'Finished events'}
+          {newLanguage == 'BG' && 'Приключили събития'}
+        </h1>
+        <p className='mb-3 text-secondary text-center mt-3'>
+
+          {newLanguage == 'ENG' && 'These events already ended. Choose event to give your feedback!'}
+          {newLanguage == 'BG' && 'Тези събития вече приключиха. Избери събитие за обратна връзка!'}
+        </p>
         <ul>
 
           {finishedEvents.length > 0 && finishedEvents.map((finishedEvent, idx) => {
@@ -1104,7 +1320,23 @@ const UserSettingsPageComponent = () => {
               setChosenFinishedEvent(finishedEvent);
               toggleFeedbackForm();
               setFinishedEventsForm(false);
-            }}>Event "{finishedEvent.name}" (Floor {finishedEvent.floorNumber}, Room {finishedEvent.roomNumber}, Started: {finishedEvent.duration.startDate.replace('T', ' ')}, Ended: {finishedEvent.duration.endDate.replace('T', ' ')})</button></li>
+            }}>
+              {newLanguage == 'ENG' && 'Event '}
+              {newLanguage == 'BG' && 'Събитие '}
+              "{finishedEvent.name}" (
+              {newLanguage == 'ENG' && 'Floor '}
+              {newLanguage == 'BG' && 'Eтаж '}
+              {finishedEvent.floorNumber},
+              {newLanguage == 'ENG' && ' Room '}
+              {newLanguage == 'BG' && ' Стая '}
+              {finishedEvent.roomNumber},
+              {newLanguage == 'ENG' && ' Started'}
+              {newLanguage == 'BG' && ' Начало'}
+              : {finishedEvent.duration.startDate.replace('T', ' ')},
+              {newLanguage == 'ENG' && ' Ended'}
+              {newLanguage == 'BG' && ' Край'}
+              : {finishedEvent.duration.endDate.replace('T', ' ')})
+            </button></li>
           })}
         </ul>
       </div>)
@@ -1135,8 +1367,17 @@ const UserSettingsPageComponent = () => {
   const callRewardsMenu = () => {
     return (<div className='reward-menu-div bg-light p-4'>
       <button className="btn-close-rewards-menu btn btn-danger" onClick={() => setRewardsMenu(false)}>x</button>
-      <h1 className='text-center text-dark mt-2'><GiPresent size={80} className='mb-4 ml-3' /> Win Prizes</h1>
-      <p className='mb-3 text-secondary text-center mt-3'>Collect points from using our app and get rewards!<br /><strong> Current points: {currentUser.points}</strong></p>
+      <h1 className='text-center text-dark mt-2'><GiPresent size={80} className='mb-4 ml-3' />
+        {newLanguage == 'ENG' && 'Win Prizes'}
+        {newLanguage == 'BG' && 'Спечелете награди'}
+      </h1>
+      <p className='mb-3 text-secondary text-center mt-3'>
+        {newLanguage == 'ENG' && 'Collect points from using our app and get rewards!'}
+        {newLanguage == 'BG' && 'Събирайте точки от използването на приложението и вземете награди!'}
+        <br /><strong>
+          {newLanguage == 'ENG' && 'Current points:'}
+          {newLanguage == 'BG' && 'Настоящи точки:'}
+          {currentUser.points}</strong></p>
       <ul>
         <li><button className='btn btn-light btn-reward-item-1 text-light' onClick={() => {
           setRewardPath(keyHolderReward);
@@ -1144,11 +1385,19 @@ const UserSettingsPageComponent = () => {
         }
         }>
           <img src={keyHolderReward} width={200} height={200} alt='Responsive image' className='img-fluid text-center mb-4 mt-2' />
-          <p className='mb-3 text-secondary text-center mb-3'>Key holder <br /> <strong> points: {keyholderPoints}</strong> </p>
+          <p className='mb-3 text-secondary text-center mb-3'>
+            {newLanguage == 'ENG' && 'Key holder'}
+            {newLanguage == 'BG' && 'Ключодържател'}
+            <br /> <strong>
+              {newLanguage == 'ENG' && 'points'}
+              {newLanguage == 'BG' && 'точки'}: {keyholderPoints}</strong> </p>
         </button>
           <button className={`btn ${currentUser.points < keyholderPoints ? 'disabled' : ''}  btn-get-item-3 text-center btn-primary`} onClick={() => {
             getUserPrize();
-          }}>Take prize!</button>
+          }}>
+            {newLanguage == 'ENG' && 'Take prize!'}
+            {newLanguage == 'BG' && 'Вземи награда!'}
+          </button>
         </li>
         <li><button className={'btn  btn-light btn-reward-item-2 text-light'} onClick={() => {
           setRewardPath(hatReward);
@@ -1156,11 +1405,19 @@ const UserSettingsPageComponent = () => {
         }
         } >
           <img src={hatReward} width={200} height={200} alt='Responsive image' className='img-fluid text-center mb-4 mt-2' />
-          <p className='mb-3 text-secondary text-center  mb-3'>Hat <br /> <strong> points: {hatPoints}</strong> </p>
+          <p className='mb-3 text-secondary text-center  mb-3'>
+            {newLanguage == 'ENG' && 'Hat'}
+            {newLanguage == 'BG' && 'Шапка'}
+            <br /> <strong>
+              {newLanguage == 'ENG' && 'points'}
+              {newLanguage == 'BG' && 'точки'}: {hatPoints}</strong> </p>
         </button>
           <button className={`btn ${currentUser.points < hatPoints ? 'disabled' : ''} btn-get-item-2 text-center btn-primary`} onClick={() => {
             getUserPrize();
-          }}>Take prize!</button>
+          }}>
+            {newLanguage == 'ENG' && 'Take prize!'}
+            {newLanguage == 'BG' && 'Вземи награда!'}
+          </button>
         </li>
         <div>
           <li>
@@ -1170,16 +1427,24 @@ const UserSettingsPageComponent = () => {
             }
             }>
               <img src={tshirtReward} width={200} height={200} alt='Responsive image' className='img-fluid text-center mb-4 mt-2' />
-              <p className='mb-3 text-secondary text-center mb-3'>T shirt <br /> <strong> points: {tshirtPoints}</strong></p>
+              <p className='mb-3 text-secondary text-center mb-3'>
+                {newLanguage == 'ENG' && 'T-shirt'}
+                {newLanguage == 'BG' && 'Тениска'}
+                <br /> <strong>
+                  {newLanguage == 'ENG' && 'points'}
+                  {newLanguage == 'BG' && 'точки'}
+                  : {tshirtPoints}</strong></p>
             </button>
             <button className={`btn ${currentUser.points < tshirtPoints ? 'disabled' : ''} btn-get-item text-center btn-primary`} onClick={() => {
               getUserPrize();
-            }}>Take prize!</button>
+            }}>
+              {newLanguage == 'ENG' && 'Take prize!'}
+              {newLanguage == 'BG' && 'Вземи награда!'}
+            </button>
           </li>
         </div>
       </ul>
     </div>)
-
   }
 
   return (
@@ -1199,6 +1464,7 @@ const UserSettingsPageComponent = () => {
       {generateBiggerImageCheck && generateBiggerImage(rewardPath)}
       <OpenUserSettings />
       {userPreferenceForm && callUserPreferenceForm()}
+      {languagePreferenceForm && callLanguagePreferenceForm()}
       {disableEventAlert && showAlertWhenClickedDisabledReason()}
       {resourceLinkAlert && showAlertWhenClickedResourcesLink()}
     </>

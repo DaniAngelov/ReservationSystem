@@ -69,6 +69,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(userDto.getUsername());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
+        user.setLanguagePreferred("ENG");
         user.setRole(Role.USER);
         user.setPoints(1);
         user.setLastActive(LocalDateTime.now());
@@ -314,7 +315,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new CustomUserException("There is no such user!");
         }
-        addLinks(user.getLinkToPage(), addLinkToPageDTO.getLinkToPage());
+        user.setLinkToPage(addLinks(user.getLinkToPage(), addLinkToPageDTO.getLinkToPage()));
         userRepository.save(user);
     }
 
@@ -345,6 +346,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(changeUserLanguageDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        user.setLanguagePreferred(changeUserLanguageDTO.getLanguagePreferred());
+        userRepository.save(user);
+    }
+
+    @Override
     public void updatePassword(String password) throws CustomUserException {
         List<User> users = userRepository.findAll();
         User newUser = new User();
@@ -366,10 +377,17 @@ public class UserServiceImpl implements UserService {
         userRepository.save(newUser);
     }
 
-    private void addLinks(List<LinkToPage> userLinks, List<String> linkToPageDTOS) {
-        for (String link : linkToPageDTOS) {
-            userLinks.add(LinkToPage.builder().linkToPage(link).build());
+    private List<LinkToPage> addLinks(List<LinkToPage> userLinks, List<String> linkToPageDTOS) {
+        List<String> newUserLinks = new ArrayList<>();
+        for (LinkToPage linkToPage : userLinks) {
+            newUserLinks.add(linkToPage.getLinkToPage());
         }
+        for (String link : linkToPageDTOS) {
+            if (!newUserLinks.contains(link)) {
+                userLinks.add(LinkToPage.builder().linkToPage(link).build());
+            }
+        }
+        return userLinks;
     }
 
     private List<Event> addEvent(User user, List<Event> eventList, Event event) {

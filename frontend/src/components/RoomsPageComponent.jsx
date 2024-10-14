@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { releaseSpot, reserveSpot, getUsers, searchNewGuest } from '../services/UserService'
+import { releaseSpot, reserveSpot, getUsers, searchNewGuest, getUserByUsername } from '../services/UserService'
 import { addEvent, getEvents, searchNewEvent, getEventsForOrganizer } from '../services/FloorService';
 import { useNavigate, useParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
@@ -19,10 +19,10 @@ import { addDays } from '@progress/kendo-date-math';
 import { IoFilterCircle } from "react-icons/io5";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { IoSettingsSharp } from "react-icons/io5";
+import { FaHome } from 'react-icons/fa';
 
 
 const RoomsPageComponent = (parentRoom) => {
-  const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
   const [events, setEvents] = useState([]);
   const [isOpen, setIsopen] = useState(false);
 
@@ -83,6 +83,12 @@ const RoomsPageComponent = (parentRoom) => {
 
   const [users, setUsers] = useState([]);
 
+  const [disableEventAlert, setDisableEventAlert] = useState(false);
+
+  const [resourceLinkAlert, setResourceLinkAlert] = useState(false);
+
+  const [newLanguage, setNewLanguage] = useState('');
+
   const navigator = useNavigate();
 
 
@@ -115,7 +121,7 @@ const RoomsPageComponent = (parentRoom) => {
   }
 
   const toggleUpdateSeats = () => {
-    setUpdateSeatsToggle(!updateSeatsToggle);
+    setUpdateSeatsToggle(true);
   }
 
   const closeUpdateSeats = () => {
@@ -129,12 +135,23 @@ const RoomsPageComponent = (parentRoom) => {
 
 
   const ToggleSidebar = () => {
-    return isOpen === true ? setIsopen(false) : setIsopen(true);
+    return setIsopen(true);
   }
 
   const closeSidebar = () => {
     return setIsopen(false);
   }
+
+  useEffect(() => {
+    getUserByUsername(user, token).then((response) => {
+      console.log("response for current user")
+      console.log(response.data);
+      setNewLanguage(response.data.languagePreferred);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }, []);
 
   useEffect(() => {
     getUsers(token)
@@ -190,13 +207,35 @@ const RoomsPageComponent = (parentRoom) => {
     setFilterForm(false);
   }
 
+  const toggleResourceLinkAlert = (event) => {
+    setChosenEvent(event);
+    return setResourceLinkAlert(!resourceLinkAlert);
+  }
+
+  const closeResourceLinkAlert = () => {
+    return setResourceLinkAlert(false);
+  }
+
+  const toggleDisableEventAlert = (event) => {
+    setChosenEvent(event);
+    return setDisableEventAlert(!disableEventAlert);
+  }
+
+  const closeDisableEventAlert = () => {
+    return setDisableEventAlert(false);
+  }
+
   const OpenDatePicker = () => {
     return (<div className='form-group text-start mb-2'>
-      <label className='form-label text-light'>Event Start Time</label>
-      <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control'
+      <label className='form-label text-light'>
+        {newLanguage == 'ENG' && "Event Start Time"}
+        {newLanguage == 'BG' && "Начало на събитието"}
+      </label>
+      <input type='datetime-local' placeholder='Enter Event Start Time' name='startDate' value={startDate} className='form-control mb-1'
         onChange={(e) => setStartDate(e.target.value)}>
       </input>
-      <label className='form-label text-light'>Event End time</label>
+      <label className='form-label text-light mt-1'>{newLanguage == 'ENG' && "Event End Time"}
+        {newLanguage == 'BG' && "Край на събитието"}</label>
       <input type='datetime-local' placeholder='Enter Event End Time' name='endDate' value={endDate} className='form-control'
         onChange={(e) => setEndDate(e.target.value)}>
       </input>
@@ -214,7 +253,7 @@ const RoomsPageComponent = (parentRoom) => {
     e.preventDefault();
     const floorNumber = floorId;
     const roomNumber = roomId;
-    const faculty = parentRoom.faculty;
+    const faculty = localStorage.getItem('faculty');
 
     const eventDTO = {
       "name": name,
@@ -234,7 +273,8 @@ const RoomsPageComponent = (parentRoom) => {
 
     console.log(JSON.stringify(eventDTO));
     addEvent(JSON.stringify(eventDTO), token).then((response) => {
-      alert("Event added successfully!");
+      { newLanguage == 'ENG' && alert("Event added successfully!") }
+      { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
       console.log(response.data);
     }).catch((error) => {
       alert(error.response.data);
@@ -288,19 +328,26 @@ const RoomsPageComponent = (parentRoom) => {
           <button className="btn-close-add-event-form btn btn-danger" onClick={(e) => closeShowForm(e)}>x</button>
           <h1 className=' text-center text-light font-weight-bold'>
             <MdEventAvailable size={60} className='mr-3 mb-1' />
-            Add event</h1>
+            {newLanguage == 'ENG' && "Add event"}
+            {newLanguage == 'BG' && "Добави събитие"}
+          </h1>
           <form className='add-event-form'>
             <div className='row'>
               <div className='col'>
                 <div class="form-floating text-start mb-3 mt-4">
                   <input type="text" class="form-control text-start" id="floatingInput" placeholder="Enter Event Name" value={name}
                     onChange={(e) => setName(e.target.value)} />
-                  <label for="floatingInput text-light">Enter Name</label>
+                  <label for="floatingInput text-light">
+                    {newLanguage == 'ENG' && "Enter Name"}
+                    {newLanguage == 'BG' && "Въведи име"}
+                  </label>
                 </div>
 
                 <div class="form-floating text-start mb-3 mt-4">
                   <textarea class="form-control text-start" id="floatingInput2" placeholder="Enter Event Description" value={description} rows="3" onChange={(e) => setDescription(e.target.value)} />
-                  <label for="floatingInput2 text-light">Enter Description</label>
+                  <label for="floatingInput2 text-light">
+                    {newLanguage == 'ENG' && "Enter Description"}
+                    {newLanguage == 'BG' && "Въведи описание"}</label>
                 </div>
               </div>
               <div className='col'>
@@ -312,17 +359,26 @@ const RoomsPageComponent = (parentRoom) => {
                     <option>EXAM</option>
                     <option>SEMINAR</option>
                   </select>
-                  <label for="floatingInput4 text-light">Enter Event Type</label>
+                  <label for="floatingInput4 text-light">
+                    {newLanguage == 'ENG' && "Enter Event Type"}
+                    {newLanguage == 'BG' && "Тип на събитие!"}
+                  </label>
                 </div>
 
                 {eventType == '' && setEventType('LECTURE')}
                 <div class="form-floating text-start mb-3 mt-4 ml-3">
                   <input type="datetime-local" class="form-control text-start" id="floatingInput5" placeholder="Enter Event Start Time" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                  <label for="floatingInput5 text-light">Event Start Time</label>
+                  <label for="floatingInput5 text-light">
+                    {newLanguage == 'ENG' && "Event Start Time"}
+                    {newLanguage == 'BG' && "Начало на събитие"}
+                  </label>
                 </div>
                 <div class="form-floating text-start mb-3 mt-4 ml-3">
                   <input type="datetime-local" class="form-control text-start" id="floatingInput6" placeholder="Enter Event End time" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                  <label for="floatingInput6 text-light">Enter Event End time</label>
+                  <label for="floatingInput6 text-light">
+                    {newLanguage == 'ENG' && "Event End Time"}
+                    {newLanguage == 'BG' && "Край на събитие"}
+                  </label>
                 </div>
               </div>
               <div className='col'>
@@ -333,7 +389,10 @@ const RoomsPageComponent = (parentRoom) => {
                       findGuest(e, e.target.value);
                     }
                     } />
-                  <label for="floatingInput9 text-light ml-5 text-start">Search guest</label>
+                  <label for="floatingInput9 text-light ml-5 text-start">
+                    {newLanguage == 'ENG' && "Search guest"}
+                    {newLanguage == 'BG' && "Търси гост"}
+                  </label>
                   <ul class="dropdown-menu w-100">
                     {users.map((user, idx) => {
                       return <li key={idx}><a className="dropdown-item p-2" onClick={(e) => {
@@ -357,18 +416,30 @@ const RoomsPageComponent = (parentRoom) => {
                     toggleQrQuestionsInputEnable();
                     setQrCodeQuestions(URL.createObjectURL(e.clipboardData.files[0]));
                   }} />}
-                  {qrQuestionsInputEnable && <label for="floatingInput7 mt-3">Questions Code</label>}
-
+                  {qrQuestionsInputEnable && <label for="floatingInput7 mt-3">
+                    {newLanguage == 'ENG' && "Questions Code"}
+                    {newLanguage == 'BG' && "Код за въпроси"}
+                  </label>}
                 </div>
                 {qrCodeQuestions != '' &&
-                  <h5 className='text-light ml-4 mt-4'>Event Questions Code</h5>}
+                  <h5 className='text-light ml-4 mt-4'>
+                    {newLanguage == 'ENG' && "Event Questions Code"}
+                    {newLanguage == 'BG' && "Код за въпроси"}
+                  </h5>}
                 {qrCodeQuestions != '' && callTurningToData(qrCodeQuestions)}
                 {qrCodeQuestions != '' &&
                   <img src={qrCodeQuestions} className='qr-code-questions-img' />}
               </div>
-
+              {
+                console.log("PARENT ROOM FLOOR: " + floorId)}
+              {console.log("PARENT ROOM faculty: " + localStorage.getItem("faculty"))}
+              {console.log("PARENT ROOM Room id: " + roomId)
+              }
             </div>
-            <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate)}>Add event!</button>
+            <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate)}>
+              {newLanguage == 'ENG' && "Add event!"}
+              {newLanguage == 'BG' && "Добави събитие!"}
+            </button>
           </form>
         </div>
       </>)
@@ -415,10 +486,16 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         <div className='card-body-filter text-center bg-secondary p-5 mt-5'>
           <button className="btn-close-filter-event-form btn btn-danger" onClick={(e) => closeFilterForm(e)}>x</button>
-          <h1 className='text-center mb-2 text-light font-weight-bold mr-4'><IoFilterCircle className='mr-2 mb-2' size={70} />Filter events</h1>
+          <h3 className='text-center mb-2 text-light font-weight-bold mr-4'><IoFilterCircle className='mr-2 mb-2' size={70} />
+            {newLanguage == 'ENG' && "Filter events"}
+            {newLanguage == 'BG' && "Филтриране на събития"}
+          </h3>
           <form>
             <div className='form-group text-start mb-2'>
-              <label className='form-label text-light'>Event Type</label>
+              <label className='form-label text-light'>
+                {newLanguage == 'ENG' && "Event Type"}
+                {newLanguage == 'BG' && "Тип на събитие"}
+              </label>
               <select type='text' placeholder='Enter Event Type' name='eventType' value={eventType} className='form-control'
                 onChange={(e) => { setEventType(e.target.value) }}>
                 <option>LECTURE</option>
@@ -430,7 +507,10 @@ const RoomsPageComponent = (parentRoom) => {
             {eventType == '' && setEventType('LECTURE')}
 
             <div className='form-group text-start mb-2'>
-              <label className='form-label text-light'>Date</label>
+              <label className='form-label text-light'>
+                {newLanguage == 'ENG' && "Date"}
+                {newLanguage == 'BG' && "Дата"}
+              </label>
               <select type='text' placeholder='Enter Date' name='eventType' value={dateOption} className='form-control'
                 onChange={(e) => {
                   setDateOption(e.target.value)
@@ -445,16 +525,27 @@ const RoomsPageComponent = (parentRoom) => {
             </div>
             {dateOption == '' && setDateOption('Today')}
             {dateOption == 'Specify date' && <OpenDatePicker />}
-            <button className='btn btn-filter-events btn-success mt-2 p-3' onClick={(e) => filterNewEvents(e, eventType, dateOption, startDate, endDate)}>Filter events!</button>
+            <button className='btn btn-filter-events btn-success mt-2 p-3' onClick={(e) => filterNewEvents(e, eventType, dateOption, startDate, endDate)}>
+              {newLanguage == 'ENG' && "Filter events!"}
+              {newLanguage == 'BG' && "Филтрирай събития!"}
+            </button>
           </form>
         </div>
       </>)
   };
 
+  const getValueForReserveSpotLanguage = () => {
+    if (newLanguage == 'ENG') {
+      return "Reserve your spot now!";
+    } else {
+      return "Запази своето място!"
+    }
+  }
+
   const SidebarRightComponent = () => {
 
     const [backgroundColor, setBackgroundColor] = useState('#212529');
-    const [text, setText] = useState('Reserve your spot now!');
+    const [text, setText] = useState(getValueForReserveSpotLanguage());
 
     const [occupiesComputer, setOccupiesComputer] = useState(false);
     const [occupiesCharger, setOccupiesCharger] = useState(false);
@@ -494,7 +585,7 @@ const RoomsPageComponent = (parentRoom) => {
         "username": user,
         "seat": chosenSeat,
         "floorNumber": floorId,
-        "facultyName": parentRoom.faculty,
+        "facultyName": localStorage.getItem('faculty'),
         "eventName": chosenEvent.name,
         "roomNumber": roomId,
         "occupiesComputer": occupiesComputer,
@@ -508,7 +599,10 @@ const RoomsPageComponent = (parentRoom) => {
         console.log(response.data);
         console.log("status: " + response.status)
         setBackgroundColor('white');
-        setText('Spot reserved!')
+
+
+        { newLanguage == 'ENG' && setText('Spot reserved!') }
+        { newLanguage == 'BG' && setText('Място запазено!') }
         chosenSeat.seatTaken = true;
         console.log("background color:" + backgroundColor)
       }).catch((error) => {
@@ -522,7 +616,10 @@ const RoomsPageComponent = (parentRoom) => {
       if (roomType == 'COMPUTER') {
         return <div className='row'>
           <div className='computer-link-item col'>
-            <h2 className='text-light mt-2'>Computer</h2>
+            <h2 className='text-light mt-2'>
+              {newLanguage == 'ENG' && "Computer"}
+              {newLanguage == 'BG' && "Лаптоп"}
+            </h2>
             <Button onClick={() => {
               { toggleOccupiesComputer() }
               { updateComputerColor() }
@@ -531,7 +628,10 @@ const RoomsPageComponent = (parentRoom) => {
             </Button>
           </div>
           <div className='charger-link-item col'>
-            <h2 className='text-light mb-2 mt-2'>Charger</h2>
+            <h2 className='text-light mb-2 mt-2'>
+              {newLanguage == 'ENG' && "Charger"}
+              {newLanguage == 'BG' && "Зарядно"}
+            </h2>
             <Button onClick={() => {
               { toggleOccupiesCharger() }
               { updateChargerColor() }
@@ -545,7 +645,6 @@ const RoomsPageComponent = (parentRoom) => {
       }
     }
 
-
     return (
       <>
         <div className="container-fluid mt-3">
@@ -554,28 +653,38 @@ const RoomsPageComponent = (parentRoom) => {
               <div>
                 <Button className='mt-2 mb-2'>
                   <MdEventAvailable size={30} />
-                  <h5 className='mt-3 text-light'>{`Event: ${chosenEvent.name}`}</h5>
+                  <h5 className='mt-3 text-light'>
+                    {newLanguage == 'ENG' && "Event"}
+                    {newLanguage == 'BG' && "Събитие"}
+                    {`: ${chosenEvent.name}`}</h5>
                 </Button>
               </div>
-              <div className='col'>
+              <div className='col btn-chosen-event-room'>
                 <Button className='mt-2'>
                   <BsFillDoorOpenFill size={30} />
-                  <h5 className='mt-3 text-light'>{`Room ${chosenEvent.roomNumber}`}</h5>
+                  <h5 className='mt-3 text-light'>
+                    {` ${chosenEvent.roomNumber}`}</h5>
                 </Button>
               </div>
-              <div className='col'>
+              <div className='col btn-chosen-event-seat'>
                 <Button className='mt-2'>
                   <PiOfficeChairFill size={30} />
-                  <h5 className='mt-3 text-light'>{`Seat ${chosenSeat.seatNumber}`}</h5>
+                  <h5 className='mt-3 text-light'>
+                    {` ${chosenSeat.seatNumber}`}</h5>
                 </Button>
               </div>
 
-              {console.log("room Type: " + parentRoom.room.roomType)};
-              {openComputerRoomSpecs(parentRoom.room.roomType)}
+              {console.log("CHOSEN EVENT BBBY:" + chosenEvent)}
+
+              {console.log("room Type: " + localStorage.getItem("roomType"))};
+              {openComputerRoomSpecs(localStorage.getItem("roomType"))}
               {console.log(chosenEvent)}
-              {chosenEvent.qrCodeQuestions != '' &&
-                <h5 className='text-light header-qr-code-client-image'>Have any questions or want to vote before event? Scan the QR code below!</h5>}
-              {chosenEvent.qrCodeQuestions != '' &&
+              {chosenEvent.qrCodeQuestions != '' && chosenEvent.qrCodeQuestions != null &&
+                <h5 className='text-light header-qr-code-client-image'>
+                  {newLanguage == 'ENG' && "Have any questions or want to vote before event? Scan the QR code below!"}
+                  {newLanguage == 'BG' && "Имате въпроси или искате да гласувате? Сканирайте QR кода по-долу!"}
+                </h5>}
+              {chosenEvent.qrCodeQuestions != '' && chosenEvent.qrCodeQuestions != null &&
                 <img src={chosenEvent.qrCodeQuestions} className='qr-code-client-image' />}
 
               <li><button className="btn btn-custom-reserve-spot btn-outline-light my-2 my-sm-0 sd-link" style={{ backgroundColor: backgroundColor, content: text }} onClick={takeSpot} >{text}</button></li>
@@ -593,11 +702,14 @@ const RoomsPageComponent = (parentRoom) => {
   const SidebarLeftComponent = () => {
 
     const showEventIfEnabled = (event) => {
-      setEvent(event)
+      setEvent(event);
+      closeSidebar();
       closeShowForm();
       closeFilterForm()
       closeReleaseSeats();
       closeUserPreferencesForm();
+      closeDisableEventAlert();
+      closeResourceLinkAlert();
       closeSeatTakenEventForm();
       toggleUpdateSeats();
     }
@@ -613,20 +725,53 @@ const RoomsPageComponent = (parentRoom) => {
           event.enabled == true && showEventIfEnabled(event)
         }}>
           <MdEventAvailable size={30} />
-          <h5>Event: {event.name}</h5>
-          <small>Event type: {event.eventType}</small>
+          <h5> {newLanguage == 'ENG' && "Event"}
+            {newLanguage == 'BG' && "Събитие"}: {event.name}</h5>
+          <small> {newLanguage == 'ENG' && "Event Type"}
+            {newLanguage == 'BG' && "Тип на събитие"}: {event.eventType}</small>
           <br />
-          <small class="mb-1 mt-2">Description: {event.description}</small>
+          <small class="mb-1 mt-2"> {newLanguage == 'ENG' && "Description"}
+            {newLanguage == 'BG' && "Описание"}: {event.description}</small>
           <br />
-          <small>Start: {newStartDate}</small>
+          <small> {newLanguage == 'ENG' && "Start"}
+            {newLanguage == 'BG' && "Начало"}: {newStartDate}</small>
           <br />
-          <small>End: {newEndDate}</small>
+          <small>
+            {newLanguage == 'ENG' && "Еnd"}
+            {newLanguage == 'BG' && "Край"}
+            : {newEndDate}</small>
           <br />
-          {event.linkToPage == null ? <small>Organizer: {event.organizer}</small> :
-            <small>Organizer: <a href={`${event.linkToPage}`} onClick={(e) => e.stopPropagation()} > {event.organizer}</a></small>}
+          <small>{newLanguage == 'ENG' && "Floor"}
+            {newLanguage == 'BG' && "Етаж"}: {event.floorNumber}</small>
           <br />
-          {!event.enabled && <small>
-            Cancelled due to {event.disableEventReason}</small>}
+          <small>{newLanguage == 'ENG' && "Room"}
+            {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
+          <br />
+          {event.linkToPage == null ? <small>
+            {newLanguage == 'ENG' && "Organizer"}
+            {newLanguage == 'BG' && "Организатор"}
+            : {event.organizer}</small> :
+            <small>
+              {newLanguage == 'ENG' && "Organizer"}
+              {newLanguage == 'BG' && "Организатор"}
+              : <a href='#' onClick={(e) => {
+                e.stopPropagation()
+                toggleResourceLinkAlert(event);
+                closeUserPreferencesForm();
+                closeDisableEventAlert();
+              }
+              } > {event.organizer}</a></small>}
+          <br />
+          {!event.enabled && (event.disableEventReason == 'OTHER' ?
+            <small>
+              Cancelled due to <a href="#" onClick={(e) => {
+                toggleDisableEventAlert(event);
+                closeResourceLinkAlert();
+                closeUserPreferencesForm();
+                e.stopPropagation();
+              }}>{event.disableEventReason}</a></small>
+            : <small>
+              Cancelled due to {event.disableEventReason}</small>)}
 
         </button></Carousel.Item>;
 
@@ -651,32 +796,35 @@ const RoomsPageComponent = (parentRoom) => {
                     closeReleaseSeats();
                     closeUserPreferencesForm();
                     closeSeatTakenEventForm();
+                    closeDisableEventAlert();
+                    closeResourceLinkAlert();
                     toggleShowForm()
                   }}>
-                  Add event
+                  {newLanguage == 'ENG' && "Add event"}
+                  {newLanguage == 'BG' && "Добави събитие"}
                 </button>}
                 <button className="btn btn-events-filter btn-danger 
                                    text-light p-2 w-75 text-center mt-2" onClick={() => {
                     closeShowForm()
                     closeSidebar();
                     closeUpdateSeats();
+                    closeDisableEventAlert();
+                    closeResourceLinkAlert();
                     closeReleaseSeats();
                     closeUserPreferencesForm();
                     closeSeatTakenEventForm();
                     updateFilterForm()
                   }}>
-                  Filter events
+                  {newLanguage == 'ENG' && "Filter events"}
+                  {newLanguage == 'BG' && "Филтрирай събития"}
                 </button>
-
-                <Carousel size={150} width={150} height={200} className='p-5 mt-5' defaultActiveIndex={activeIndex}>
+                <Carousel size={150} width={150} height={200} className='carousel-body p-5 mt-5' defaultActiveIndex={activeIndex}>
                   {filteredEvents.map((event, idx) => {
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
                       return showEvent(event, idx);
                     }
                   })}
-
                 </Carousel>
-
               </div>
             </div>
           </div>
@@ -693,15 +841,19 @@ const RoomsPageComponent = (parentRoom) => {
       setChosenEvent(eventName);
       console.log("THIS SEAT:") + seat;
       if (!seat.seatTaken) {
-        ToggleSidebar()
+        ToggleSidebar();
       } else {
         if (seat.userThatOccupiedSeat == user) {
           closeSeatTakenEventForm();
           closeUserPreferencesForm();
+          closeDisableEventAlert();
+          closeResourceLinkAlert();
           ToggleReleaseSeats();
         } else {
           setChosenTakenSeat(seat);
           closeReleaseSeats();
+          closeDisableEventAlert();
+          closeResourceLinkAlert();
           closeUserPreferencesForm();
           ToggleSeatTakenEventForm();
         }
@@ -770,7 +922,8 @@ const RoomsPageComponent = (parentRoom) => {
 
     releaseSpot(JSON.stringify(userReleaseSpotDTO), token).then((response) => {
       ToggleReleaseSeats();
-      alert('Spot successfully released!');
+      { newLanguage == 'ENG' && alert('Spot successfully released!') }
+      { newLanguage == 'BG' && alert('Мястото е успешно освободено!') }
     }).catch((error) => {
       console.log(error);
       alert(error.response.data);
@@ -782,7 +935,8 @@ const RoomsPageComponent = (parentRoom) => {
   const releaseSeats = () => {
     return (
       <button className='btn-release btn btn-outline-primary my-2 my-sm-0' type='submit' onClick={(e) => { releaseUserSpot(e, chosenSeat, chosenEvent.name) }}>
-        Release your spot ?
+        {newLanguage == 'ENG' && "Release your spot ?"}
+        {newLanguage == 'BG' && "Освободи място ?"}
       </button>)
   }
 
@@ -790,11 +944,17 @@ const RoomsPageComponent = (parentRoom) => {
     navigator('/settings');
   }
 
+  const navigateToHomePage = () => {
+    navigator('/welcome');
+  }
+
   const OpenUserSettings = () => {
     return (<><div className='container'>
       <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
         closeReleaseSeats();
         closeSeatTakenEventForm();
+        closeResourceLinkAlert();
+        closeDisableEventAlert();
         toggleUserPreferencesForm();
       }
       }>
@@ -824,7 +984,7 @@ const RoomsPageComponent = (parentRoom) => {
 
   const findEvent = (e, searchField) => {
     e.preventDefault();
-    const facultyName = parentRoom.faculty;
+    const facultyName = localStorage.getItem('faculty');
     const userSearchEventDTO = {
       "searchField": searchField,
       "floorNumber": floorId,
@@ -848,9 +1008,11 @@ const RoomsPageComponent = (parentRoom) => {
         <nav class="custom-navbar navbar justify-content-between">
           <form class="custom-form-search-bar form-inline">
             <IoMdSearch size={35} className='text-secondary search-bar-icon' />
-            <input class="form-control mr-sm-2" type="search" placeholder="Search for event" aria-label="Search" value={searchField}
+            <input class="form-control mr-sm-2" type="search" placeholder={newLanguage == 'ENG' ? "Search for event" : "Търси събитие"} aria-label="Search" value={searchField}
               onChange={(e) => setSearchField(e.target.value)} />
-            <button class="btn btn-outline-success my-2 my-sm-0" onClick={(e) => findEvent(e, searchField)}>Search</button>
+            <button class="btn btn-outline-success my-2 my-sm-0" onClick={(e) => findEvent(e, searchField)}>
+              {newLanguage == 'ENG' && "Search"}
+              {newLanguage == 'BG' && "Търси"}</button>
           </form>
         </nav>
       </>
@@ -877,9 +1039,12 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         <form class="custom-form-search-bar-organizer form-inline">
           <IoMdSearch size={35} className='search-icon-organizer text-secondary search-bar-icon' />
-          <input class="input-organizer-events form-control mr-sm-2" type="search" placeholder="Events for lector" aria-label="Search" value={organizerSearchField}
+          <input class="input-organizer-events form-control mr-sm-2" type="search" placeholder={newLanguage == 'ENG' ? "Events for lector" : "     Събития за лектор"} aria-label="Search" value={organizerSearchField}
             onChange={(e) => setOrganizerSearchField(e.target.value)} />
-          <button class="btn-organizer-events btn btn-outline-success my-2 my-sm-0" onClick={(e) => findEventsForOrganizer(e, organizerSearchField)}>Search</button>
+          <button class="btn-organizer-events btn btn-outline-success my-2 my-sm-0" onClick={(e) => findEventsForOrganizer(e, organizerSearchField)}>
+            {newLanguage == 'ENG' && "Search"}
+            {newLanguage == 'BG' && "Търси"}
+          </button>
         </form>
       </>
     )
@@ -887,7 +1052,9 @@ const RoomsPageComponent = (parentRoom) => {
 
   const callSeatTakenEventForChosenUser = () => {
     return (<div className='chosen-seat-taken-for-user-div bg-primary'>
-      <Button className='bg-primary'>This seat is taken by
+      <Button className='bg-primary'>
+        {newLanguage == 'ENG' && "This seat is taken by"}
+        {newLanguage == 'BG' && "Това място е заето от"}
         <img src={userIcon} width={40} height={40} alt='Responsive image' className='img-fluid mr-2 ml-2' />
         {chosenSeat.userThatOccupiedSeat}!</Button>
     </div>)
@@ -901,7 +1068,8 @@ const RoomsPageComponent = (parentRoom) => {
   const callLogOut = () => {
     return (<div>
       <button className='btn btn-danger text-light' onClick={() => { logOut() }}>
-        Log out
+        {newLanguage == 'ENG' && "Log out"}
+        {newLanguage == 'BG' && "Логаут"}
       </button>
     </div>)
   }
@@ -911,18 +1079,52 @@ const RoomsPageComponent = (parentRoom) => {
       <button className='btn-navigate-user-settings-rooms btn btn-outline-success my-2 my-sm-0' onClick={() => {
         navigateToUserSettings();
       }}>
-        <IoSettingsSharp size={30} /> Settings
+        <IoSettingsSharp size={30} />
+        {newLanguage == 'ENG' && "Settings"}
+        {newLanguage == 'BG' && "Настройки"}
+
       </button>
       <button className='btn-user-logout-setting-rooms btn btn-outline-info my-2 my-sm-0' onClick={() => {
         logOut();
       }}>
-        <RiLogoutBoxLine size={30} /> Log out
+        <RiLogoutBoxLine size={30} />
+        {newLanguage == 'ENG' && "Log out"}
+        {newLanguage == 'BG' && "Логаут"}
+
       </button>
+      <button className='btn-user-home-setting-rooms btn btn-outline-primary my-2 my-sm-0' onClick={() => {
+        navigateToHomePage();
+      }}>
+        <div className='mr-2 mb-3'>
+          <FaHome size={30} />
+          {newLanguage == 'ENG' && "Home"}
+          {newLanguage == 'BG' && "Начало"}
+        </div>
+      </button>
+    </div>)
+  }
+
+  const showAlertWhenClickedDisabledReason = () => {
+    return (<div class="disable-event-alert-events alert alert-primary" role="alert">
+      Disable event description: "{chosenEvent.disableEventDescription}"
+    </div>)
+  }
+
+  const showAlertWhenClickedResourcesLink = () => {
+    return (<div class="resource-link-alert-events alert alert-success" role="alert">
+      Links:
+      <br />
+      {chosenEvent.linkToPage.map((link, idx) => {
+        return <div><a key={idx} href={link} title={link}>Link {idx + 1}</a><br /></div>
+      })}
     </div>)
   }
 
   return (
     <>
+      {console.log("ROOM TYPE HERE BBY:" + parentRoom.room.roomType)}
+      {parentRoom.faculty != '' && localStorage.setItem("faculty", parentRoom.faculty)};
+      {parentRoom.room.roomType != undefined && localStorage.setItem("roomType", parentRoom.room.roomType)};
       {SidebarLeftComponent()}
       <SidebarRightComponent />
       {updateSeatsToggle && <SeatComponent />}
@@ -935,6 +1137,8 @@ const RoomsPageComponent = (parentRoom) => {
       {callSearchBarForOrganizer()}
       {seatTakenEventForm && callSeatTakenEventForChosenUser()}
       {userPreferenceForm && callUserPreferenceForm()}
+      {disableEventAlert && showAlertWhenClickedDisabledReason()}
+      {resourceLinkAlert && showAlertWhenClickedResourcesLink()}
     </>
   )
 }

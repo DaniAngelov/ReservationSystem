@@ -144,4 +144,11 @@ public class UserController {
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
 
+    @PutMapping("/language")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    public ResponseEntity<?> changeLanguage(@RequestBody ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
+        userService.changeLanguage(changeUserLanguageDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }

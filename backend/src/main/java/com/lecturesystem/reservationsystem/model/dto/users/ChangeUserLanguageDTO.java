@@ -7,10 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserPointsDTO {
+public class ChangeUserLanguageDTO {
     private String username;
     private String languagePreferred;
-    private String password;
-    private String email;
-    private Integer points;
 }

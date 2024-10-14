@@ -38,3 +38,5 @@ export const getUserByUsername = (user, token) => axios.get(REST_API_BASE_URL + 
 });
 
 export const searchNewGuest = (request, token) => axios.put(REST_API_BASE_URL + '/search', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const updateNewLanguage = (request, token) => axios.put(REST_API_BASE_URL + '/language', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

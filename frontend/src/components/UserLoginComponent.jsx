@@ -36,37 +36,59 @@ const UserLoginComponent = () => {
   const [forgottenPass, setForgottenPass] = useState(false);
   const [oneTimePassFinalForm, setOneTimePassFinalForm] = useState(false);
   const [invalidLoginAlert, setInvalidLoginAlert] = useState(false);
+  const [invalidForgottenPasswordAlert, setInvalidForgottenPasswordAlert] = useState(false);
 
   const [showText, setShowText] = useState(false);
 
   const [oneTimePassEnabled, setOneTimePassEnabled] = useState(false);
   const [mfaEnabled, setMfaEnabled] = useState(false);
 
+  const [alertError, setAlertError] = useState('');
 
   const toggleInvalidLoginAlert = () => {
     return setInvalidLoginAlert(true);
+  }
+
+  const closeInvalidLoginAlert = () => {
+    return setInvalidLoginAlert(false);
+  }
+
+  const toggleInvalidForgottenPasswordAlert = () => {
+    return setInvalidForgottenPasswordAlert(true);
+  }
+
+  const closeInvalidForgottenPasswordAlert = () => {
+    return setInvalidForgottenPasswordAlert(false);
   }
 
   const toggleFaEventForm = () => {
     return setFaEventForm(!faEventForm);
   }
 
+  const closeFaEventForm = () => {
+    return setFaEventForm(false);
+  }
+
   const toggleOnePassForm = () => {
     return setOnePassForm(!onePassForm);
+  }
+
+  const closeOnePassForm = () => {
+    return setOnePassForm(false);
   }
 
   const toggleOneTimePassFinalForm = () => {
     return setOneTimePassFinalForm(!oneTimePassFinalForm);
   }
 
-  const closeOneTimePassFinalForm = () => {
+  const closeOneTimePassFinalForm = (e) => {
+    e.preventDefault();
     return setOneTimePassFinalForm(false);
   }
 
   const toggleMFaEventForm = () => {
     return setMfaEventForm(!mfaEventForm);
   }
-
 
   const toggleForgottenPass = (e) => {
     e.preventDefault();
@@ -90,19 +112,21 @@ const UserLoginComponent = () => {
 
   const toggleForgottenPassTrue = (e, newEmail) => {
     e.preventDefault();
-    setShowText(true);
     const userForgottenPassDTO = {
       email: newEmail
     }
 
     sendMessageToEmail(userForgottenPassDTO).then((response) => {
+      setShowText(true);
+      closeInvalidForgottenPasswordAlert();
       console.log(response);
+      setTimeout(() =>
+        updateForgottenPassState(), 2500);
     }).catch((error) => {
-      console.log(error);
+      setAlertError(error.response.data);
+      toggleInvalidForgottenPasswordAlert();
     })
 
-    setTimeout(() =>
-      updateForgottenPassState(), 2000);
     return forgottenPass;
   }
 
@@ -130,11 +154,11 @@ const UserLoginComponent = () => {
 
     return (
       <>
-        <div className=' custom-card-body-2 text-center bg-secondary p-5 mt-5 text-light'>
-
+        <div className='custom-card-body-mfa text-center bg-secondary p-5 mt-5 text-light'>
+        <button className="btn-close-mfa-event-pass-form btn btn-danger" onClick={(e) => closeFaEventForm(e)}>x</button>
           <h1 className='text-center mb-2'><BsShieldLockFill size={70} className='mb-2' /> Verify your account!</h1>
           <h5 className='text-center mt-4'>Enter the 6-digit verification code from your Authenticator app! </h5>
-          <div className="custom-form-2 mb-2">
+          <div className="custom-form-mfa mb-2">
             <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit1} onChange={(e) => setDigit1(e.target.value)} />
             <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit2} onChange={(e) => setDigit2(e.target.value)} />
             <input className="mr-2" type="text" maxLength="1" size="1" min="0" max="9" pattern="[0-9]{1}" value={digit3} onChange={(e) => setDigit3(e.target.value)} />
@@ -210,7 +234,7 @@ const UserLoginComponent = () => {
     if (!username.trim()) {
       validationErrors.username = 'Username is required!'
       setIsUsernameValid(false);
-    } 
+    }
 
     if (!password.trim()) {
       validationErrors.password = 'Password is required!'
@@ -242,7 +266,7 @@ const UserLoginComponent = () => {
         }
 
 
-      }).catch((error) => {
+      }).catch(() => {
         toggleInvalidLoginAlert();
       });
     }
@@ -258,7 +282,7 @@ const UserLoginComponent = () => {
       <>
         <div className='card-body-forgot-pass text-center text-black bg-light p-5'>
           <form>
-            <button className="btn-close-forgotten-pass-form btn btn-danger" onClick={(e) => closeMfaForm(e)}>x</button>
+            <button className="btn-close-forgotten-pass-form btn btn-danger" onClick={(e) => closeOnePassForm(e)}>x</button>
             <h1 className='mb-5'>Verify yourself</h1>
             <p className='mb-3 text-secondary'>Enter your email and we'll send you a code to verify yourself.</p>
 
@@ -284,10 +308,13 @@ const UserLoginComponent = () => {
       <>
         <div className='card-body-forgot-pass text-center text-black bg-light p-5'>
           <form>
-            <button className="btn-close-forgotten-pass-form btn btn-danger" onClick={(e) => closeForgottenPassForm(e)}>x</button>
+            <button className="btn-close-forgotten-pass-form btn btn-danger" onClick={(e) => {
+              closeForgottenPassForm(e)
+              closeInvalidForgottenPasswordAlert();
+            }
+            }>x</button>
             <h1 className='mb-5'>Reset your password</h1>
-            <p className='mb-3 text-secondary'>Enter your email and we'll send  send you a link to reset your password.</p>
-
+            <p className='mt-5 mb-3 text-secondary'>Enter your email and we'll send you a link to reset your password.</p>
           </form>
           <div class="mb-3 mt-5">
             <TbMailFilled size={30} className='mail-image' />
@@ -345,6 +372,18 @@ const UserLoginComponent = () => {
     </div>)
   }
 
+  const showAlertWhenEmailDoesNotExist = () => {
+    return (<div class="login-alert-forgotten-pass alert alert-danger text-danger text-center" role="alert">
+     
+      {alertError}
+      <button className="btn-close-forgotten-pass-form-alert btn btn-danger" onClick={(e) => {
+              closeInvalidForgottenPasswordAlert();
+            }
+            }>x</button>
+      
+    </div>)
+  }
+
   return (
     <>
       <div className='body-div-login-page'>
@@ -352,6 +391,7 @@ const UserLoginComponent = () => {
           <img src={logo} width={150} height={150} alt='Responsive image' className='custom-img-login-page img-fluid' />
         </div>
         {invalidLoginAlert && showAlertWhenClickedInvalidLogin()}
+        {invalidForgottenPasswordAlert && showAlertWhenEmailDoesNotExist()}
         <div className='card-body-login'>
           <form className='needs-validation login-custom-form p-3 bg-light' noValidate>
             <h1 className='text-center text-dark mb-4'>Sign in</h1>
