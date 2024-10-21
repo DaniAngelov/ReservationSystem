@@ -1,0 +1,180 @@
+{
+    "faculties": [
+        {
+            "name": "Faculty of Mathematics and Informatics",
+            "floors": [
+                {
+                    "floorNumber": 1,
+                    "rooms": [
+                        {
+                            "roomNumber": 11,
+                            "seatsNumber": 5,
+                            "roomType": "COMPUTER"
+                        }
+                    ]
+                },
+                {
+                    "floorNumber": 2,
+                    "rooms": [
+                        {
+                            "roomNumber": 22,
+                            "seatsNumber": 10,
+                            "roomType": "SEMINAR"
+                        },
+                        {
+                            "roomNumber": 33,
+                            "seatsNumber": 15,
+                            "roomType": "NORMAL"
+                        }
+                    ]
+                },
+                {
+                    "floorNumber": 3,
+                    "rooms": [
+                        {
+                            "roomNumber": 33,
+                            "seatsNumber": 10,
+                            "roomType": "COMPUTER"
+                        },
+                        {
+                            "roomNumber": 34,
+                            "seatsNumber": 5,
+                            "roomType": "NORMAL"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Faculty of Chemistry and Pharmacy",
+            "floors": [
+                {
+                    "floorNumber": 1,
+                    "rooms": [
+                        {
+                            "roomNumber": 19,
+                            "seatsNumber": 10,
+                            "roomType": "NORMAL"
+                        }
+                    ]
+                },
+                {
+                    "floorNumber": 2,
+                    "rooms": [
+                        {
+                            "roomNumber": 25,
+                            "seatsNumber": 10,
+                            "roomType": "COMPUTER"
+                        },
+                        {
+                            "roomNumber": 28,
+                            "seatsNumber": 10,
+                            "roomType": "COMPUTER"
+                        }
+                    ]
+                },
+                {
+                    "floorNumber": 3,
+                    "rooms": [
+                        {
+                            "roomNumber": 37,
+                            "seatsNumber": 10,
+                            "roomType": "SEMINAR"
+                        },
+                        {
+                            "roomNumber": 38,
+                            "seatsNumber": 10,
+                            "roomType": "SEMINAR"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "name": "event 1",
+            "description": "This is event 1!",
+            "eventType": "LECTURE",
+            "duration": {
+                "startDate": "2024-10-05T12:59",
+                "endDate": "2024-10-07T12:59"
+            },
+            "organizer": "admin",
+            "roomNumber": 11,
+            "floorNumber": 1,
+            "facultyName": "Faculty of Mathematics and Informatics",
+            "user": "admin"
+        },
+        {
+            "name": "event 2",
+            "description": "This is event 2!",
+            "eventType": "LECTURE",
+            "duration": {
+                "startDate": "2024-10-05T12:59",
+                "endDate": "2024-10-07T12:59"
+            },
+            "organizer": "admin",
+            "roomNumber": 22,
+            "floorNumber": 2,
+            "facultyName": "Faculty of Mathematics and Informatics",
+            "user": "admin"
+        },
+        {
+            "name": "event 3",
+            "description": "This is event 3!",
+            "eventType": "LECTURE",
+            "duration": {
+                "startDate": "2024-10-05T12:59",
+                "endDate": "2024-10-07T12:59"
+            },
+            "organizer": "admin",
+            "roomNumber": 33,
+            "floorNumber": 3,
+            "facultyName": "Faculty of Mathematics and Informatics",
+            "user": "admin"
+        },
+        {
+            "name": "event 11",
+            "description": "This is event 11!",
+            "eventType": "LECTURE",
+            "duration": {
+                "startDate": "2024-10-05T12:59",
+                "endDate": "2024-10-07T12:59"
+            },
+            "organizer": "admin",
+            "roomNumber": 19,
+            "floorNumber": 1,
+            "facultyName": "Faculty of Chemistry and Pharmacy",
+            "user": "admin"
+        },
+        {
+            "name": "event 22",
+            "description": "This is event 22!",
+            "eventType": "LECTURE",
+            "duration": {
+                "startDate": "2024-10-05T12:59",
+                "endDate": "2024-10-07T12:59"
+            },
+            "organizer": "admin",
+            "roomNumber": 25,
+            "floorNumber": 2,
+            "facultyName": "Faculty of Chemistry and Pharmacy",
+            "user": "admin"
+        },
+        {
+            "name": "event 33",
+            "description": "This is event 33!",
+            "eventType": "LECTURE",
+            "duration": {
+                "startDate": "2024-10-05T12:59",
+                "endDate": "2024-10-07T12:59"
+            },
+            "organizer": "admin",
+            "roomNumber": 37,
+            "floorNumber": 3,
+            "facultyName": "Faculty of Chemistry and Pharmacy",
+            "user": "admin"
+        }
+    ]
+}

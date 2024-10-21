@@ -1,0 +1,10 @@
+{
+  "name": "Rocket",
+  "seats": 5,
+  "eventName": "event 66",
+  "floorNumber": 4,
+  "facultyName": "Faculty of Mathematics and Informatics",
+  "roomNumber": 44,
+  "occupiesComputer": true,
+  "occupiesCharger": true
+}
