@@ -32,4 +32,6 @@ public interface EventService {
 
     void endEvent(EndEventDTO endEventDTO) throws CustomEventException;
 
+    Event getSpecificEventByName(String eventName) throws CustomEventException;
+
 }

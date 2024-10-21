@@ -1,8 +1,11 @@
 package com.lecturesystem.reservationsystem.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
+import com.lecturesystem.reservationsystem.model.dto.TeamDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
 import com.lecturesystem.reservationsystem.model.entity.User;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
@@ -15,7 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -28,6 +33,9 @@ public class UserController {
     private final UserService userService;
 
     private final ModelMapper modelMapper = new ModelMapper();
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public UserController(UserService userService, TwoFactorAuthenticationService twoFactorAuthenticationService, UserRepository userRepository) {
         this.userService = userService;
@@ -62,6 +70,22 @@ public class UserController {
     public ResponseEntity<?> reserveSpot(@RequestBody UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException {
         userService.reserveSpot(userReserveSpotDTO);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/reserve-team")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'LECTOR')")
+    public void reserveSpotTeam(@RequestBody TeamDTO teamDTO) throws CustomUserException, CustomEventException {
+        userService.reserveSpotTeam(teamDTO);
+        new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/reserve-team-json")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'LECTOR')")
+    public ResponseEntity<?> reserveSpotTeamJSON(@ModelAttribute MultipartFile file) throws CustomUserException, CustomEventException, IOException {
+        objectMapper.registerModule(new JavaTimeModule());
+        TeamDTO teamDTO = objectMapper.readValue(file.getInputStream(), TeamDTO.class);
+        reserveSpotTeam(teamDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/release")

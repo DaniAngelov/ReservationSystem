@@ -71,6 +71,9 @@ public class Event {
     private boolean enabled;
 
     @Column
+    private Integer availableSeats;
+
+    @Column
     @Lob
     private Blob qrCodeQuestions;
 

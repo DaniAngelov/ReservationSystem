@@ -8,7 +8,6 @@ import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
-import com.lecturesystem.reservationsystem.model.enums.DisableEventReason;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
 import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import com.lecturesystem.reservationsystem.repository.*;
@@ -76,6 +75,7 @@ public class EventServiceImpl implements EventService {
                         if (eventDTO.getQrCodeQuestions() != null) {
                             event.setQrCodeQuestions(new SerialBlob(eventDTO.getQrCodeQuestions().getBytes()));
                         }
+                        event.setAvailableSeats(room.getSeatsNumber());
                         event.setFeedbackForm(new ArrayList<>());
                         event.setRoom(room);
                         addGuests(event, eventDTO);
@@ -160,8 +160,7 @@ public class EventServiceImpl implements EventService {
         }
         if (event.getOrganizer().equals(user.getUsername())) {
             event.setDisableEventReason(disableEventDTO.getDisableReason());
-            if (disableEventDTO.getDisableReason().equals(DisableEventReason.OTHER) &&
-                    !disableEventDTO.getDisableEventDescription().equals("")) {
+            if (!disableEventDTO.getDisableEventDescription().equals("")) {
                 event.setDisableEventDescription(disableEventDTO.getDisableEventDescription());
             }
             event.setEnabled(false);
@@ -223,6 +222,15 @@ public class EventServiceImpl implements EventService {
         }
         event.setHasEnded(true);
         eventRepository.save(event);
+    }
+
+    @Override
+    public Event getSpecificEventByName(String eventName) throws CustomEventException {
+        Event foundEvent = eventRepository.findEventByName(eventName);
+        if (foundEvent == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        return foundEvent;
     }
 
     private void deleteEventForAllUsers(Event event) {

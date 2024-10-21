@@ -3,6 +3,7 @@ package com.lecturesystem.reservationsystem.service;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AddRoomImageDTO;
 import com.lecturesystem.reservationsystem.model.dto.FacultyDTO;
+import com.lecturesystem.reservationsystem.model.dto.export.ExportFacultyDTO;
 import com.lecturesystem.reservationsystem.model.entity.Faculty;
 
 import java.sql.SQLException;
@@ -14,4 +15,8 @@ public interface FacultyAndFloorService {
     void addRoomImage(AddRoomImageDTO addRoomImageDTO) throws SQLException;
 
     List<Faculty> getAllFloors();
+
+    List<ExportFacultyDTO> getWrapperDTO();
+
+    ;
 }

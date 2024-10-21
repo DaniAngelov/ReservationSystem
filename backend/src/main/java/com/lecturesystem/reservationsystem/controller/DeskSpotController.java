@@ -1,12 +1,15 @@
 package com.lecturesystem.reservationsystem.controller;
 
 
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.*;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
+import com.lecturesystem.reservationsystem.model.dto.export.ExportFacultyDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.util.FacultyWrapper;
@@ -15,13 +18,17 @@ import com.lecturesystem.reservationsystem.service.EventService;
 import com.lecturesystem.reservationsystem.service.FacultyAndFloorService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,23 +54,25 @@ public class DeskSpotController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException, SQLException {
+    public void addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException, SQLException {
         facultyAndFloorService.addFaculty(facultyDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping("/events")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
-    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException, CustomUserException {
+    public void addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException, CustomUserException {
         Event event = eventService.addEvent(eventDTO);
-        return new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
+        new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
     }
 
     @PutMapping("/events/search")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
-    public ResponseEntity<List<EventDTO>> searchEvent(@RequestBody SearchEventDTO searchEventDTO) {
+    public ResponseEntity<List<AddEventDTO>> searchEvent(@RequestBody SearchEventDTO searchEventDTO) throws CustomUserException, SQLException, IOException {
         List<Event> events = eventService.searchEvents(searchEventDTO);
-        List<EventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, EventDTO.class)).collect(toList());
+        List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(toList());
+        List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
+        addLinksForEvent(serializerEventDTOS);
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
@@ -96,6 +105,14 @@ public class DeskSpotController {
         List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
         addLinksForEvent(serializerEventDTOS);
         return new ResponseEntity<>(serializerEventDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/events/get-event")
+    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
+    public ResponseEntity<AddEventDTO> getSpecificEvent(@RequestParam String eventName) throws CustomEventException {
+        Event event = eventService.getSpecificEventByName(eventName);
+        AddEventDTO eventDTO = modelMapper.map(event, AddEventDTO.class);
+        return new ResponseEntity<>(eventDTO, HttpStatus.OK);
     }
 
     @GetMapping("/events/user")
@@ -161,6 +178,30 @@ public class DeskSpotController {
         return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
     }
 
+    @GetMapping(value = "/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ByteArrayResource> exportData() throws IOException {
+        objectMapper.registerModule(new JavaTimeModule());
+        List<ExportFacultyDTO> exportFacultyDTO = facultyAndFloorService.getWrapperDTO();
+        ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
+        File newFile = new File("C:\\Users\\jorda\\OneDrive\\Desktop\\test24.json");
+        writer.writeValue(newFile, exportFacultyDTO);
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                .filename(newFile.getName())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(contentDisposition);
+        Path path = Paths.get(newFile.getPath());
+        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(newFile.length())
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .body(resource);
+    }
+
     private void addLinksForEvent(List<AddEventDTO> addEventDTOS) throws CustomUserException {
         for (AddEventDTO addEventDTO : addEventDTOS) {
             User organizer = userRepository.getUserByUsername(addEventDTO.getOrganizer());
@@ -214,7 +255,6 @@ public class DeskSpotController {
                 }
             }
         }
-
     }
 
 }

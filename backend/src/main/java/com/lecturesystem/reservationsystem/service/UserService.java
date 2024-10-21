@@ -3,6 +3,7 @@ package com.lecturesystem.reservationsystem.service;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
+import com.lecturesystem.reservationsystem.model.dto.TeamDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
 import com.lecturesystem.reservationsystem.model.entity.User;
 import dev.samstevens.totp.exceptions.QrGenerationException;
@@ -16,6 +17,8 @@ public interface UserService {
     AuthenticationResponseDTO loginUser(UserLoginDTO userLoginDTO) throws CustomUserException;
 
     void reserveSpot(UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException;
+
+    void reserveSpotTeam(TeamDTO teamDTO) throws CustomEventException, CustomUserException;
 
     void releaseSpot(UserReleaseSpotDTO userReleaseSpotDTO) throws CustomUserException, CustomEventException;
 

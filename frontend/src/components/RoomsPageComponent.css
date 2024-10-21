@@ -1,20 +1,13 @@
-@import url(https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css);
-@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap");
-
+html,
 body {
-  background-color: #e0e3e8;
-  overflow-y: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  background: url('../assets/work-desk-schedule.jpg') no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover
 }
-
-/* ---Sidebar css */
-.text-primary {
-  color: #5a8dee !important;
-}
-
-.shadow-md {
-  box-shadow: 0px 5px 10px rgba(90, 116, 148, 0.3);
-}
-
 
 .event-headline {
   color: white;
@@ -22,22 +15,6 @@ body {
   font-weight: bold;
   text-align: center;
   box-shadow: 2px 2px 10px 10px rgba(155, 169, 166, 0.3);
-}
-
-.sidebar {
-  width: 280px;
-  min-height: 100vh;
-  box-shadow: 0px 4px 8px rgb(0 0 0 / 16%);
-  background-color: #212529;
-  position: fixed;
-  top: 0;
-  right: -20%;
-  z-index: 1;
-  transition: 0.5s;
-}
-
-.sidebar.active {
-  right: 0;
 }
 
 .sidebar-left {
@@ -55,6 +32,7 @@ body {
 .sidebar-left.active {
   right: -1.5%;
 }
+
 
 .btn-2 {
   z-index: 1;
@@ -82,7 +60,23 @@ body {
   padding: 15px;
 }
 
-.sidebar-overlay {
+.sidebar-right {
+  width: 280px;
+  min-height: 100vh;
+  box-shadow: 0px 4px 8px rgb(0 0 0 / 16%);
+  background-color: #212529;
+  position: fixed;
+  top: 0;
+  right: -20%;
+  z-index: 1;
+  transition: 0.5s;
+}
+
+.sidebar-right.active {
+  right: 0;
+}
+
+.sidebar-right-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -94,7 +88,7 @@ body {
   visibility: hidden;
 }
 
-.sidebar-overlay.active {
+.sidebar-right-overlay.active {
   opacity: 1;
   visibility: visible;
 }
@@ -237,7 +231,8 @@ body {
 
 .disable-event-alert-events {
   position: absolute;
-  width: 20%;
+  width: 15%;
+  height: 17vh;
   left: 20%;
   top: 60vh !important;
 }
@@ -258,8 +253,30 @@ body {
   margin: auto;
 }
 
+.button-events-event-name {
+  overflow-y: auto;
+}
+
 .carousel-item {
   margin-top: 13%;
+}
+
+.btn-chosen-event-seat {
+  width: 15vh !important;
+  height: 12vh !important;
+}
+
+.btn-chosen-event-room {
+  width: 15vh !important;
+  height: 12vh !important;
+}
+
+.btn-close-disable-event-alert-rooms {
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  width: 16%;
+  height: 30%;
 }
 
 .custom-navbar {
@@ -297,33 +314,37 @@ body {
 
 .qr-code-client-image {
   position: absolute;
-  width: 70% !important;
-  height: 25%;
+  width: 60% !important;
+  height: 22%;
   bottom: 10%;
-  right: 14%;
+  right: 18%;
 }
 
 .charger-link-item {
   position: absolute;
+  width: 50% !important;
   top: 35%;
-  right: -25%;
+  height: 10%;
+  right: 2%;
 }
 
 .computer-link-item {
   position: absolute;
+  width: 50% !important;
+  height: 10%;
   top: 35%;
-  right: 25%;
+  right: 55%;
 }
 
 .header-qr-code-client-image {
   position: absolute;
-  bottom: 35%;
+  bottom: 32%;
 }
 
 .chosen-seat-taken-for-user-div {
   position: absolute;
   bottom: 1%;
-  left: 22%;
+  left: 19%;
   border-radius: 10px;
   z-index: 1;
 }
@@ -366,9 +387,12 @@ body {
 }
 
 .lectors-div-guests {
+  z-index: 1;
   position: absolute;
-  top: -105%;
+  top: 5%;
   right: 30%;
+  height: 18%;
+  width: 30%;
 }
 
 .guests-list {
@@ -458,4 +482,27 @@ body {
 .btn-navigate-user-settings-rooms:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
+}
+
+.reserve-spot-event-sidebar-logo {
+  position: absolute;
+  width: 15% !important;
+  left: 85%;
+  top: 1%;
+}
+
+.btn-close-resources-link-alert-room{
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  width: 13%;
+  height: 20%;
+}
+
+.seats-div-custom{
+  position: absolute;
+  overflow-y: auto;
+  width: 55%;
+  top: 25%;
+  height: 60%;
 }

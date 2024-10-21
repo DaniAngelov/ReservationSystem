@@ -415,16 +415,12 @@ input {
 }
 
 .carousel-2 {
-  width: 300px;
-  height: 510px;
+  width: 330px;
+  height: 455px;
   position: absolute !important;
-  left: 45%;
-  top: 7%;
-}
-
-.carousel-new-item-2 {
-  width: 500px;
-
+  left: 44%;
+  top: 9%;
+  margin: auto;
 }
 
 .btn-disable {
@@ -462,6 +458,22 @@ input {
   top: 4%;
   width: 8%;
   height: 11%;
+}
+
+.btn-close-disable-event-alert{
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  width: 16%;
+  height: 30%;
+}
+
+.btn-close-resources-link-alert{
+  position: absolute;
+  right: 3%;
+  top: 3%;
+  width: 13%;
+  height: 20%;
 }
 
 .btn-close-fa-event-form {
@@ -528,6 +540,10 @@ input {
   right: 30%;
 }
 
+.header-user-icon{
+  overflow-y: auto;
+}
+
 .authentication-types-header {
   position: absolute;
   top: 8%;
@@ -542,7 +558,12 @@ input {
   left: 32%;
   border-radius: 20px;
   z-index: 1;
-  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
 }
 
 .carousel-user-settings {
@@ -756,7 +777,7 @@ li {
   top: 10%;
   width: 40%;
   height: 30%;
-  left: 37%;
+  left: 35%;
   z-index: 1;
 }
 
@@ -793,7 +814,8 @@ li {
 
 .disable-event-alert {
   position: absolute;
-  width: 20%;
+  width: 15%;
+  height: 17vh;
   left: 64%;
   top: 50vh !important;
 }
@@ -803,4 +825,17 @@ li {
   width: 20%;
   left: 64%;
   top: 44vh !important;
+}
+
+.button-event-name-disable-event{
+  overflow-y: auto;
+  width: 60%;
+  height: 20vh !important;
+  margin-left: 5%;
+}
+
+.disable-event-sidebar-logo{
+  position: absolute;
+  left: 81%;
+  top: 1%;
 }

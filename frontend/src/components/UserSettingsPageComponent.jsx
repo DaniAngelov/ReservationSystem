@@ -29,6 +29,7 @@ import { addDays } from '@progress/kendo-date-math';
 import axios from 'axios';
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { GrLanguage } from "react-icons/gr";
+import { VscThreeBars } from "react-icons/vsc";
 
 const UserSettingsPageComponent = () => {
 
@@ -133,7 +134,7 @@ const UserSettingsPageComponent = () => {
       console.log("error");
       console.log(error);
     })
-  }, []);
+  }, [])
 
   useEffect(() => {
     getEventsForUser(user, token)
@@ -156,13 +157,13 @@ const UserSettingsPageComponent = () => {
           } else {
             newEvents.push(event);
           }
-        });
+        })
         setNewUserEvents(newEvents);
         setFinishedEvents(newFinishedEvents);
       }).catch(error => {
         console.error(error);
       })
-  }, []);
+  }, [])
 
   useEffect(() => {
     getEventsForOrganizer(user, token).then((response) => {
@@ -174,10 +175,14 @@ const UserSettingsPageComponent = () => {
       console.log("error");
       console.log(error);
     })
-  }, []);
+  }, [])
 
   const ToggleSidebar = () => {
     return isOpen === true ? setIsopen(false) : setIsopen(true);
+  }
+
+  const closeSidebar = () => {
+    return setIsopen(false);
   }
 
   const toggleDisableEvent = () => {
@@ -185,9 +190,13 @@ const UserSettingsPageComponent = () => {
     return setDisableEvent(!disableEvent);
   }
 
+  const closeDisableEvent = () => {
+    return setDisableEvent(false);
+  }
+
   const toggleDisableEventAlert = (event) => {
     setChosenEvent(event);
-    return setDisableEventAlert(!disableEventAlert);
+    return setDisableEventAlert(true);
   }
 
   const closeDisableEventAlert = () => {
@@ -205,6 +214,10 @@ const UserSettingsPageComponent = () => {
 
   const toggleDeleteEvent = () => {
     return setDeleteEventEnabled(!deleteEventEnabled);
+  }
+
+  const closeDeleteEvent = () => {
+    return setDeleteEventEnabled(false);
   }
 
   const toggleDashboard = () => {
@@ -391,7 +404,7 @@ const UserSettingsPageComponent = () => {
       });
     }).catch((error) => {
       console.log(error.response.data);
-    });
+    })
   }
 
 
@@ -456,7 +469,7 @@ const UserSettingsPageComponent = () => {
 
         </div>
       </>)
-  };
+  }
 
 
   const enableTwoFactorAuthentication = () => {
@@ -471,7 +484,7 @@ const UserSettingsPageComponent = () => {
       toggleFaEventForm();
     }).catch((error) => {
       console.log(error.response.data);
-    });
+    })
 
   }
 
@@ -481,12 +494,11 @@ const UserSettingsPageComponent = () => {
       "enabled": false
     }
     enableTwoFA(request, token).then((response) => {
-      ;
       { newLanguage == 'ENG' && alert("Two Factor Authentication has been disabled successfully!") }
       { newLanguage == 'BG' && alert("Двуфакторното удостоверяване е изключено!") }
     }).catch((error) => {
       console.log(error.response.data);
-    });
+    })
   }
 
   const enableOrDisableOneTimePass = () => {
@@ -503,7 +515,7 @@ const UserSettingsPageComponent = () => {
       }
     }).catch((error) => {
       console.log(error.response.data);
-    });
+    })
   }
 
   const checkIfEventStillContinues = (event, endDate) => {
@@ -566,23 +578,22 @@ const UserSettingsPageComponent = () => {
               setActiveIndex(idx);
             }} > {event.organizer}</a></small>}
         <br />
-        {!event.enabled && (event.disableEventReason == 'OTHER' ?
+        {!event.enabled && (event.disableEventReason != '' &&
           <small>
-            Cancelled due to <a href="#" onClick={(e) => {
+            {newLanguage == 'ENG' && "Cancelled due to: "}
+            {newLanguage == 'BG' && "Прекратено поради: "} <a href="#" onClick={(e) => {
               toggleDisableEventAlert(event);
               closeResourceLinkAlert();
               e.stopPropagation();
               setActiveIndex(idx);
-            }}>{event.disableEventReason}</a></small>
-          : <small>
-            Cancelled due to {event.disableEventReason}</small>)}
+            }}>{event.disableEventReason}</a></small>)}
       </button></Carousel.Item>;
   }
 
   const ShowAllEventsForUser = () => {
     return (
       <>
-        <div className='p-4 mt-5'>
+        <div className='p-4'>
           <div className='row carousel-buttons'>
             <div className='col'>
               <Button className='btn-today-events btn-primary p-3' onClick={(e) => {
@@ -646,12 +657,15 @@ const UserSettingsPageComponent = () => {
 
   const showAlertWhenClickedDisabledReason = () => {
     return (<div class="disable-event-alert alert alert-primary" role="alert">
-      Disable event description: "{chosenEvent.disableEventDescription}"
+      <button className="btn-close-disable-event-alert btn btn-danger" onClick={(e) => closeDisableEventAlert(e)}>x</button>
+      {newLanguage == 'ENG' && "Disable event description"}
+      {newLanguage == 'BG' && "Описание"}: "{chosenEvent.disableEventDescription}"
     </div>)
   }
 
   const showAlertWhenClickedResourcesLink = () => {
     return (<div class="resource-link-alert alert alert-success" role="alert">
+      <button className="btn-close-resources-link-alert btn btn-danger" onClick={(e) => closeResourceLinkAlert(e)}>x</button>
       Links:
       <br />
       {chosenEvent.linkToPage.map((link, idx) => {
@@ -671,7 +685,6 @@ const UserSettingsPageComponent = () => {
       <div>
         <button className={`d-block custom-event-button-2 text-light ${event.enabled == true ? 'bg-success' : 'bg-secondary'} p-3 mt-5`} key={idx} onClick={(e) => {
           setActiveIndex(idx);
-          setChosenEvent(event)
           event.enabled == true && showEventIfEnabled(e, event);
         }
         }>
@@ -704,19 +717,16 @@ const UserSettingsPageComponent = () => {
                 toggleResourceLinkAlert(event);
                 closeDisableEventAlert();
                 e.stopPropagation();
-                setActiveIndex(idx);
               }} > {event.organizer}</a></small>}
           <br />
-          {!event.enabled && (event.disableEventReason == 'OTHER' ?
+          {!event.enabled && (event.disableEventReason != '' &&
             <small>
-              Cancelled due to <a href="#" onClick={(e) => {
+              {newLanguage == 'ENG' && "Cancelled due to: "}
+              {newLanguage == 'BG' && "Прекратено поради: "} <a href="#" onClick={(e) => {
                 toggleDisableEventAlert(event);
                 closeResourceLinkAlert();
                 e.stopPropagation();
-                setActiveIndex(idx);
-              }}>{event.disableEventReason}</a></small>
-            : <small>
-              Cancelled due to {event.disableEventReason}</small>)}
+              }}>{event.disableEventReason}</a></small>)}
 
         </button>
       </div></Carousel.Item>;
@@ -752,7 +762,7 @@ const UserSettingsPageComponent = () => {
   const ShowAllCreatedEventsForUser = () => {
     return (
       <>
-        <div className='p-4 mt-5'>
+        <div className='p-4'>
           <div className='row carousel-buttons'>
             <div className='col'>
               <Button className='btn-today-events btn-primary p-3' onClick={(e) => {
@@ -803,6 +813,18 @@ const UserSettingsPageComponent = () => {
     return (
       <button className='btn-disable btn btn-outline-info my-2 my-sm-0' onClick={() => {
         toggleDisableEvent();
+        closeFaEventForm();
+        closeFeedbackForm();
+        closeFinishedEventsForm();
+        closeAddResourcesLinkForm();
+        closeDisableEvent();
+        closeDeleteEvent();
+        closeRewardMenu();
+        closeDisableEventAlert();
+        closeResourceLinkAlert();
+        closeSidebar();
+        toggleAuthenticationForm();
+        closeAuthenticationForm();
         ToggleSidebar();
       }} >
         {newLanguage == 'ENG' && 'Disable this event?'}
@@ -810,7 +832,6 @@ const UserSettingsPageComponent = () => {
       </button>
     )
   }
-
 
   const disableNewEvent = (e, disableReason) => {
     e.preventDefault();
@@ -835,17 +856,21 @@ const UserSettingsPageComponent = () => {
     })
   }
 
+  const deleteEventFromList = (eventName) => {
+    const newFilteredEvents = filteredEvents.filter((event) => event.name != eventName);
+    setFilteredEvents(newFilteredEvents);
+  }
+
   const deleteChosenEvent = (e) => {
     e.preventDefault();
+    deleteEventFromList(chosenEvent.name);
     const deleteEventDTO = {
       "name": chosenEvent.name
     }
-    console.log("DELETE EVENT:");
-    console.log(JSON.stringify(deleteEventDTO));
     deleteEvent(JSON.stringify(deleteEventDTO), token).then((response) => {
-      console.log("response");
-      console.log(response);
-      alert("You have successfully deleted this event!")
+      { newLanguage == 'ENG' && alert("You have successfully delete this event!") }
+      { newLanguage == 'BG' && alert("Успешно изтрихте това събитие!") }
+      setActiveIndex(activeIndex - 1);
       setDisableEvent(false);
       setDeleteEventEnabled(false);
     }).catch((error) => {
@@ -908,7 +933,7 @@ const UserSettingsPageComponent = () => {
   const SidebarLeftComponent = () => {
     return (
       <>
-        <div className="container-fluid mt-3">
+        <div className="container-fluid">
           <div className="sidebar-left">
             <div className="sd-header">
               <img src={logo} width={135} height={135} alt='Responsive image' className='img-fluid logoImage-3' />
@@ -922,8 +947,12 @@ const UserSettingsPageComponent = () => {
                   closeFeedbackForm();
                   closeFinishedEventsForm();
                   closeAddResourcesLinkForm();
+                  closeDisableEventAlert();
                   closeRewardMenu();
-
+                  closeResourceLinkAlert();
+                  closeDisableEvent();
+                  closeDeleteEvent();
+                  closeSidebar()
                   toggleAuthenticationForm()
                 }}>
                   {newLanguage == 'ENG' && 'Authentication'}
@@ -936,9 +965,14 @@ const UserSettingsPageComponent = () => {
                   closeAuthenticationForm();
                   closeFaEventForm();
                   closeFeedbackForm();
+                  closeDisableEvent();
+                  closeDeleteEvent();
                   closeFinishedEventsForm();
                   closeAddResourcesLinkForm();
+                  closeDisableEventAlert();
                   closeRewardMenu();
+                  closeResourceLinkAlert();
+                  closeSidebar()
                   toggleDashboard()
                 }}>
                   {newLanguage == 'ENG' && 'Dashboard'}
@@ -951,9 +985,14 @@ const UserSettingsPageComponent = () => {
                   closeAuthenticationForm();
                   closeAddResourcesLinkForm();
                   closeFaEventForm();
+                  closeDisableEvent();
+                  closeDeleteEvent();
                   closeFeedbackForm();
                   closeFinishedEventsForm();
+                  closeDisableEventAlert();
                   closeRewardMenu();
+                  closeResourceLinkAlert();
+                  closeSidebar()
                   toggleCreatedEventsDashboard()
                 }}>
                   {newLanguage == 'ENG' && 'Your created events'}
@@ -965,9 +1004,14 @@ const UserSettingsPageComponent = () => {
                 closeCreatedEventsDashboard();
                 closeAuthenticationForm();
                 closeFaEventForm();
+                closeDisableEventAlert();
                 closeRewardMenu();
+                closeResourceLinkAlert();
+                closeDisableEvent();
+                closeDeleteEvent();
                 closeFinishedEventsForm();
                 closeFeedbackForm();
+                closeSidebar()
                 toggleAddResourcesForm();
               }}>
                 {newLanguage == 'ENG' && 'Add link to your resources'}
@@ -980,8 +1024,13 @@ const UserSettingsPageComponent = () => {
                   closeFaEventForm();
                   closeAddResourcesLinkForm();
                   closeDashboard();
+                  closeDisableEventAlert();
                   closeRewardMenu();
+                  closeResourceLinkAlert();
+                  closeDisableEvent();
+                  closeDeleteEvent();
                   closeFeedbackForm();
+                  closeSidebar()
                   toggleFinishedEventsForm();
                 }}>
                   {newLanguage == 'ENG' && 'Feedback'}
@@ -995,6 +1044,9 @@ const UserSettingsPageComponent = () => {
                   closeFaEventForm();
                   closeAddResourcesLinkForm();
                   closeDashboard();
+                  closeSidebar()
+                  closeDisableEvent();
+                  closeDeleteEvent();
                   closeFeedbackForm();
                   closeFinishedEventsForm();
                   toggleRewardMenu();
@@ -1024,8 +1076,8 @@ const UserSettingsPageComponent = () => {
     return (<div class="form-floating text-start mb-3 mt-4 bg-light">
       <textarea class="form-control text-start h-100" id="floatingInput11" placeholder="Enter additional feedback" value={disableEventDescription} rows="5" onChange={(e) => setDisableEventDescription(e.target.value)} />
       <label className="floatingInput11 text-secondary">
-        {newLanguage == 'ENG' && 'Specify reason'}
-        {newLanguage == 'BG' && 'Избери причина'}
+        {newLanguage == 'ENG' && 'Additional description'}
+        {newLanguage == 'BG' && 'Допълнително описание'}
       </label>
     </div>)
   }
@@ -1033,12 +1085,17 @@ const UserSettingsPageComponent = () => {
   const sidebarRightComponent = () => {
     return (
       <>
-        <div className="container-fluid mt-3">
+        <div className="container-fluid">
           <div className={`sidebar-settings-right ${isOpen == true ? 'active' : ''}`}>
             <div className="sd-body text-center">
+              <button className='disable-event-sidebar-logo btn btn-dark' onClick={() => {
+                closeSidebar();
+              }}>
+                <VscThreeBars size={20} className=' text-light' />
+              </button>
               <ul>
                 <li>
-                  <Button className='mt-2 mb-4'>
+                  <Button className='button-event-name-disable-event mt-2 mb-4'>
                     <MdEventAvailable size={30} />
                     <h5 className='mt-3 text-light'>
                       {newLanguage == 'ENG' && 'Event chosen: '}
@@ -1058,20 +1115,16 @@ const UserSettingsPageComponent = () => {
                         <select type='text' placeholder='Enter Reason' name='disableEventReason' value={disableEventReason} className='form-control text-center'
                           onChange={(e) => { setDisableEventReason(e.target.value) }}>
                           <option>
-                            {newLanguage == 'ENG' && 'Health problems'}
-                            {newLanguage == 'BG' && 'Здравни проблеми'}
+                            HEALTH_PROBLEMS
                           </option>
                           <option>
-                            {newLanguage == 'ENG' && 'Emergency'}
-                            {newLanguage == 'BG' && 'Спешност'}
+                            EMERGENCY
                           </option>
                           <option>
-                            {newLanguage == 'ENG' && 'Absence'}
-                            {newLanguage == 'BG' && 'Отсъствие'}
+                            ABSENCE
                           </option>
                           <option>
-                            {newLanguage == 'ENG' && 'Other'}
-                            {newLanguage == 'BG' && 'Друго'}
+                            OTHER
                           </option>
                         </select>
                       </div>
@@ -1081,7 +1134,7 @@ const UserSettingsPageComponent = () => {
                   </Button>
                 </li>
                 <li>
-                  {disableEventReason == 'Other' && callDisableEventDescriptionForm()}
+                  {callDisableEventDescriptionForm()}
                 </li>
                 <li>
                   <button className='btn btn-disable-events btn-outline-success my-2 my-sm-0  mt-2 sd-link-settings-button' onClick={(e) => disableNewEvent(e, disableEventReason.toUpperCase())}>
@@ -1131,7 +1184,7 @@ const UserSettingsPageComponent = () => {
       }
     });
     setLinkResources(inputsUpdated);
-  };
+  }
 
   const callAddResourcesNewForm = () => {
     return (

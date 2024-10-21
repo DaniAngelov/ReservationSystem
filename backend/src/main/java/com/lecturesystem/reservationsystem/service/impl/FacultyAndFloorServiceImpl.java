@@ -4,14 +4,17 @@ import com.lecturesystem.reservationsystem.model.dto.AddRoomImageDTO;
 import com.lecturesystem.reservationsystem.model.dto.FacultyDTO;
 import com.lecturesystem.reservationsystem.model.dto.FloorDTO;
 import com.lecturesystem.reservationsystem.model.dto.RoomDTO;
+import com.lecturesystem.reservationsystem.model.dto.export.ExportFacultyDTO;
 import com.lecturesystem.reservationsystem.model.entity.Faculty;
 import com.lecturesystem.reservationsystem.model.entity.Floor;
 import com.lecturesystem.reservationsystem.model.entity.Room;
+import com.lecturesystem.reservationsystem.repository.EventRepository;
 import com.lecturesystem.reservationsystem.repository.FacultyRepository;
 import com.lecturesystem.reservationsystem.repository.FloorRepository;
 import com.lecturesystem.reservationsystem.repository.RoomRepository;
 import com.lecturesystem.reservationsystem.service.FacultyAndFloorService;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -27,15 +30,20 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
     private final FloorRepository floorRepository;
     private final RoomRepository roomRepository;
 
+    private final EventRepository eventRepository;
+
     private final FacultyRepository facultyRepository;
+
+    private final ModelMapper modelMapper = new ModelMapper();
 
     @Override
     public void addFaculty(FacultyDTO facultyDTO) throws SQLException {
         Faculty facultyByName = facultyRepository.findFacultyByName(facultyDTO.getName());
-        Faculty faculty = new Faculty();
+
         List<Floor> newFloors = new ArrayList<>();
         List<FloorDTO> floorDTOs = facultyDTO.getFloors();
         if (facultyByName == null) {
+            Faculty faculty = new Faculty();
             faculty.setName(facultyDTO.getName());
             faculty.setFloors(addFloor(facultyDTO, newFloors, floorDTOs));
             facultyRepository.save(faculty);
@@ -43,8 +51,8 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
         }
         newFloors = facultyByName.getFloors();
 
-        faculty.setFloors(addFloor(facultyDTO, newFloors, floorDTOs));
-        facultyRepository.save(faculty);
+        facultyByName.setFloors(addFloor(facultyDTO, newFloors, floorDTOs));
+        facultyRepository.save(facultyByName);
     }
 
     @Override
@@ -64,6 +72,12 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
     @Override
     public List<Faculty> getAllFloors() {
         return sortValues(facultyRepository.findAll());
+    }
+
+    @Override
+    public List<ExportFacultyDTO> getWrapperDTO() {
+        List<Faculty> faculties = facultyRepository.findAll();
+        return faculties.stream().map(faculty -> modelMapper.map(faculty, ExportFacultyDTO.class)).toList();
     }
 
     private List<Floor> addFloor(FacultyDTO facultyDTO, List<Floor> newFloors, List<FloorDTO> floorDTOs) throws SQLException {

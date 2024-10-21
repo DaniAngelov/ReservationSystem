@@ -5,14 +5,12 @@ import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AuthenticationResponseDTO;
 import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.dto.TeamDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.*;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Role;
 import com.lecturesystem.reservationsystem.model.enums.RoomType;
-import com.lecturesystem.reservationsystem.repository.EventRepository;
-import com.lecturesystem.reservationsystem.repository.FacultyRepository;
-import com.lecturesystem.reservationsystem.repository.SeatRepository;
-import com.lecturesystem.reservationsystem.repository.UserRepository;
+import com.lecturesystem.reservationsystem.repository.*;
 import com.lecturesystem.reservationsystem.service.UserService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import jakarta.mail.MessagingException;
@@ -37,6 +35,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+
+    private final TeamRepository teamRepository;
     private final SeatRepository seatRepository;
     private final EventRepository eventRepository;
 
@@ -148,11 +148,56 @@ public class UserServiceImpl implements UserService {
         }
         chosenSeat.setSeatTaken(true);
         chosenSeat.setUserThatOccupiedSeat(user.getUsername());
+        event.setAvailableSeats(event.getRoom().getSeatsNumber() - 1);
         seatRepository.save(chosenSeat);
         user.setEvents(addEvent(user, user.getEvents(), event));
         user.setLastActive(LocalDateTime.now());
         user.setPoints(user.getPoints() + 1);
         userRepository.save(user);
+    }
+
+    @Override
+    public void reserveSpotTeam(TeamDTO teamDTO) throws CustomEventException, CustomUserException {
+        Team foundTeam = teamRepository.findTeamByName(teamDTO.getName());
+        if (foundTeam == null) {
+            Team newTeam = Team.builder().name(teamDTO.getName()).build();
+            teamRepository.save(newTeam);
+        }
+
+        Event event = eventRepository.findEventByName(teamDTO.getEventName());
+        if (event == null) {
+            throw new CustomEventException("There is no such event!");
+        }
+        Faculty faculty = facultyRepository.findFacultyByName(teamDTO.getFacultyName());
+        if (faculty == null) {
+            throw new CustomEventException("There is no such faculty!");
+        }
+        int seats = teamDTO.getSeats();
+        if (event.getAvailableSeats() < seats) {
+            throw new CustomEventException("There are not enough seats available!");
+        }
+        if (event.getRoom() == null) {
+            throw new CustomUserException("There is no such room!");
+        }
+        int seatsNumberCount = 0;
+        for (Seat seat : event.getSeats()) {
+            if (seatsNumberCount == seats) {
+                break;
+            }
+            if (!seat.isSeatTaken()) {
+                seatsNumberCount++;
+                if (event.getRoom().getRoomType().equals(RoomType.COMPUTER)) {
+                    seat.setOccupiesComputer(teamDTO.isOccupiesComputer());
+                    seat.setOccupiesCharger(teamDTO.isOccupiesCharger());
+                }
+                seat.setSeatTaken(true);
+                seat.setUserThatOccupiedSeat(teamDTO.getName());
+                seatRepository.save(seat);
+            }
+        }
+        event.setAvailableSeats(event.getAvailableSeats() - seats);
+        eventRepository.save(event);
+
     }
 
     @Override
@@ -185,6 +230,7 @@ public class UserServiceImpl implements UserService {
         }
         chosenSeat.setSeatTaken(false);
         chosenSeat.setUserThatOccupiedSeat("");
+        event.setAvailableSeats(event.getAvailableSeats() + 1);
         seatRepository.save(chosenSeat);
         user.getEvents().remove(event);
         user.setLastActive(LocalDateTime.now());

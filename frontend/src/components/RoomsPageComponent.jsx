@@ -20,6 +20,7 @@ import { IoFilterCircle } from "react-icons/io5";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { IoSettingsSharp } from "react-icons/io5";
 import { FaHome } from 'react-icons/fa';
+import { VscThreeBars } from "react-icons/vsc";
 
 
 const RoomsPageComponent = (parentRoom) => {
@@ -105,7 +106,7 @@ const RoomsPageComponent = (parentRoom) => {
   }
 
   const ToggleSeatTakenEventForm = () => {
-    return setSeatTakenEventForm(!seatTakenEventForm);
+    return setSeatTakenEventForm(true);
   }
 
   const closeSeatTakenEventForm = () => {
@@ -144,8 +145,6 @@ const RoomsPageComponent = (parentRoom) => {
 
   useEffect(() => {
     getUserByUsername(user, token).then((response) => {
-      console.log("response for current user")
-      console.log(response.data);
       setNewLanguage(response.data.languagePreferred);
     }).catch((error) => {
       console.log("error");
@@ -164,7 +163,7 @@ const RoomsPageComponent = (parentRoom) => {
         });
         setUsers(newUsers);
       }).catch(error => {
-        console.error(error);
+        console.error(error.response.message);
       })
   }, []);
 
@@ -270,16 +269,18 @@ const RoomsPageComponent = (parentRoom) => {
       "qrCodeQuestions": qrCodeQuestions,
       "guests": guestDTO
     }
-
     console.log(JSON.stringify(eventDTO));
     addEvent(JSON.stringify(eventDTO), token).then((response) => {
+      const newFilteredEvents = filteredEvents;
+      newFilteredEvents.push(response.data);
+      setFilteredEvents(newFilteredEvents);
       { newLanguage == 'ENG' && alert("Event added successfully!") }
       { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
-      console.log(response.data);
+      closeShowForm();
     }).catch((error) => {
       alert(error.response.data);
       console.log(error);
-    });
+    })
   }
 
   const callTurningToData = (qrCodeQuestions) => {
@@ -296,8 +297,7 @@ const RoomsPageComponent = (parentRoom) => {
       }
       blobToDataURL(response.data, function (dataurl) {
         return setQrCodeQuestions(dataurl);
-      });
-
+      })
     })
   }
 
@@ -430,11 +430,6 @@ const RoomsPageComponent = (parentRoom) => {
                 {qrCodeQuestions != '' &&
                   <img src={qrCodeQuestions} className='qr-code-questions-img' />}
               </div>
-              {
-                console.log("PARENT ROOM FLOOR: " + floorId)}
-              {console.log("PARENT ROOM faculty: " + localStorage.getItem("faculty"))}
-              {console.log("PARENT ROOM Room id: " + roomId)
-              }
             </div>
             <button className='btn-add-event btn text-center btn-primary mt-4 w-50' onClick={(event) => addNewEvent(event, name, description, eventType, startDate, endDate)}>
               {newLanguage == 'ENG' && "Add event!"}
@@ -616,7 +611,7 @@ const RoomsPageComponent = (parentRoom) => {
       if (roomType == 'COMPUTER') {
         return <div className='row'>
           <div className='computer-link-item col'>
-            <h2 className='text-light mt-2'>
+            <h2 className='text-light mt-4'>
               {newLanguage == 'ENG' && "Computer"}
               {newLanguage == 'BG' && "Лаптоп"}
             </h2>
@@ -628,7 +623,7 @@ const RoomsPageComponent = (parentRoom) => {
             </Button>
           </div>
           <div className='charger-link-item col'>
-            <h2 className='text-light mb-2 mt-2'>
+            <h2 className='text-light mb-2 mt-4'>
               {newLanguage == 'ENG' && "Charger"}
               {newLanguage == 'BG' && "Зарядно"}
             </h2>
@@ -647,38 +642,38 @@ const RoomsPageComponent = (parentRoom) => {
 
     return (
       <>
-        <div className="container-fluid mt-3">
-          <div className={`sidebar ${isOpen == true ? 'active' : ''}`}>
+        <div>
+          <div className={`sidebar-right ${isOpen == true ? 'active' : ''}`}>
             <div className="sd-body text-center row">
+              <button className='reserve-spot-event-sidebar-logo btn btn-dark' onClick={() => {
+                closeSidebar();
+              }}>
+                <VscThreeBars size={20} className=' text-light' />
+              </button>
               <div>
-                <Button className='mt-2 mb-2'>
+                <Button className='w-75 mt-2 mb-2'>
                   <MdEventAvailable size={30} />
-                  <h5 className='mt-3 text-light'>
+                  <h5 className='mt-3 text-light button-events-event-name'>
                     {newLanguage == 'ENG' && "Event"}
                     {newLanguage == 'BG' && "Събитие"}
                     {`: ${chosenEvent.name}`}</h5>
                 </Button>
               </div>
-              <div className='col btn-chosen-event-room'>
-                <Button className='mt-2'>
+              <div className='col'>
+                <Button className='mt-2 btn-chosen-event-room'>
                   <BsFillDoorOpenFill size={30} />
                   <h5 className='mt-3 text-light'>
                     {` ${chosenEvent.roomNumber}`}</h5>
                 </Button>
               </div>
-              <div className='col btn-chosen-event-seat'>
-                <Button className='mt-2'>
+              <div className='col'>
+                <Button className='mt-2 btn-chosen-event-seat'>
                   <PiOfficeChairFill size={30} />
                   <h5 className='mt-3 text-light'>
-                    {` ${chosenSeat.seatNumber}`}</h5>
+                    {`${chosenSeat.seatNumber}`}</h5>
                 </Button>
               </div>
-
-              {console.log("CHOSEN EVENT BBBY:" + chosenEvent)}
-
-              {console.log("room Type: " + localStorage.getItem("roomType"))};
               {openComputerRoomSpecs(localStorage.getItem("roomType"))}
-              {console.log(chosenEvent)}
               {chosenEvent.qrCodeQuestions != '' && chosenEvent.qrCodeQuestions != null &&
                 <h5 className='text-light header-qr-code-client-image'>
                   {newLanguage == 'ENG' && "Have any questions or want to vote before event? Scan the QR code below!"}
@@ -692,7 +687,7 @@ const RoomsPageComponent = (parentRoom) => {
             </div>
           </div>
 
-          <div className={`sidebar-overlay ${isOpen == true ? 'active' : ''}`} onClick={ToggleSidebar}></div>
+          <div className={`sidebar-right-overlay ${isOpen == true ? 'active' : ''}`} onClick={ToggleSidebar}></div>
         </div>
       </>
     )
@@ -762,16 +757,16 @@ const RoomsPageComponent = (parentRoom) => {
               }
               } > {event.organizer}</a></small>}
           <br />
-          {!event.enabled && (event.disableEventReason == 'OTHER' ?
+          {!event.enabled && (event.disableEventReason != '' &&
             <small>
-              Cancelled due to <a href="#" onClick={(e) => {
+              {newLanguage == 'ENG' && "Cancelled due to: "}
+              {newLanguage == 'BG' && "Прекратено поради: "}
+              <a href="#" onClick={(e) => {
                 toggleDisableEventAlert(event);
                 closeResourceLinkAlert();
                 closeUserPreferencesForm();
                 e.stopPropagation();
-              }}>{event.disableEventReason}</a></small>
-            : <small>
-              Cancelled due to {event.disableEventReason}</small>)}
+              }}>{event.disableEventReason}</a></small>)}
 
         </button></Carousel.Item>;
 
@@ -779,7 +774,7 @@ const RoomsPageComponent = (parentRoom) => {
 
     return (
       <>
-        <div className="container-fluid mt-3">
+        <div className="container-fluid">
           <div className="sidebar-left">
             <div className="sd-header">
               <img src={logo} width={100} height={100} alt='Responsive image' className='img-fluid logoImage-2' />
@@ -836,12 +831,16 @@ const RoomsPageComponent = (parentRoom) => {
 
   const SeatComponent = () => {
 
+    let counter = -1;
+    let rowCounter = 0;
+
     const updateSeatStatus = (eventName, seat) => {
       setChosenSeat(seat);
       setChosenEvent(eventName);
       console.log("THIS SEAT:") + seat;
       if (!seat.seatTaken) {
         ToggleSidebar();
+        closeSeatTakenEventForm();
       } else {
         if (seat.userThatOccupiedSeat == user) {
           closeSeatTakenEventForm();
@@ -849,6 +848,7 @@ const RoomsPageComponent = (parentRoom) => {
           closeDisableEventAlert();
           closeResourceLinkAlert();
           ToggleReleaseSeats();
+          closeSidebar();
         } else {
           setChosenTakenSeat(seat);
           closeReleaseSeats();
@@ -856,8 +856,16 @@ const RoomsPageComponent = (parentRoom) => {
           closeResourceLinkAlert();
           closeUserPreferencesForm();
           ToggleSeatTakenEventForm();
+          closeSidebar();
         }
+      }
+    }
 
+    const incrementCounter = () => {
+      counter = counter + 1;
+      if (counter % 6 == 0) {
+        rowCounter = rowCounter + 1;
+        return <Button className='btn-success btn-row-counter mr-2 mb-5'>{rowCounter}</Button>;
       }
     }
 
@@ -865,45 +873,41 @@ const RoomsPageComponent = (parentRoom) => {
       <>
         {console.log("GUESTS OF EVENT:")}
         {console.log(event.guests)}
-        <div className="container-fluid">
-          <div className={`${event.seats.length > 20 ? 'seats-div-custom' : 'seats-div-custom-lower-seats-count'} border-primary row text-center`}>
-            <div className='lectors-div-guests row'>
-              {event.seats.map((seat, idx) =>
-                <div className='col'>
-                  {(seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <button
-                    className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
-                  ${event.seats.length > 20 ? 'p-2' : 'p-3'} m-2 btn-lg active`}
-                    key={idx} onClick={() => {
-                      {
-                        updateSeatStatus(event, seat);
-                      }
-                    }}>
-                    <PiOfficeChairFill size={30} />
-
-                  </button>}
-                </div>
-              )}
+        <div className='lectors-div-guests row justify-content-md-center'>
+          {event.seats.map((seat, idx) =>
+            (seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <div className='col-md-auto'>
+              {(seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <button
+                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
+                  p-3 m-2 btn-lg`}
+                key={idx} onClick={() => {
+                  {
+                    updateSeatStatus(event, seat);
+                  }
+                }}>
+                <PiOfficeChairFill size={30} /><br />{seat.seatNumber}
+              </button>}
             </div>
-
-            {event.seats.map((seat, idx) =>
-              <div className='col'>
-                {seat.seatType == 'NORMAL' && <button
-                  className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
-                  ${event.seats.length > 20 ? 'p-2' : 'p-3'} m-2 btn-lg active`}
-                  key={idx} onClick={() => {
-                    {
-                      updateSeatStatus(event, seat);
-                    }
-                  }}>
-                  <PiOfficeChairFill size={30} />
-
-                </button>}
-
-              </div>
-            )
-            }
-          </div>
+          )}
         </div>
+        <div className='seats-div-custom row justify-content-md-center'>
+          {event.seats.map((seat, idx) =>
+            (seat.seatType == 'NORMAL') && <div className='col-md-auto'>
+              {event.seats.length - 2 != counter && incrementCounter()}
+              {seat.seatType == 'NORMAL' && <button
+                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
+                  p-3 m-2`}
+                key={idx} onClick={() => {
+                  {
+                    updateSeatStatus(event, seat);
+                  }
+                }}>
+                <PiOfficeChairFill size={30} /> <br />{seat.seatNumber}
+              </button>}
+
+            </div>
+          )
+          }
+        </div >
       </>
     )
   }
@@ -1065,15 +1069,6 @@ const RoomsPageComponent = (parentRoom) => {
     navigator('/login');
   }
 
-  const callLogOut = () => {
-    return (<div>
-      <button className='btn btn-danger text-light' onClick={() => { logOut() }}>
-        {newLanguage == 'ENG' && "Log out"}
-        {newLanguage == 'BG' && "Логаут"}
-      </button>
-    </div>)
-  }
-
   const callUserPreferenceForm = () => {
     return (<div>
       <button className='btn-navigate-user-settings-rooms btn btn-outline-success my-2 my-sm-0' onClick={() => {
@@ -1106,12 +1101,15 @@ const RoomsPageComponent = (parentRoom) => {
 
   const showAlertWhenClickedDisabledReason = () => {
     return (<div class="disable-event-alert-events alert alert-primary" role="alert">
-      Disable event description: "{chosenEvent.disableEventDescription}"
+      <button className="btn-close-disable-event-alert-rooms btn btn-danger" onClick={(e) => closeDisableEventAlert(e)}>x</button>
+      {newLanguage == 'ENG' && "Disable event description"}
+      {newLanguage == 'BG' && "Описание"}: "{chosenEvent.disableEventDescription}"
     </div>)
   }
 
   const showAlertWhenClickedResourcesLink = () => {
     return (<div class="resource-link-alert-events alert alert-success" role="alert">
+      <button className="btn-close-resources-link-alert-room btn btn-danger" onClick={(e) => closeResourceLinkAlert(e)}>x</button>
       Links:
       <br />
       {chosenEvent.linkToPage.map((link, idx) => {
@@ -1122,17 +1120,15 @@ const RoomsPageComponent = (parentRoom) => {
 
   return (
     <>
-      {console.log("ROOM TYPE HERE BBY:" + parentRoom.room.roomType)}
       {parentRoom.faculty != '' && localStorage.setItem("faculty", parentRoom.faculty)};
       {parentRoom.room.roomType != undefined && localStorage.setItem("roomType", parentRoom.room.roomType)};
       {SidebarLeftComponent()}
-      <SidebarRightComponent />
-      {updateSeatsToggle && <SeatComponent />}
+      {SidebarRightComponent()}
+      {updateSeatsToggle && SeatComponent()}
       {showForm && callEventForm()}
       {filterForm && callFilterForm()}
       {releaseSeat && releaseSeats()}
       <OpenUserSettings />
-      {callLogOut()}
       {callSearchBar()}
       {callSearchBarForOrganizer()}
       {seatTakenEventForm && callSeatTakenEventForChosenUser()}

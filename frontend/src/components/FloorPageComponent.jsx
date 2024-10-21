@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import './FloorPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
+import dataJson from '../assets/data.json';
+import teamsDataJson from '../assets/teams.json';
 import userIcon from '../assets/user-icon.png';
-import { getFloors, uploadFile, getEvents, endEvent, addRoomImage } from '../services/FloorService';
+import { getFloors, uploadFile, getEvents, endEvent, addRoomImage, exportData, getSpecificEvent } from '../services/FloorService';
 import { BsFillDoorOpenFill } from "react-icons/bs";
 
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +15,9 @@ import { RiLogoutBoxLine } from "react-icons/ri";
 import { IoSettingsSharp } from "react-icons/io5";
 import axios from 'axios';
 import { Button } from "react-bootstrap";
-import { getUserByUsername, getUsers } from '../services/UserService';
+import { HiDesktopComputer } from "react-icons/hi"
+import { LuCable } from "react-icons/lu";
+import { getUserByUsername, getUsers, reserveTeam, reserveTeamJSON } from '../services/UserService';
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -37,13 +41,40 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [roomOptionsFormPart2, setRoomOptionsFormPart2] = useState(false);
   const [showImageInputField, setShowImageInputField] = useState(true);
 
+  const [importDataForm, setImportDataForm] = useState(false);
+
   const [newLanguage, setNewLanguage] = useState('');
+
+  const [uploadFileAlert, setUploadFileAlert] = useState(false);
+  const [uploadFileTeamsAlert, setUploadFileTeamsAlert] = useState(false);
+
+  const [teamName, setTeamName] = useState('');
+  const [teamNumber, setTeamNumber] = useState(0);
+  const [teamEvent, setTeamEvent] = useState('');
+  const [teamOccupiesCharger, setTeamOccupiesCharger] = useState(false);
+  const [teamOccupiesComputer, setTeamOccupiesComputer] = useState(false);
+
+  const [uploadDataText, setUploadDataText] = useState('');
 
   const user = decodedToken.sub;
 
   const role = decodedToken.role;
 
   const navigator = useNavigate();
+
+  const [importDataFromJson, setImportDataFromJson] = useState(true);
+  const [importDataForTeam, setImportDataForTeam] = useState(false);
+
+  const [computerColor, setComputerColor] = useState('white');
+  const [chargerColor, setChargerColor] = useState('white');
+
+  const toggleOccupiesComputer = () => {
+    return setTeamOccupiesComputer(!teamOccupiesComputer);
+  }
+
+  const toggleOccupiesCharger = () => {
+    return setTeamOccupiesCharger(!teamOccupiesCharger);
+  }
 
   const setButtonColor = (room) => {
     if (room.roomType == 'COMPUTER') {
@@ -118,6 +149,41 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </div></>)
   }
 
+  const toggleImportDataFromJson = () => {
+    return setImportDataFromJson(true);
+  }
+
+  const closeImportDataFromJson = () => {
+    return setImportDataFromJson(false);
+  }
+
+  const toggleImportDataForTeam = () => {
+    return setImportDataForTeam(true);
+  }
+
+  const closeImportDataForTeam = () => {
+    return setImportDataForTeam(false);
+  }
+
+  const toggleUploadFileTeamsAlert = (text) => {
+    setUploadDataText(text);
+    return setUploadFileTeamsAlert(true);
+  }
+
+  const closeUploadFileTeamsAlert = () => {
+    return setUploadFileTeamsAlert(false);
+  }
+
+
+  const toggleUploadFileAlert = (text) => {
+    setUploadDataText(text);
+    return setUploadFileAlert(true);
+  }
+
+  const closeUploadFileAlert = () => {
+    return setUploadFileAlert(false);
+  }
+
   const closeShowImageInputField = () => {
     return setShowImageInputField(false);
   }
@@ -128,6 +194,14 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const closeRoomImageInputEnable = () => {
     return setRoomImageInputEnable(false);
+  }
+
+  const toggleImportDataForm = () => {
+    return setImportDataForm(!importDataForm);
+  }
+
+  const closeImportDataForm = () => {
+    return setImportDataForm(false);
   }
 
   const toggleRoomOptionsForm = () => {
@@ -158,8 +232,16 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     return setGenerateRoomsEnabled(!generateRoomsEnabled);
   }
 
+  const closeGenerateRoomsEnabled = () => {
+    return setGenerateRoomsEnabled(false);
+  }
+
   const toggleUserPreferencesForm = () => {
     return setUserPreferenceForm(!userPreferenceForm);
+  }
+
+  const closeUserPreferencesForm = () => {
+    return setUserPreferenceForm(false);
   }
 
   const showRooms = (floorNumber, facultyName) => {
@@ -174,10 +256,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         }
       })
     })
-
-    console.log("newMap")
-    console.log(newMap)
-
     setNewRooms(newMap);
     setIsOpen(true);
   }
@@ -241,8 +319,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   }
 
   const SeatsComponent = () => {
-
-
     const GenerateRooms = () => {
 
       const newRoomsPartOne = newRooms.slice(0, newRooms.length / 2);
@@ -348,7 +424,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const SidebarLeftComponent = () => {
     return (
       <>
-        <div className="container-fluid mt-3">
+        <div className="container-fluid">
           <div className="sidebar-left">
             <div className="sd-header">
               <img src={logo} width={135} height={135} alt='Responsive image' className='img-fluid logoImage' />
@@ -369,6 +445,9 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
                     setChosenFloor(floor.floorNumber);
                     { generateRoomsEnabled == false && toggleGenerateRoomsEnabled() }
                     showRooms(floor.floorNumber, floor.facultyName);
+                    closeImportDataForm();
+                    closeUserPreferencesForm();
+                    closeUploadFileAlert();
                   }
                   }>
                     {floor.facultyName} -
@@ -387,8 +466,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   }
 
   const UploadFile = () => {
-
-
     const handleFileSelected = (e) => {
       const newFormData = new FormData();
       const file = e.target.files[0];
@@ -396,21 +473,55 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       uploadFile(newFormData, token).then((response) => {
         console.log("Response" + response.data)
         console.log(response.data);
+        { newLanguage == 'ENG' && toggleUploadFileAlert('Successful import of file!'); }
+        { newLanguage == 'BG' && toggleUploadFileAlert('Успешно зареждане на файла!') }
       })
         .catch((error) => {
+          { newLanguage == 'ENG' && toggleUploadFileAlert(`Failed import of file! Error: ${error.response.data}`) }
+          { newLanguage == 'BG' && toggleUploadFileAlert(`Неуспешно зареждане на файла! Грешка: "${error.response.data}"`) }
           console.log("error: " + error);
           console.log(error);
         })
     }
 
     return (<>
-      {role == 'ADMIN' && <div class="border custom-file-3 mb-3">
+      <div class=" custom-file-3 mb-3">
         <input type="file" class="custom-file-input" onChange={handleFileSelected} required />
-        <label class="custom-file-label col-md-2 input-label-file" >
+        <label class="custom-file-label" >
           {newLanguage == 'ENG' && 'Choose file...'}
           {newLanguage == 'BG' && 'Избери файл...'}
         </label>
-      </div>}
+      </div>
+    </>)
+  }
+
+  const UploadTeamsFile = () => {
+    const handleFileSelectedTeams = (e) => {
+      const newFormData = new FormData();
+      const file = e.target.files[0];
+      newFormData.append('file', file, file.name);
+      reserveTeamJSON(newFormData, token).then((response) => {
+        console.log("Response" + response.data)
+        console.log(response.data);
+        { newLanguage == 'ENG' && toggleUploadFileAlert('Team successfully created and seats reserved!'); }
+        { newLanguage == 'BG' && toggleUploadFileAlert('Успешно създаване на отбор и запазване на места!') }
+      })
+        .catch((error) => {
+          { newLanguage == 'ENG' && toggleUploadFileAlert(`Failed import of file! Error: ${error.response.data}`) }
+          { newLanguage == 'BG' && toggleUploadFileAlert(`Неуспешно зареждане на файла! Грешка: "${error.response.data}"`) }
+          console.log("error: " + error);
+          console.log(error);
+        })
+    }
+
+    return (<>
+      <div class=" custom-file-teams mb-3">
+        <input type="file" class="custom-file-input" onChange={handleFileSelectedTeams} required />
+        <label class="custom-file-label" >
+          {newLanguage == 'ENG' && 'Choose file...'}
+          {newLanguage == 'BG' && 'Избери файл...'}
+        </label>
+      </div>
     </>)
   }
 
@@ -529,17 +640,267 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </div>
   }
 
+  const onClickExportFile = (e) => {
+    e.preventDefault();
+
+    exportData(token).then((response) => {
+      console.log("Response data:")
+      console.log(response.headers.get("Content-Disposition").split('"')[1])
+
+      const element = document.createElement("a");
+      const textFile = new Blob([JSON.stringify(response.data)], { type: 'text/plain' }); //pass data from localStorage API to blob
+      element.href = URL.createObjectURL(textFile);
+      element.download = "data.json";
+      document.body.appendChild(element);
+      element.click();
+    })
+      .catch((error) => {
+        alert(error.response.data);
+        console.log(error.response.data);
+      });
+  }
+
+  const exportFile = () => {
+    return <div>
+      <Button className='export-file-btn btn-primary p-2' onClick={(event) => {
+        onClickExportFile(event);
+      }}>{newLanguage == 'ENG' && 'Export data file'}
+        {newLanguage == 'BG' && 'Сваляне на файл с данни'}</Button>
+
+    </div>
+  }
+
+  const importFile = () => {
+    return <div>
+      <Button className='import-file-btn btn-info text-light p-2' onClick={() => {
+        toggleImportDataForm();
+        closeUserPreferencesForm();
+        closeUploadFileAlert();
+        closeGenerateRoomsEnabled();
+      }}>{newLanguage == 'ENG' && 'Import data'}
+        {newLanguage == 'BG' && 'Добави данни'}</Button>
+
+    </div>
+  }
+
+  const addNewTeam = (event) => {
+    event.preventDefault();
+
+    getSpecificEvent(teamEvent, token).then((response) => {
+      console.log("response");
+      console.log(response.data);
+      const foundEvent = response.data;
+
+      const teamDTO = {
+        "name": teamName,
+        "seats": teamNumber,
+        "eventName": teamEvent,
+        "facultyName": foundEvent.facultyName,
+        "floorNumber": foundEvent.floorNumber,
+        "roomNumber": foundEvent.roomNumber,
+        "occupiesComputer": teamOccupiesComputer,
+        "occupiesCharger": teamOccupiesCharger,
+      }
+
+      console.log("TEAM DTO");
+      console.log(JSON.stringify(teamDTO));
+      reserveTeam(JSON.stringify(teamDTO), token).then((response) => {
+        console.log("response")
+        console.log(response.data)
+        { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Successfully saved places!`) }
+        { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Успешно запазване на места!`) }
+      }).catch((error) => {
+        console.log(error);
+        { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
+        { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
+      })
+    }).catch((error) => {
+      console.log(error);
+      { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
+      { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
+      console.log("error");
+      console.log(error);
+    })
+
+
+  }
+
+
+  const updateComputerColor = () => {
+    if (computerColor == 'white') {
+      setComputerColor('yellow');
+    } else {
+      setComputerColor('white');
+    }
+  }
+
+  const updateChargerColor = () => {
+    if (chargerColor == 'white') {
+      setChargerColor('yellow');
+    } else {
+      setChargerColor('white');
+    }
+  }
+
+  const callImportDataForm = () => {
+    return (<div className='import-team-div bg-dark p-5'>
+      <button className="btn-close-import-team-form btn btn-danger" onClick={(e) => {
+        closeImportDataForm(e)
+      }}>x</button>
+      <h1 className='form-label text-light text-center mb-5 mr-5'>
+        {newLanguage == 'ENG' && 'Import data'}
+        {newLanguage == 'BG' && 'Добавяне на данни'}
+      </h1>
+
+      <div className='import-data-buttons-div'>
+        <Button className='btn-import-data-json btn-dark text-light p-2' onClick={() => {
+          toggleImportDataFromJson();
+          closeImportDataForTeam();
+        }}>{newLanguage == 'ENG' && 'System'}
+          {newLanguage == 'BG' && 'Система'}</Button>
+
+        <Button className='btn-import-data-team btn-dark text-light p-2 ml-1' onClick={() => {
+          closeImportDataFromJson();
+          toggleImportDataForTeam();
+        }}>{newLanguage == 'ENG' && 'Teams'}
+          {newLanguage == 'BG' && 'Отбори'}</Button>
+      </div>
+
+      {importDataForTeam == true &&
+
+        <div> <p className='p-2 mb-3 text-secondary'>
+          {newLanguage == 'ENG' && 'JSON Teams Example File:'}
+          {newLanguage == 'BG' && 'Примерен JSON файл с отбори:'}
+        </p>
+
+          <div>
+            <p className='json-text bg-light text-dark'><pre>{JSON.stringify(teamsDataJson, null, 2)}</pre></p>
+          </div>
+
+          <p className='json-file-header p-2 mb-3 text-secondary'>
+            {newLanguage == 'ENG' && 'Import JSON Teams File:'}
+            {newLanguage == 'BG' && 'Зареждане на JSON файл с отбори:'}
+          </p>
+
+          <div><h5 className='manual-json-file-header p-2 mb-3 text-secondary'>
+            {newLanguage == 'ENG' && 'Team Creation Form (Manual)'}
+            {newLanguage == 'BG' && 'Форма за създаване на отбор'}
+          </h5>
+            <form className='create-team-form'>
+              <div className='row'>
+                <div className='col'>
+                  <div class="form-floating text-start mb-2 mt-3">
+                    <input type="text" class="form-control text-start" id="floatingInput" value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)} />
+                    <label for="floatingInput text-light">
+                      {newLanguage == 'ENG' && "Team name"}
+                      {newLanguage == 'BG' && "Име на отбор"}
+                    </label>
+                  </div>
+                  <div class="form-floating text-start mb-2 mt-3">
+                    <input type="number" class="form-control text-start" id="floatingInput" value={teamNumber}
+                      onChange={(e) => setTeamNumber(e.target.value)} />
+                    <label for="floatingInput text-light">
+                      {newLanguage == 'ENG' && "Seats for reservation"}
+                      {newLanguage == 'BG' && "Места за резервиране"}
+                    </label>
+                  </div>
+                  <div class="form-floating text-start mb-5 mt-3">
+                    <input type="text" class="form-control text-start" id="floatingInput" value={teamEvent}
+                      onChange={(e) => setTeamEvent(e.target.value)} />
+                    <label for="floatingInput text-light">
+                      {newLanguage == 'ENG' && "Event name"}
+                      {newLanguage == 'BG' && "Име на събитие"}
+                    </label>
+                  </div>
+                  <div className='check-buttons-create-team row mt-2'>
+                    <div className='col'>
+                      <h5 className='text-light'>
+                        {newLanguage == 'ENG' && "Computer"}
+                        {newLanguage == 'BG' && "Лаптоп"}
+                      </h5>
+                      <Button onClick={() => {
+                        { toggleOccupiesComputer() }
+                        { updateComputerColor() }
+                      }}>
+                        <HiDesktopComputer size={30} color={computerColor} />
+                      </Button>
+                    </div>
+                    <div className='= col'>
+                      <h5 className='text-light mb-2'>
+                        {newLanguage == 'ENG' && "Charger"}
+                        {newLanguage == 'BG' && "Зарядно"}
+                      </h5>
+                      <Button onClick={() => {
+                        { toggleOccupiesCharger() }
+                        { updateChargerColor() }
+                      }}>
+                        <LuCable size={30} color={chargerColor} />
+                      </Button>
+                    </div>
+                  </div>
+                  <button className='btn-add-team btn text-center btn-primary mt-5 w-100' onClick={(event) => addNewTeam(event)}>
+                    {newLanguage == 'ENG' && "Save"}
+                    {newLanguage == 'BG' && "Запази"}
+                  </button>
+                </div>
+              </div>
+            </form></div>
+        </div>}
+
+      {importDataFromJson == true &&
+
+        <div> <p className='p-2 mb-3 text-secondary'>
+          {newLanguage == 'ENG' && 'JSON System Example File:'}
+          {newLanguage == 'BG' && 'Примерен JSON файл с данни за системата:'}
+        </p>
+
+          <div>
+            <p className='json-text bg-light text-dark'><pre>{JSON.stringify(dataJson, null, 2)}</pre></p>
+          </div>
+
+          <p className='json-file-header-system p-2 mb-3 text-secondary'>
+            {newLanguage == 'ENG' && 'Import JSON File:'}
+            {newLanguage == 'BG' && 'Зареждане на JSON файл:'}
+          </p>
+        </div>}
+
+    </div>)
+  }
+
+  const showAlertWhenUploadFile = () => {
+    return (<div class="upload-file-alert alert alert-primary" role="alert">
+      <button className="btn-close-upload-event-alert btn btn-danger" onClick={(e) => closeUploadFileAlert(e)}>x</button>
+      <br />
+      {uploadDataText}
+    </div>)
+  }
+
+  const showTeamsAlertWhenUploadFile = () => {
+    return (<div class="upload-file-teams-alert alert alert-primary" role="alert">
+      <button className="btn-close-upload-event-teams-alert btn btn-danger" onClick={(e) => closeUploadFileTeamsAlert(e)}>x</button>
+      <br />
+      {uploadDataText}
+    </div>)
+  }
+
   return (
     <>
-      <SidebarLeftComponent />
+      {SidebarLeftComponent()}
       {SeatsComponent()}
-      <UploadFile />
       <OpenUserSettings />
       {callLogOut()}
       {checkIfEventStillContinues()}
       {showRoomImage && openRoomImage()}
       {userPreferenceForm && callUserPreferenceForm()}
       {roomImageInputEnable && openImageForm()}
+      {role == 'ADMIN' && importFile()}
+      {role == 'ADMIN' && exportFile()}
+      {role == 'ADMIN' && importDataForm && importDataFromJson && UploadFile()}
+      {role == 'ADMIN' && importDataForm && importDataForTeam && UploadTeamsFile()}
+      {role == 'ADMIN' && importDataForm && callImportDataForm()}
+      {uploadFileAlert && showAlertWhenUploadFile()}
+      {uploadFileTeamsAlert && showTeamsAlertWhenUploadFile()}
     </>
   )
 }
