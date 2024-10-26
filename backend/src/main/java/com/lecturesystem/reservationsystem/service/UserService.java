@@ -14,6 +14,10 @@ import java.util.List;
 public interface UserService {
     AuthenticationResponseDTO registerUser(UserDTO userDto) throws CustomUserException;
 
+    void registerAdmin(RegisterAdminDTO registerAdminDTO) throws CustomUserException;
+
+    boolean getAdmin();
+
     AuthenticationResponseDTO loginUser(UserLoginDTO userLoginDTO) throws CustomUserException;
 
     void reserveSpot(UserReserveSpotDTO userReserveSpotDTO) throws CustomUserException, CustomEventException;
@@ -46,5 +50,5 @@ public interface UserService {
 
     List<User> searchUser(SearchGuestDTO searchGuestDTO);
 
-    void changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException;
+    User changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException;
 }

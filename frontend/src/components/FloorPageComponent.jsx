@@ -4,7 +4,7 @@ import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.
 import dataJson from '../assets/data.json';
 import teamsDataJson from '../assets/teams.json';
 import userIcon from '../assets/user-icon.png';
-import { getFloors, uploadFile, getEvents, endEvent, addRoomImage, exportData, getSpecificEvent } from '../services/FloorService';
+import { getFloors, uploadFile, getEvents, endEvent, addRoomImage, exportData, getSpecificEvent, uploadStartData, searchNewEvent, searchNewEventByName } from '../services/FloorService';
 import { BsFillDoorOpenFill } from "react-icons/bs";
 
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +27,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [roomImageContent, setRoomImageContent] = useState('');
   const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const token = localStorage.getItem('token');
   const decodedToken = jwtDecode(token);
   const [generateRoomsEnabled, setGenerateRoomsEnabled] = useState(false);
@@ -56,6 +57,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const [uploadDataText, setUploadDataText] = useState('');
 
+  const [eventListEnabled, setEventListEnabled] = useState(false);
+
   const user = decodedToken.sub;
 
   const role = decodedToken.role;
@@ -68,12 +71,24 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [computerColor, setComputerColor] = useState('white');
   const [chargerColor, setChargerColor] = useState('white');
 
+  const [uploadSystemFile, setUploadSystemFile] = useState(false);
+
+  const [eventSearchField, setEventSearchField] = useState('');
+
   const toggleOccupiesComputer = () => {
     return setTeamOccupiesComputer(!teamOccupiesComputer);
   }
 
   const toggleOccupiesCharger = () => {
     return setTeamOccupiesCharger(!teamOccupiesCharger);
+  }
+
+  const toggleUploadSystemFile = () => {
+    return setUploadSystemFile(!uploadSystemFile);
+  }
+
+  const closeUploadSystemFile = () => {
+    return setTeamOccupiesCharger(false);
   }
 
   const setButtonColor = (room) => {
@@ -107,6 +122,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           newEvents.push(event);
         })
         setEvents(newEvents);
+        setFilteredEvents(newEvents);
       }).catch(error => {
         console.error(error);
       })
@@ -242,6 +258,15 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const closeUserPreferencesForm = () => {
     return setUserPreferenceForm(false);
+  }
+
+  const toggleEventList = (e) => {
+    e.preventDefault();
+    return setEventListEnabled(!eventListEnabled);
+  }
+
+  const closeEventList = (e) => {
+    return setEventListEnabled(false);
   }
 
   const showRooms = (floorNumber, facultyName) => {
@@ -556,7 +581,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     return (<div>
       <button className='btn btn-danger text-light' onClick={() => { logOut() }}>
         {newLanguage == 'ENG' && ' Logout '}
-        {newLanguage == 'BG' && ' Логуат '}
+        {newLanguage == 'BG' && ' Изход '}
       </button>
     </div>)
   }
@@ -575,7 +600,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       }}>
         <RiLogoutBoxLine size={30} />
         {newLanguage == 'ENG' && 'Logout'}
-        {newLanguage == 'BG' && 'Логаут'}
+        {newLanguage == 'BG' && 'Изход'}
       </button>
     </div>)
   }
@@ -742,6 +767,22 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     }
   }
 
+  const findEvent = (e, searchField) => {
+    e.preventDefault();
+    const userSearchEventDTO = {
+      "searchField": searchField
+    }
+
+    searchNewEventByName(JSON.stringify(userSearchEventDTO), token).then((response) => {
+      console.log("response");
+      console.log(response.data);
+      setFilteredEvents(response.data);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
   const callImportDataForm = () => {
     return (<div className='import-team-div bg-dark p-5'>
       <button className="btn-close-import-team-form btn btn-danger" onClick={(e) => {
@@ -806,12 +847,29 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
                     </label>
                   </div>
                   <div class="form-floating text-start mb-5 mt-3">
-                    <input type="text" class="form-control text-start" id="floatingInput" value={teamEvent}
-                      onChange={(e) => setTeamEvent(e.target.value)} />
-                    <label for="floatingInput text-light">
+                    <input class="form-control mr-sm-2 text-start" type="search" placeholder="Search for event" id="floatingInput15" aria-label="Search" value={eventSearchField}
+                      data-bs-toggle="dropdown" aria-expanded="false" onChange={(e) => {
+                        setEventSearchField(e.target.value);
+                        findEvent(e, e.target.value);
+                        setTeamEvent(e.target.value);
+                      }
+                      } />
+                    <label for="floatingInput15 text-light ml-5 text-start">
                       {newLanguage == 'ENG' && "Event name"}
                       {newLanguage == 'BG' && "Име на събитие"}
                     </label>
+                    <ul class="dropdown-menu w-100">
+                      {filteredEvents.map((event, idx) => {
+                        return <li key={idx}><a className="dropdown-item p-2" onClick={(e) => {
+                          {
+                            toggleEventList(e);
+                          }
+                        }} >
+                          {event.name}
+                        </a></li>
+                      })}
+
+                    </ul>
                   </div>
                   <div className='check-buttons-create-team row mt-2'>
                     <div className='col'>
@@ -884,6 +942,36 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </div>)
   }
 
+  const importSystemData = () => {
+    if (faculties.length == 0) {
+      uploadStartData().then((response) => {
+        console.log("Response" + response.data)
+        console.log(response.data);
+        { newLanguage == 'ENG' && alert("Data uploaded!"); }
+        { newLanguage == 'BG' && alert("Данните са заредени!"); }
+
+      })
+        .catch((error) => {
+          console.log("error: " + error);
+          console.log(error);
+        })
+    } else {
+      { newLanguage == 'ENG' && alert("Data already uploaded!"); }
+      { newLanguage == 'BG' && alert("Данните са вече заредени!"); }
+    }
+  }
+
+  const callUploadSystemFileButton = () => {
+    return <Button className='upload-file-system-button btn-success' onClick={
+      () => {
+        importSystemData();
+      }
+    }>
+      {newLanguage == 'ENG' && 'Automatic Data Import'}
+      {newLanguage == 'BG' && 'Aвтоматично зареждане на данни'}
+    </Button>
+  }
+
   return (
     <>
       {SidebarLeftComponent()}
@@ -901,6 +989,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       {role == 'ADMIN' && importDataForm && callImportDataForm()}
       {uploadFileAlert && showAlertWhenUploadFile()}
       {uploadFileTeamsAlert && showTeamsAlertWhenUploadFile()}
+      {callUploadSystemFileButton()}
     </>
   )
 }

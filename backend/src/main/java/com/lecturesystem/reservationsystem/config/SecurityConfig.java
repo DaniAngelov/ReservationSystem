@@ -40,9 +40,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/users/register").permitAll()
+                        .requestMatchers("/api/users/register-admin").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
                         .requestMatchers("/api/users/forgotten-password").permitAll()
                         .requestMatchers("/api/users/update-password").permitAll()
+                        .requestMatchers("/api/floors/events/events-exist").permitAll()
+                        .requestMatchers("/api/floors/upload-start-data").permitAll()
+                        .requestMatchers("/api/users/get-admin").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement -> sessionManagement

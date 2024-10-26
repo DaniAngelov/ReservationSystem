@@ -70,7 +70,11 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
         user.setLanguagePreferred("ENG");
-        user.setRole(Role.USER);
+        if (userDto.getRole().equals("ADMIN")) {
+            user.setRole(Role.ADMIN);
+        } else {
+            user.setRole(Role.USER);
+        }
         user.setPoints(1);
         user.setLastActive(LocalDateTime.now());
         user.setLinkToPage(new ArrayList<>());
@@ -82,6 +86,24 @@ public class UserServiceImpl implements UserService {
         authenticationResponseDTO.setToken(jwtToken);
 
         return authenticationResponseDTO;
+    }
+
+    @Override
+    public void registerAdmin(RegisterAdminDTO registerAdminDTO) throws CustomUserException {
+        UserDTO.UserDTOBuilder adminBuilder = UserDTO.builder().username("admin").email("admin@abv.bg").role("ADMIN");
+        if (!registerAdminDTO.getPassword().equals("")) {
+            adminBuilder.password(registerAdminDTO.getPassword());
+        } else {
+            adminBuilder.password("admin");
+        }
+        UserDTO admin = adminBuilder.build();
+        registerUser(admin);
+    }
+
+    @Override
+    public boolean getAdmin() {
+        User user = userRepository.getUserByUsername("admin");
+        return user != null;
     }
 
     @Override
@@ -392,13 +414,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
+    public User changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
         User user = userRepository.getUserByUsername(changeUserLanguageDTO.getUsername());
         if (user == null) {
             throw new CustomUserException("There is no such user!");
         }
         user.setLanguagePreferred(changeUserLanguageDTO.getLanguagePreferred());
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     @Override

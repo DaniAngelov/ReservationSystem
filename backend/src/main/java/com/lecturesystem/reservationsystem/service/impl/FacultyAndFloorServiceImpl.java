@@ -30,8 +30,6 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
     private final FloorRepository floorRepository;
     private final RoomRepository roomRepository;
 
-    private final EventRepository eventRepository;
-
     private final FacultyRepository facultyRepository;
 
     private final ModelMapper modelMapper = new ModelMapper();
@@ -78,6 +76,12 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
     public List<ExportFacultyDTO> getWrapperDTO() {
         List<Faculty> faculties = facultyRepository.findAll();
         return faculties.stream().map(faculty -> modelMapper.map(faculty, ExportFacultyDTO.class)).toList();
+    }
+
+    @Override
+    public boolean checkEventExist() {
+        List<Faculty> faculties = facultyRepository.findAll();
+        return faculties.size() != 0;
     }
 
     private List<Floor> addFloor(FacultyDTO facultyDTO, List<Floor> newFloors, List<FloorDTO> floorDTOs) throws SQLException {

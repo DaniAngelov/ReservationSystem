@@ -37,7 +37,7 @@ public class UserController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public UserController(UserService userService, TwoFactorAuthenticationService twoFactorAuthenticationService, UserRepository userRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -46,6 +46,13 @@ public class UserController {
         AuthenticationResponseDTO authenticationResponseDTO = userService.registerUser(userDto);
         return new ResponseEntity<>(authenticationResponseDTO, HttpStatus.CREATED);
     }
+
+    @PostMapping("/register-admin")
+    public ResponseEntity<?> registerAdmin(RegisterAdminDTO registerAdminDTO) throws CustomUserException {
+        userService.registerAdmin(registerAdminDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 
     @PutMapping("/login")
     public ResponseEntity<AuthenticationResponseDTO> login(@RequestBody UserLoginDTO userLoginDTO) throws CustomUserException {
@@ -152,6 +159,12 @@ public class UserController {
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
 
+    @GetMapping("/get-admin")
+    public ResponseEntity<Boolean> getAdmin() {
+        boolean adminFound = userService.getAdmin();
+        return new ResponseEntity<>(adminFound, HttpStatus.OK);
+    }
+
     @GetMapping("/user-points")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'USER', 'ADMIN')")
     public ResponseEntity<UserPointsDTO> getUserWithPoints(@RequestParam String username) throws CustomUserException {
@@ -170,9 +183,10 @@ public class UserController {
 
     @PutMapping("/language")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
-    public ResponseEntity<?> changeLanguage(@RequestBody ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
-        userService.changeLanguage(changeUserLanguageDTO);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<UserPointsDTO> changeLanguage(@RequestBody ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
+        User user = userService.changeLanguage(changeUserLanguageDTO);
+        UserPointsDTO userDTO = modelMapper.map(user, UserPointsDTO.class);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
 }

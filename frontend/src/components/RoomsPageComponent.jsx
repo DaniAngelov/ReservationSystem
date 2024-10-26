@@ -691,7 +691,6 @@ const RoomsPageComponent = (parentRoom) => {
         </div>
       </>
     )
-
   }
 
   const SidebarLeftComponent = () => {
@@ -1084,7 +1083,7 @@ const RoomsPageComponent = (parentRoom) => {
       }}>
         <RiLogoutBoxLine size={30} />
         {newLanguage == 'ENG' && "Log out"}
-        {newLanguage == 'BG' && "Логаут"}
+        {newLanguage == 'BG' && "Изход"}
 
       </button>
       <button className='btn-user-home-setting-rooms btn btn-outline-primary my-2 my-sm-0' onClick={() => {
@@ -1102,6 +1101,7 @@ const RoomsPageComponent = (parentRoom) => {
   const showAlertWhenClickedDisabledReason = () => {
     return (<div class="disable-event-alert-events alert alert-primary" role="alert">
       <button className="btn-close-disable-event-alert-rooms btn btn-danger" onClick={(e) => closeDisableEventAlert(e)}>x</button>
+      <br />
       {newLanguage == 'ENG' && "Disable event description"}
       {newLanguage == 'BG' && "Описание"}: "{chosenEvent.disableEventDescription}"
     </div>)
@@ -1110,6 +1110,7 @@ const RoomsPageComponent = (parentRoom) => {
   const showAlertWhenClickedResourcesLink = () => {
     return (<div class="resource-link-alert-events alert alert-success" role="alert">
       <button className="btn-close-resources-link-alert-room btn btn-danger" onClick={(e) => closeResourceLinkAlert(e)}>x</button>
+      <br />
       Links:
       <br />
       {chosenEvent.linkToPage.map((link, idx) => {

@@ -13,6 +13,7 @@ import com.lecturesystem.reservationsystem.model.dto.export.ExportFacultyDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.util.FacultyWrapper;
+import com.lecturesystem.reservationsystem.repository.FacultyRepository;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.EventService;
 import com.lecturesystem.reservationsystem.service.FacultyAndFloorService;
@@ -20,6 +21,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,6 +54,8 @@ public class DeskSpotController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private final FacultyRepository facultyRepository;
+
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public void addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException, SQLException {
@@ -70,6 +74,16 @@ public class DeskSpotController {
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
     public ResponseEntity<List<AddEventDTO>> searchEvent(@RequestBody SearchEventDTO searchEventDTO) throws CustomUserException, SQLException, IOException {
         List<Event> events = eventService.searchEvents(searchEventDTO);
+        List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(toList());
+        List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
+        addLinksForEvent(serializerEventDTOS);
+        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+    }
+
+    @PutMapping("/events/search-by-name")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    public ResponseEntity<List<AddEventDTO>> searchEventByName(@RequestBody SearchEventByNameDTO searchEventByNameDTO) throws CustomEventException, CustomUserException, SQLException, IOException {
+        List<Event> events = eventService.searchEventByName(searchEventByNameDTO);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(toList());
         List<AddEventDTO> serializerEventDTOS = serializeEventDTOS(eventDTOS, events);
         addLinksForEvent(serializerEventDTOS);
@@ -157,6 +171,12 @@ public class DeskSpotController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/events/events-exist")
+    public ResponseEntity<Boolean> checkEventExists() {
+        boolean result = facultyAndFloorService.checkEventExist();
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @PutMapping("/events/add-room-image")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> addRoomImage(@RequestBody AddRoomImageDTO addRoomImageDTO) throws SQLException {
@@ -178,6 +198,24 @@ public class DeskSpotController {
         return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
     }
 
+    @PostMapping("/upload-start-data")
+    public void uploadStartData() throws IOException, CustomUserException, CustomEventException, SQLException {
+
+        Path path = Paths.get("backend/src/main/resources/data.json");
+        String name = "data.json";
+        String originalFileName = "data.json";
+        String contentType = "application/json";
+        byte[] content = null;
+        try {
+            content = Files.readAllBytes(path);
+        } catch (final IOException e) {
+        }
+        if (facultyRepository.findAll().size() == 0) {
+            readDataFromFile(new MockMultipartFile(name,
+                    originalFileName, contentType, content));
+        }
+    }
+
     @GetMapping(value = "/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ByteArrayResource> exportData() throws IOException {
@@ -189,7 +227,6 @@ public class DeskSpotController {
         ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
                 .filename(newFile.getName())
                 .build();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(contentDisposition);
         Path path = Paths.get(newFile.getPath());

@@ -4,6 +4,8 @@ const REST_API_BASE_URL = 'http://localhost:8080/api/users';
 
 export const createUser = (user) => axios.post(REST_API_BASE_URL + '/register', user);
 
+export const registerAdmin = () => axios.post(REST_API_BASE_URL + '/register-admin');
+
 export const loginUser = (user) => axios.put(REST_API_BASE_URL + '/login', user);
 
 export const reserveSpot = (user, token) => axios.put(REST_API_BASE_URL + '/reserve', user, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
@@ -44,3 +46,5 @@ export const getUserByUsername = (user, token) => axios.get(REST_API_BASE_URL + 
 export const searchNewGuest = (request, token) => axios.put(REST_API_BASE_URL + '/search', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const updateNewLanguage = (request, token) => axios.put(REST_API_BASE_URL + '/language', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const getAdmin = () => axios.get(REST_API_BASE_URL + '/get-admin');

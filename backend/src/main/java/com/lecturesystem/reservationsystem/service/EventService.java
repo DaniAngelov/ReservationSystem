@@ -34,4 +34,6 @@ public interface EventService {
 
     Event getSpecificEventByName(String eventName) throws CustomEventException;
 
+    List<Event> searchEventByName(SearchEventByNameDTO addEventByNameDTO) throws CustomEventException;
+
 }

@@ -104,11 +104,15 @@ body {
   left: 10%;
   width: 80%;
   top: 20%;
+  z-index: 1;
 }
 
 .dropdown-floors-item {
   width: 150%;
+  height: 25vh;
   top: 20%;
+  z-index: 1;
+  overflow-y: auto;
 }
 
 
@@ -251,10 +255,18 @@ body {
   border-radius: 15px;
 }
 
+.upload-file-system-button{
+  position: absolute;
+  width: 16%;
+  bottom: 31%;
+  left: 2%;
+  z-index: 1;
+}
+
 .export-file-btn {
   position: absolute;
   width: 16%;
-  bottom: 27%;
+  bottom: 23%;
   left: 2%;
   z-index: 1;
 }
@@ -262,11 +274,10 @@ body {
 .import-file-btn {
   position: absolute;
   width: 16%;
-  bottom: 19%;
+  bottom: 15%;
   left: 2%;
   z-index: 1;
 }
-
 
 .href-export {
   position: absolute;
@@ -341,15 +352,15 @@ body {
   right: 2%;
   top: 2%;
   width: 10%;
-  height: 35%;
+  height: 40%;
 }
 
 .upload-file-teams-alert {
   position: absolute;
   width: 24%;
-  height: 14vh;
-  left: 44%;
-  top: 14vh !important;
+  height: 13vh;
+  left: 25%;
+  top: 75.5vh !important;
 }
 
 .import-data-buttons-div {

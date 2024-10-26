@@ -37,7 +37,11 @@ export const addEvent = (request, token) => axios.post(REST_API_EVENTS_BASE_URL,
 
 export const searchNewEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/search', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
+export const searchNewEventByName = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/search-by-name', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
 export const uploadFile = (formData, token) => axios.post(REST_API_BASE_URL + '/upload', formData, { headers: { 'Content-Type': 'multipart/form-data', "Authorization": `Bearer ${token}` } });
+
+export const uploadStartData = (token) => axios.post(REST_API_BASE_URL + '/upload-start-data', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const disableUserEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/disable', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
@@ -52,3 +56,5 @@ export const addFeedbackForm = (request, token) => axios.put(REST_API_EVENTS_BAS
 export const addRoomImage = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/add-room-image', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const exportData = (token) => axios.get(REST_API_BASE_URL + '/export', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
+export const checkIfEventExists = () => axios.get(REST_API_EVENTS_BASE_URL + '/events-exist');

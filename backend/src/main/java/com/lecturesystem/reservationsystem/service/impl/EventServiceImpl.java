@@ -233,6 +233,18 @@ public class EventServiceImpl implements EventService {
         return foundEvent;
     }
 
+    @Override
+    public List<Event> searchEventByName(SearchEventByNameDTO addEventByNameDTO) {
+        List<Event> foundEvents = new ArrayList<>();
+        List<Event> events = eventRepository.findAll();
+        for (Event event : events) {
+            if (event.getName().toUpperCase().contains(addEventByNameDTO.getSearchField().toUpperCase())) {
+                foundEvents.add(event);
+            }
+        }
+        return foundEvents.stream().sorted(Comparator.comparing(Event::getName)).collect(Collectors.toList());
+    }
+
     private void deleteEventForAllUsers(Event event) {
         for (User user : event.getUsers()) {
             user.getEvents().remove(event);

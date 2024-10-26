@@ -18,5 +18,5 @@ public interface FacultyAndFloorService {
 
     List<ExportFacultyDTO> getWrapperDTO();
 
-    ;
+    boolean checkEventExist();
 }

@@ -130,6 +130,7 @@ const UserSettingsPageComponent = () => {
       console.log(response.data);
       setLanguageCurrentUser(response.data);
       setNewLanguage(response.data.languagePreferred);
+      setCurrentUser(response.data);
     }).catch((error) => {
       console.log("error");
       console.log(error);
@@ -306,8 +307,6 @@ const UserSettingsPageComponent = () => {
     return setLanguagePreferenceForm(false);
   }
 
-
-
   const logOut = () => {
     localStorage.clear();
     navigator('/login');
@@ -325,7 +324,7 @@ const UserSettingsPageComponent = () => {
         logOut();
       }}>
         <RiLogoutBoxLine size={30} />  {newLanguage == 'ENG' && "Log out"}
-        {newLanguage == 'BG' && "Логаут"}
+        {newLanguage == 'BG' && "Изход"}
       </button>
     </div>)
   }
@@ -337,9 +336,8 @@ const UserSettingsPageComponent = () => {
       "languagePreferred": language
     }
     updateNewLanguage(updateLanguageDTO, token).then((response) => {
-      console.log("response")
+      console.log("response language")
       console.log(response.data);
-      setCurrentUser(response.data);
     }).catch((error) => {
       console.log("error");
       console.log(error);
@@ -568,6 +566,9 @@ const UserSettingsPageComponent = () => {
         <small>{newLanguage == 'ENG' && "Room"}
           {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
         <br />
+        <small>{newLanguage == 'ENG' && "Faculty"}
+          {newLanguage == 'BG' && "Факултет"}: {event.facultyName}</small>
+        <br />
         {event.linkToPage == null ? <small>{newLanguage == 'ENG' && "Organizer"}
           {newLanguage == 'BG' && "Организатор"}: {event.organizer}</small> :
           <small>{newLanguage == 'ENG' && "Organizer"}
@@ -708,6 +709,9 @@ const UserSettingsPageComponent = () => {
           <br />
           <small>{newLanguage == 'ENG' && "Room"}
             {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
+          <br />
+          <small>{newLanguage == 'ENG' && "Faculty"}
+            {newLanguage == 'BG' && "Факултет"}: {event.facultyName}</small>
           <br />
           {console.log(event)}
           {event.linkToPage == null ? <small>{newLanguage == 'ENG' && "Organizer"}
@@ -943,7 +947,9 @@ const UserSettingsPageComponent = () => {
                 <button className='btn btn-item-authentication-types btn-secondary text-light' onClick={() => {
                   closeDashboard();
                   closeCreatedEventsDashboard();
+                  closeLanguagePreferencesForm();
                   closeFaEventForm();
+                  closeUserPreferencesForm();
                   closeFeedbackForm();
                   closeFinishedEventsForm();
                   closeAddResourcesLinkForm();
@@ -964,6 +970,8 @@ const UserSettingsPageComponent = () => {
                   closeCreatedEventsDashboard();
                   closeAuthenticationForm();
                   closeFaEventForm();
+                  closeLanguagePreferencesForm();
+                  closeUserPreferencesForm();
                   closeFeedbackForm();
                   closeDisableEvent();
                   closeDeleteEvent();
@@ -986,6 +994,8 @@ const UserSettingsPageComponent = () => {
                   closeAddResourcesLinkForm();
                   closeFaEventForm();
                   closeDisableEvent();
+                  closeLanguagePreferencesForm();
+                  closeUserPreferencesForm();
                   closeDeleteEvent();
                   closeFeedbackForm();
                   closeFinishedEventsForm();
@@ -1005,6 +1015,8 @@ const UserSettingsPageComponent = () => {
                 closeAuthenticationForm();
                 closeFaEventForm();
                 closeDisableEventAlert();
+                closeLanguagePreferencesForm();
+                closeUserPreferencesForm();
                 closeRewardMenu();
                 closeResourceLinkAlert();
                 closeDisableEvent();
@@ -1024,6 +1036,8 @@ const UserSettingsPageComponent = () => {
                   closeFaEventForm();
                   closeAddResourcesLinkForm();
                   closeDashboard();
+                  closeLanguagePreferencesForm();
+                  closeUserPreferencesForm();
                   closeDisableEventAlert();
                   closeRewardMenu();
                   closeResourceLinkAlert();
@@ -1042,6 +1056,8 @@ const UserSettingsPageComponent = () => {
                   closeCreatedEventsDashboard();
                   closeAuthenticationForm();
                   closeFaEventForm();
+                  closeLanguagePreferencesForm();
+                  closeUserPreferencesForm();
                   closeAddResourcesLinkForm();
                   closeDashboard();
                   closeSidebar()
@@ -1217,8 +1233,8 @@ const UserSettingsPageComponent = () => {
 
         </div>
         {resourceCounter > 1 && <button className='w-100 p-2 mt-1 btn btn-primary text-light' onClick={() => { addResourceLinkForUser() }}>
-          {newLanguage == 'ENG' && 'Submit!'}
-          {newLanguage == 'BG' && 'Запиши!'}
+          {newLanguage == 'ENG' && 'Submit'}
+          {newLanguage == 'BG' && 'Запиши'}
         </button>}
       </div>
     )
@@ -1428,8 +1444,10 @@ const UserSettingsPageComponent = () => {
         {newLanguage == 'ENG' && 'Collect points from using our app and get rewards!'}
         {newLanguage == 'BG' && 'Събирайте точки от използването на приложението и вземете награди!'}
         <br /><strong>
-          {newLanguage == 'ENG' && 'Current points:'}
-          {newLanguage == 'BG' && 'Настоящи точки:'}
+          {console.log("currentUser")}
+          {console.log(currentUser)}
+          {newLanguage == 'ENG' && 'Current points: '}
+          {newLanguage == 'BG' && 'Настоящи точки: '}
           {currentUser.points}</strong></p>
       <ul>
         <li><button className='btn btn-light btn-reward-item-1 text-light' onClick={() => {

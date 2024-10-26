@@ -3,11 +3,12 @@ import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.
 import './UserLoginComponent.css'
 import { useNavigate } from 'react-router-dom';
 import { BsShieldLockFill } from "react-icons/bs";
-import { verifyOneTimePass, generateOneTimePass, loginUser, sendMessageToEmail, verifyTwoFA } from '../services/UserService';
+import { verifyOneTimePass, generateOneTimePass, loginUser, sendMessageToEmail, verifyTwoFA, getAdmin, registerAdmin } from '../services/UserService';
 import { jwtDecode } from 'jwt-decode'
 
 import { TbMailFilled } from "react-icons/tb";
 import codingLogo from '../assets/coding-image-login.jpg';
+import { checkIfEventExists, uploadStartData } from '../services/FloorService';
 
 const UserLoginComponent = () => {
   const navigator = useNavigate();
@@ -44,7 +45,7 @@ const UserLoginComponent = () => {
   const [mfaEnabled, setMfaEnabled] = useState(false);
 
   const [alertError, setAlertError] = useState('');
-
+  1
   const toggleInvalidLoginAlert = () => {
     return setInvalidLoginAlert(true);
   }
@@ -155,7 +156,7 @@ const UserLoginComponent = () => {
     return (
       <>
         <div className='custom-card-body-mfa text-center bg-secondary p-5 mt-5 text-light'>
-        <button className="btn-close-mfa-event-pass-form btn btn-danger" onClick={(e) => closeFaEventForm(e)}>x</button>
+          <button className="btn-close-mfa-event-pass-form btn btn-danger" onClick={(e) => closeFaEventForm(e)}>x</button>
           <h1 className='text-center mb-2'><BsShieldLockFill size={70} className='mb-2' /> Verify your account!</h1>
           <h5 className='text-center mt-4'>Enter the 6-digit verification code from your Authenticator app! </h5>
           <div className="custom-form-mfa mb-2">
@@ -374,15 +375,42 @@ const UserLoginComponent = () => {
 
   const showAlertWhenEmailDoesNotExist = () => {
     return (<div class="login-alert-forgotten-pass alert alert-danger text-danger text-center" role="alert">
-     
+
       {alertError}
       <button className="btn-close-forgotten-pass-form-alert btn btn-danger" onClick={(e) => {
-              closeInvalidForgottenPasswordAlert();
-            }
-            }>x</button>
-      
+        closeInvalidForgottenPasswordAlert();
+      }
+      }>x</button>
+
     </div>)
   }
+
+  const registerNewAdmin = () => {
+    registerAdmin().then((response) => {
+      console.log("Response register" + response.data)
+      console.log(response.data);
+    })
+      .catch((error) => {
+        console.log("error: " + error);
+        console.log(error);
+      })
+  }
+
+  const isAdminRegistered = () => {
+    let data = false;
+    getAdmin().then((response) => {
+      console.log("Response")
+      console.log(response.data);
+      data = response.data;
+    })
+      .catch((error) => {
+        console.log("error: ");
+        console.log(error);
+      })
+
+    return data;
+  }
+
 
   return (
     <>
@@ -436,6 +464,9 @@ const UserLoginComponent = () => {
       {oneTimePassFinalForm && callOnePassForm()}
       {mfaEventForm && callMfaEventForm()}
       {forgottenPass && forgottenPassForm()}
+      {console.log("Is admin registered")}
+      {console.log(isAdminRegistered())}
+      {isAdminRegistered() == false && registerNewAdmin()}
     </>
   )
 }
