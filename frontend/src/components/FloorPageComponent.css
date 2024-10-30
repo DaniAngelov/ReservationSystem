@@ -86,7 +86,7 @@ body {
   position: absolute;
   width: 18%;
   z-index: 1;
-  top: 27%;
+  top: 37%;
   right: 12.5%;
 }
 
@@ -239,6 +239,16 @@ body {
   box-shadow: 0 0 5px white inset;
 }
 
+.btn-user-settings-floors {
+  position: absolute;
+  left: 3%;
+  bottom: 2%;
+  width: 30vh;
+  text-align: start;
+  z-index: 1;
+  overflow-y: auto;
+}
+
 .room-options-buttons {
   width: 2%;
   height: 7%;
@@ -255,18 +265,10 @@ body {
   border-radius: 15px;
 }
 
-.upload-file-system-button{
-  position: absolute;
-  width: 16%;
-  bottom: 31%;
-  left: 2%;
-  z-index: 1;
-}
-
 .export-file-btn {
   position: absolute;
   width: 16%;
-  bottom: 23%;
+  bottom: 33%;
   left: 2%;
   z-index: 1;
 }
@@ -274,7 +276,16 @@ body {
 .import-file-btn {
   position: absolute;
   width: 16%;
+  bottom: 25%;
+  left: 2%;
+  z-index: 1;
+}
+
+.upload-file-system-button{
+  position: absolute;
+  width: 16%;
   bottom: 15%;
+  height: 8.5%;
   left: 2%;
   z-index: 1;
 }
@@ -313,7 +324,7 @@ body {
 .json-file-header {
   position: absolute;
   right: 5%;
-  top: 17%;
+  top: 26%;
   z-index: 1;
 }
 
@@ -358,44 +369,73 @@ body {
 .upload-file-teams-alert {
   position: absolute;
   width: 24%;
-  height: 13vh;
-  left: 25%;
-  top: 75.5vh !important;
+  height: 17vh;
+  left: 64%;
+  top: 42vh !important;
 }
 
 .import-data-buttons-div {
   position: absolute;
   border-radius: 12pt;
   bottom: 4%;
-  right: 42%;
+  right: 33%;
 }
 
 .manual-json-file-header {
   position: absolute;
-  right: 5%;
-  top: 33%;
+  left: 5%;
+  top: 23%;
   z-index: 1;
 }
 
 .create-team-form {
-  right: 6%;
-  top: 38%;
+  left: 6%;
+  top: 33%;
   position: absolute;
   width: 30%;
 }
 
-.btn-import-data-team-manual {
+.create-form-seats-section-div{
   position: absolute;
-  right: 5%;
-  bottom: 4%;
+  left: 110%;
+  width: 100%;
+  top: 0%;
 }
 
 .btn-add-team {
-  margin-top: 0%;
+  position: absolute;
+  left: 223%;
+  width: 80%;
+  bottom: -45%;
 }
 
 .check-buttons-create-team {
   position: absolute;
-  left: 20%;
-  bottom: 15%;
+  left: 260%;
+  top: -5%;
+}
+
+.team-occupy-computer{
+  position: absolute;
+  top: -10%;
+  right: 10%;
+}
+
+.team-occupy-charger{
+  position: absolute;
+  top: -10%;
+}
+
+.computer-number-team-div{
+  width: 35vh !important;
+}
+
+.charger-number-team-div{
+  width: 35vh !important;
+}
+
+.team-equipment-div{
+  position: absolute;
+  top: 38%;
+  left: 220%;
 }

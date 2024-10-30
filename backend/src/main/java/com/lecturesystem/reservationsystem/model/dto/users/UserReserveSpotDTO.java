@@ -17,4 +17,6 @@ public class UserReserveSpotDTO {
     private int roomNumber;
     private boolean occupiesComputer;
     private boolean occupiesCharger;
+    private int occupiesComputerNumber;
+    private int occupiesChargerNumber;
 }

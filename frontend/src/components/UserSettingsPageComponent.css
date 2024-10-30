@@ -33,23 +33,14 @@ body {
   margin-left: 3rem;
 }
 
-.btn-user-settings {
-
+.btn-user-settings-user-page {
   position: absolute;
-  text-align: center;
-  left: 32%;
-  bottom: 0%;
-  width: 15vh;
-  z-index: 1;
-}
-
-.btn-user-settings-3 {
-  position: absolute;
-  left: 3%;
+  left: 2%;
   bottom: 2%;
-  width: 30vh;
+  width: 35vh;
   text-align: start;
   z-index: 1;
+  overflow-y: auto;
 }
 
 .logoImage-3 {
@@ -186,7 +177,7 @@ body {
 
 .btn-user-logout-setting-2 {
   position: absolute;
-  left: 18%;
+  left: 19%;
   bottom: 2%;
   width: 11%;
   height: 7%;
@@ -241,7 +232,7 @@ body {
 
 .btn-user-home-setting-2 {
   position: absolute;
-  left: 18%;
+  left: 19%;
   bottom: 9.5%;
   width: 11%;
   height: 7%;
@@ -295,7 +286,7 @@ body {
   position: absolute;
   left: 5%;
   width: 90%;
-  top: 66%;
+  top: 63%;
   height: 7%;
   color: #475f7b;
   border-radius: 4px;
@@ -312,7 +303,7 @@ body {
   position: absolute;
   left: 5%;
   width: 90%;
-  top: 75%;
+  top: 71%;
   height: 7%;
   color: #475f7b;
   border-radius: 4px;
@@ -426,7 +417,7 @@ input {
 .btn-disable {
   position: absolute;
   top: 25%;
-  left: 50%;
+  left: 49%;
   z-index: 1;
 }
 
@@ -439,7 +430,7 @@ input {
 .btn-disable-events {
   position: absolute;
   bottom: 2%;
-  right: 0;
+  right: 0%;
 }
 
 .card-body-disable {
@@ -538,10 +529,6 @@ input {
   position: absolute;
   top: 20%;
   right: 30%;
-}
-
-.header-user-icon {
-  overflow-y: auto;
 }
 
 .authentication-types-header {
@@ -842,4 +829,13 @@ li {
   position: absolute;
   left: 81%;
   top: 1%;
+}
+
+.btn-user-settings-user-role{
+  position: absolute;
+  bottom: 13.5%;
+  left: 5%;
+  width: 10%;
+  height: 8%;
+  z-index: 1;
 }

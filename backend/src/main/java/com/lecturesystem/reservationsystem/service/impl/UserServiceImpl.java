@@ -10,6 +10,7 @@ import com.lecturesystem.reservationsystem.model.dto.users.*;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Role;
 import com.lecturesystem.reservationsystem.model.enums.RoomType;
+import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import com.lecturesystem.reservationsystem.repository.*;
 import com.lecturesystem.reservationsystem.service.UserService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
@@ -67,13 +68,19 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.setUsername(userDto.getUsername());
+        user.setEvents(new ArrayList<>());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
         user.setLanguagePreferred("ENG");
-        if (userDto.getRole().equals("ADMIN")) {
-            user.setRole(Role.ADMIN);
-        } else {
-            user.setRole(Role.USER);
+        switch (userDto.getRole()) {
+            case "ADMIN" -> user.setRole(Role.ADMIN);
+            case "QA" -> user.setRole(Role.QA);
+            case "DEVELOPER" -> user.setRole(Role.DEVELOPER);
+            case "DEVOPS" -> user.setRole(Role.DEVOPS);
+            default -> user.setRole(Role.USER);
+        }
+        if (userDto.getTeamName() != null && !userDto.getTeamName().equals("")) {
+            user.setTeamName(userDto.getTeamName());
         }
         user.setPoints(1);
         user.setLastActive(LocalDateTime.now());
@@ -91,7 +98,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void registerAdmin(RegisterAdminDTO registerAdminDTO) throws CustomUserException {
         UserDTO.UserDTOBuilder adminBuilder = UserDTO.builder().username("admin").email("admin@abv.bg").role("ADMIN");
-        if (!registerAdminDTO.getPassword().equals("")) {
+        if (registerAdminDTO.getPassword() != null) {
             adminBuilder.password(registerAdminDTO.getPassword());
         } else {
             adminBuilder.password("admin");
@@ -167,9 +174,16 @@ public class UserServiceImpl implements UserService {
         if (event.getRoom().getRoomType().equals(RoomType.COMPUTER)) {
             chosenSeat.setOccupiesCharger(userReserveSpotDTO.isOccupiesCharger());
             chosenSeat.setOccupiesComputer(userReserveSpotDTO.isOccupiesComputer());
+            if (userReserveSpotDTO.isOccupiesComputer()) {
+                chosenSeat.setOccupiesComputerNumber(userReserveSpotDTO.getOccupiesComputerNumber());
+            }
+            if (userReserveSpotDTO.isOccupiesCharger()) {
+                chosenSeat.setOccupiesChargerNumber(userReserveSpotDTO.getOccupiesChargerNumber());
+            }
         }
         chosenSeat.setSeatTaken(true);
         chosenSeat.setUserThatOccupiedSeat(user.getUsername());
+        chosenSeat.setUserRole(user.getRole().toString());
         event.setAvailableSeats(event.getRoom().getSeatsNumber() - 1);
         seatRepository.save(chosenSeat);
         user.setEvents(addEvent(user, user.getEvents(), event));
@@ -198,28 +212,69 @@ public class UserServiceImpl implements UserService {
         if (event.getAvailableSeats() < seats) {
             throw new CustomEventException("There are not enough seats available!");
         }
+        int qaSeats = teamDTO.getQaSeats();
+        if (event.getAvailableQaSeats() < qaSeats) {
+            throw new CustomEventException("There are not enough QA seats available!");
+        }
+        int developerSeats = teamDTO.getDeveloperSeats();
+        if (event.getAvailableDeveloperSeats() < developerSeats) {
+            throw new CustomEventException("There are not enough DEVELOPER seats available!");
+        }
+        int devopsSeats = teamDTO.getDevopsSeats();
+        if (event.getAvailableDevopsSeats() < devopsSeats) {
+            throw new CustomEventException("There are not enough DEVOPS seats available!");
+        }
         if (event.getRoom() == null) {
             throw new CustomUserException("There is no such room!");
         }
+        List<UserDTO> registeredUsers = registerUsers(teamDTO.getUsers(), teamDTO.getName());
+        List<UserDTO> normalUserDtos = registeredUsers.stream().filter((user) -> Role.valueOf(user.getRole()).equals(Role.USER)).toList();
+        List<UserDTO> qaUserDtos = registeredUsers.stream().filter((user) -> Role.valueOf(user.getRole()).equals(Role.QA)).toList();
+        List<UserDTO> developerUserDtos = registeredUsers.stream().filter((user) -> Role.valueOf(user.getRole()).equals(Role.DEVELOPER)).toList();
+        List<UserDTO> devopsUserDtos = registeredUsers.stream().filter((user) -> Role.valueOf(user.getRole()).equals(Role.DEVOPS)).toList();
+        saveSeatsStatus(teamDTO, event, seats, SeatType.NORMAL, normalUserDtos);
+        saveSeatsStatus(teamDTO, event, qaSeats, SeatType.QA, qaUserDtos);
+        saveSeatsStatus(teamDTO, event, developerSeats, SeatType.DEVELOPER, developerUserDtos);
+        saveSeatsStatus(teamDTO, event, devopsSeats, SeatType.DEVOPS, devopsUserDtos);
+        event.setAvailableSeats(event.getAvailableSeats() - seats);
+        event.setAvailableQaSeats(event.getAvailableQaSeats() - qaSeats);
+        event.setAvailableDeveloperSeats(event.getAvailableDeveloperSeats() - developerSeats);
+        event.setAvailableDevopsSeats(event.getAvailableDevopsSeats() - devopsSeats);
+        eventRepository.save(event);
+
+    }
+
+    private void saveSeatsStatus(TeamDTO teamDTO, Event event, int seats, SeatType seatType, List<UserDTO> users) {
         int seatsNumberCount = 0;
-        for (Seat seat : event.getSeats()) {
+        for (int i = 0; i < event.getSeats().size(); i++) {
+            Seat seat = event.getSeats().get(i);
             if (seatsNumberCount == seats) {
                 break;
             }
-            if (!seat.isSeatTaken()) {
-                seatsNumberCount++;
+            if (!seat.isSeatTaken() && seat.getSeatType().equals(seatType)) {
                 if (event.getRoom().getRoomType().equals(RoomType.COMPUTER)) {
                     seat.setOccupiesComputer(teamDTO.isOccupiesComputer());
                     seat.setOccupiesCharger(teamDTO.isOccupiesCharger());
+                    if (seat.isOccupiesComputer()) {
+                        seat.setOccupiesComputerNumber(teamDTO.getOccupiesComputerNumber());
+                    }
+                    if (seat.isOccupiesCharger()) {
+                        seat.setOccupiesChargerNumber(teamDTO.getOccupiesChargerNumber());
+                    }
                 }
                 seat.setSeatTaken(true);
-                seat.setUserThatOccupiedSeat(teamDTO.getName());
+                User user = userRepository.getUserByUsername(users.get(seatsNumberCount).getUsername());
+                user.setEvents(addEvent(user, user.getEvents(), event));
+                user.setLastActive(LocalDateTime.now());
+                user.setPoints(user.getPoints() + 1);
+                user.setTemporaryUserExpirationDate(event.getDuration().getEndDate());
+                userRepository.save(user);
+                seat.setUserThatOccupiedSeat(user.getUsername());
+                seat.setUserRole(user.getRole().toString());
                 seatRepository.save(seat);
+                seatsNumberCount++;
             }
         }
-        event.setAvailableSeats(event.getAvailableSeats() - seats);
-        eventRepository.save(event);
-
     }
 
     @Override
@@ -251,7 +306,10 @@ public class UserServiceImpl implements UserService {
             chosenSeat.setOccupiesComputer(false);
         }
         chosenSeat.setSeatTaken(false);
+        chosenSeat.setUserRole(null);
         chosenSeat.setUserThatOccupiedSeat("");
+        chosenSeat.setOccupiesChargerNumber(0);
+        chosenSeat.setOccupiesComputerNumber(0);
         event.setAvailableSeats(event.getAvailableSeats() + 1);
         seatRepository.save(chosenSeat);
         user.getEvents().remove(event);
@@ -424,6 +482,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteInactiveUsers() {
+        List<User> users = userRepository.findAll().stream().filter(user -> user.getTemporaryUserExpirationDate() != null && user.getTemporaryUserExpirationDate().isBefore(LocalDateTime.now())).toList();
+        if (users.size() > 0) {
+            for (User user : users) {
+                List<Seat> seats = seatRepository.findAll();
+                for (Seat seat : seats) {
+                    Event seatEvent = seat.getEvent();
+                    if (seat.getUserThatOccupiedSeat().equals(user.getUsername())) {
+                        if(user.getRole().equals(Role.USER)){
+                            seatEvent.setAvailableSeats(seatEvent.getAvailableSeats() + 1);
+                        }else if(user.getRole().equals(Role.DEVELOPER)){
+                            seatEvent.setAvailableDeveloperSeats(seatEvent.getAvailableDeveloperSeats() + 1);
+                        }else if(user.getRole().equals(Role.QA)){
+                            seatEvent.setAvailableQaSeats(seatEvent.getAvailableQaSeats() + 1);
+                        }else if(user.getRole().equals(Role.DEVOPS)){
+                            seatEvent.setAvailableDevopsSeats(seatEvent.getAvailableDevopsSeats() + 1);
+                        }
+                        seat.setUserRole(null);
+                        seat.setSeatTaken(false);
+                        seat.setUserThatOccupiedSeat("");
+                        seat.setOccupiesChargerNumber(0);
+                        seat.setOccupiesComputerNumber(0);
+                        seat.setOccupiesComputer(false);
+                        seat.setOccupiesCharger(false);
+                    }
+                }
+                user.setEvents(null);
+                userRepository.delete(user);
+            }
+        }
+    }
+
+    @Override
     public void updatePassword(String password) throws CustomUserException {
         List<User> users = userRepository.findAll();
         User newUser = new User();
@@ -443,6 +534,19 @@ public class UserServiceImpl implements UserService {
         newUser.setPassword(passwordEncoder.encode(password));
         newUser.setIsPasswordChangeEnabled(false);
         userRepository.save(newUser);
+    }
+
+    private List<UserDTO> registerUsers(List<UserDTO> userDTOS, String teamName) throws CustomUserException {
+        List<UserDTO> newUserDtos = new ArrayList<>();
+        for (UserDTO userDTO : userDTOS) {
+            User userByUsername = userRepository.getUserByUsername(userDTO.getUsername());
+            if (userByUsername == null) {
+                userDTO.setTeamName(teamName);
+                registerUser(userDTO);
+                newUserDtos.add(userDTO);
+            }
+        }
+        return newUserDtos;
     }
 
     private List<LinkToPage> addLinks(List<LinkToPage> userLinks, List<String> linkToPageDTOS) {

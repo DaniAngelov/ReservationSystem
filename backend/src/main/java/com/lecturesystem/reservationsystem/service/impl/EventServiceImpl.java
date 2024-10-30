@@ -4,15 +4,19 @@ import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
 import com.lecturesystem.reservationsystem.model.dto.DurationDTO;
+import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
+import com.lecturesystem.reservationsystem.model.dto.TeamMemberDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
+import com.lecturesystem.reservationsystem.model.enums.Role;
 import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import com.lecturesystem.reservationsystem.repository.*;
 import com.lecturesystem.reservationsystem.service.EventService;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -42,6 +46,8 @@ public class EventServiceImpl implements EventService {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private final ModelMapper modelMapper = new ModelMapper();
+
     @Override
     public Event addEvent(EventDTO eventDTO) throws CustomEventException, SQLException, CustomUserException {
         Event eventByName = eventRepository.findEventByName(eventDTO.getName());
@@ -66,7 +72,7 @@ public class EventServiceImpl implements EventService {
                         event.setDescription(eventDTO.getDescription());
                         event.setEventType(eventDTO.getEventType());
                         event.setDuration(getDuration(eventDTO.getDuration()));
-                        event.setSeats(getSeats(room.getSeatsNumber()));
+                        event.setSeats(getSeats(room.getSeatsNumber(), room.getQaSeatsNumber(), room.getDeveloperSeatsNumber(), room.getDevopsSeatsNumber()));
                         event.setFloorNumber(eventDTO.getFloorNumber());
                         event.setRoomNumber(eventDTO.getRoomNumber());
                         event.setDisableEventDescription("");
@@ -76,6 +82,9 @@ public class EventServiceImpl implements EventService {
                             event.setQrCodeQuestions(new SerialBlob(eventDTO.getQrCodeQuestions().getBytes()));
                         }
                         event.setAvailableSeats(room.getSeatsNumber());
+                        event.setAvailableQaSeats(room.getQaSeatsNumber());
+                        event.setAvailableDeveloperSeats(room.getDeveloperSeatsNumber());
+                        event.setAvailableDevopsSeats(room.getDevopsSeatsNumber());
                         event.setFeedbackForm(new ArrayList<>());
                         event.setRoom(room);
                         addGuests(event, eventDTO);
@@ -245,6 +254,45 @@ public class EventServiceImpl implements EventService {
         return foundEvents.stream().sorted(Comparator.comparing(Event::getName)).collect(Collectors.toList());
     }
 
+    @Override
+    public List<TeamMemberDTO> getTeamMembersInfo() throws CustomUserException {
+        List<TeamMemberDTO> teamMemberDTOS = new ArrayList<>();
+        List<User> users = userRepository.findAll();
+        List<User> teamUsers = users.stream().filter(user -> user.getTeamName() != null && !user.getTeamName().equals("")).toList();
+        for (User user : teamUsers) {
+            List<Event> userEvents = getAllEventsForUser(user.getUsername());
+            List<SeatDTO> userSeats = getSeatsForUser(user.getUsername());
+            List<EventTeamMemberDTO> addEventDTOS = userEvents.stream().map(event -> modelMapper.map(event, EventTeamMemberDTO.class)).toList();
+            TeamMemberDTO teamMemberDTO = TeamMemberDTO.builder()
+                    .username(user.getUsername())
+                    .role(user.getRole().toString())
+                    .eventsReserved(addEventDTOS)
+                    .seatsReserved(userSeats).build();
+            teamMemberDTOS.add(teamMemberDTO);
+        }
+        return teamMemberDTOS;
+    }
+
+    private List<SeatDTO> getSeatsForUser(String username) {
+        List<Seat> seats = seatRepository.findAll();
+        List<Seat> userSeats = seats.stream().filter(seat -> seat.getUserThatOccupiedSeat().equals(username)).toList();
+        List<SeatDTO> seatDTOS = new ArrayList<>();
+        for (Seat seat : userSeats) {
+            SeatDTO seatDTO = SeatDTO.builder().seatTaken(seat.isSeatTaken())
+                    .seatNumber(seat.getSeatNumber())
+                    .seatType(seat.getSeatType())
+                    .userThatOccupiedSeat(seat.getUserThatOccupiedSeat())
+                    .userRole(seat.getUserRole())
+                    .occupiesChargerNumber(seat.getOccupiesChargerNumber())
+                    .occupiesComputerNumber(seat.getOccupiesComputerNumber())
+                    .occupiesCharger(seat.isOccupiesCharger())
+                    .occupiesComputer(seat.isOccupiesComputer())
+                    .build();
+            seatDTOS.add(seatDTO);
+        }
+        return seatDTOS;
+    }
+
     private void deleteEventForAllUsers(Event event) {
         for (User user : event.getUsers()) {
             user.getEvents().remove(event);
@@ -258,6 +306,7 @@ public class EventServiceImpl implements EventService {
             Seat seat = new Seat();
             seat.setSeatType(SeatType.LECTOR);
             seat.setSeatTaken(true);
+            seat.setUserRole(Role.LECTOR.toString());
             seat.setUserThatOccupiedSeat(organizer.getUsername());
             seat.setSeatNumber("L1");
             event.getSeats().add(seatRepository.save(seat));
@@ -289,6 +338,7 @@ public class EventServiceImpl implements EventService {
                     Seat seat = new Seat();
                     seat.setSeatType(SeatType.GUEST);
                     seat.setSeatTaken(true);
+                    seat.setUserRole(Role.LECTOR.toString());
                     seat.setUserThatOccupiedSeat(guest.getUsername());
                     seat.setSeatNumber("G" + counter);
                     event.getSeats().add(seatRepository.save(seat));
@@ -314,6 +364,7 @@ public class EventServiceImpl implements EventService {
                         Seat seat = new Seat();
                         seat.setSeatType(SeatType.GUEST);
                         seat.setSeatTaken(true);
+                        seat.setUserRole(Role.LECTOR.toString());
                         seat.setUserThatOccupiedSeat(guest.getUsername());
                         seat.setSeatNumber("G" + counter);
                         event.getSeats().add(seatRepository.save(seat));
@@ -352,18 +403,28 @@ public class EventServiceImpl implements EventService {
         return duration;
     }
 
-    private List<Seat> getSeats(int seatsNumber) {
+    private List<Seat> getSeats(int seatsNumber, int qaSeatsNumber, int developerSeatsNumber, int devopsSeatsNumber) {
         List<Seat> seats = new ArrayList<>();
-        for (int i = 0; i < seatsNumber; i++) {
-            Seat newSeat = new Seat();
-            newSeat.setSeatNumber("T" + (i + 1));
-            newSeat.setSeatTaken(false);
-            newSeat.setSeatType(SeatType.NORMAL);
-            newSeat.setUserThatOccupiedSeat("");
-            seats.add(seatRepository.save(newSeat));
-        }
+        generateSeats(seatsNumber, "N", seats, SeatType.NORMAL);
+        generateSeats(qaSeatsNumber, "QA", seats, SeatType.QA);
+        generateSeats(developerSeatsNumber, "DE", seats, SeatType.DEVELOPER);
+        generateSeats(devopsSeatsNumber, "DO", seats, SeatType.DEVOPS);
         return seats.stream()
                 .sorted(Comparator.comparing(Seat::getSeatNumber))
                 .collect(Collectors.toList());
+    }
+
+    private void generateSeats(int seatsNumber, String seatLetter, List<Seat> seats, SeatType seatType) {
+        for (int i = 0; i < seatsNumber; i++) {
+            Seat newSeat = new Seat();
+            newSeat.setSeatNumber(seatLetter + (i + 1));
+            newSeat.setSeatTaken(false);
+            newSeat.setSeatType(seatType);
+            newSeat.setUserThatOccupiedSeat("");
+            newSeat.setUserRole(null);
+            newSeat.setOccupiesChargerNumber(0);
+            newSeat.setOccupiesComputerNumber(0);
+            seats.add(seatRepository.save(newSeat));
+        }
     }
 }

@@ -51,4 +51,6 @@ public interface UserService {
     List<User> searchUser(SearchGuestDTO searchGuestDTO);
 
     User changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException;
+
+    void deleteInactiveUsers();
 }

@@ -9,6 +9,9 @@
                         {
                             "roomNumber": 55,
                             "seatsNumber": 150,
+                            "qaSeatsNumber": 10,
+                            "developerSeatsNumber": 10,
+                            "devopsSeatsNumber": 10,
                             "roomType": "COMPUTER"
                         }
                     ]

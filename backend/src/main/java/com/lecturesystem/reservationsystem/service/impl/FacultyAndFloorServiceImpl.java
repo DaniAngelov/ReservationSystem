@@ -8,7 +8,6 @@ import com.lecturesystem.reservationsystem.model.dto.export.ExportFacultyDTO;
 import com.lecturesystem.reservationsystem.model.entity.Faculty;
 import com.lecturesystem.reservationsystem.model.entity.Floor;
 import com.lecturesystem.reservationsystem.model.entity.Room;
-import com.lecturesystem.reservationsystem.repository.EventRepository;
 import com.lecturesystem.reservationsystem.repository.FacultyRepository;
 import com.lecturesystem.reservationsystem.repository.FloorRepository;
 import com.lecturesystem.reservationsystem.repository.RoomRepository;
@@ -129,6 +128,9 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
                 if (room.getRoomNumber() == roomDTO.getRoomNumber()) {
                     room.setEvents(new ArrayList<>());
                     room.setSeatsNumber(roomDTO.getSeatsNumber());
+                    room.setQaSeatsNumber(roomDTO.getQaSeatsNumber());
+                    room.setDeveloperSeatsNumber(roomDTO.getDeveloperSeatsNumber());
+                    room.setDevopsSeatsNumber(roomDTO.getDevopsSeatsNumber());
                     room.setFloorNumber(floor.getFloorNumber());
                     room.setFacultyName(faculty.getName());
                     if (roomDTO.getRoomImage() != null) {
@@ -143,6 +145,9 @@ public class FacultyAndFloorServiceImpl implements FacultyAndFloorService {
                 Room newRoom = new Room();
                 newRoom.setRoomNumber(roomDTO.getRoomNumber());
                 newRoom.setSeatsNumber(roomDTO.getSeatsNumber());
+                newRoom.setQaSeatsNumber(roomDTO.getQaSeatsNumber());
+                newRoom.setDeveloperSeatsNumber(roomDTO.getDeveloperSeatsNumber());
+                newRoom.setDevopsSeatsNumber(roomDTO.getDevopsSeatsNumber());
                 newRoom.setFloorNumber(floor.getFloorNumber());
                 newRoom.setFacultyName(faculty.getName());
                 newRoom.setEvents(new ArrayList<>());

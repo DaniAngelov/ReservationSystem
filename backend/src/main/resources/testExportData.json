@@ -1,0 +1,124 @@
+[ {
+  "name" : "Faculty of Mathematics and Informatics",
+  "floors" : [ {
+    "floorNumber" : 1,
+    "rooms" : [ {
+      "roomNumber" : 11,
+      "events" : [ {
+        "name" : "event 1",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 15,
+        "hasEnded" : true
+      } ],
+      "roomType" : "COMPUTER",
+      "seatsNumber" : 15
+    } ]
+  }, {
+    "floorNumber" : 2,
+    "rooms" : [ {
+      "roomNumber" : 22,
+      "events" : [ {
+        "name" : "event 2",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 10,
+        "hasEnded" : true
+      } ],
+      "roomType" : "SEMINAR",
+      "seatsNumber" : 10
+    }, {
+      "roomNumber" : 33,
+      "events" : [ ],
+      "roomType" : "NORMAL",
+      "seatsNumber" : 15
+    } ]
+  }, {
+    "floorNumber" : 3,
+    "rooms" : [ {
+      "roomNumber" : 33,
+      "events" : [ {
+        "name" : "event 3",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 10,
+        "hasEnded" : true
+      } ],
+      "roomType" : "COMPUTER",
+      "seatsNumber" : 10
+    }, {
+      "roomNumber" : 34,
+      "events" : [ ],
+      "roomType" : "NORMAL",
+      "seatsNumber" : 5
+    } ]
+  } ]
+}, {
+  "name" : "Faculty of Chemistry and Pharmacy",
+  "floors" : [ {
+    "floorNumber" : 1,
+    "rooms" : [ {
+      "roomNumber" : 19,
+      "events" : [ {
+        "name" : "event 11",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 10,
+        "hasEnded" : true
+      }, {
+        "name" : "nov event",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 10,
+        "hasEnded" : false
+      } ],
+      "roomType" : "NORMAL",
+      "seatsNumber" : 10
+    } ]
+  }, {
+    "floorNumber" : 2,
+    "rooms" : [ {
+      "roomNumber" : 25,
+      "events" : [ {
+        "name" : "event 22",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 10,
+        "hasEnded" : true
+      } ],
+      "roomType" : "COMPUTER",
+      "seatsNumber" : 10
+    }, {
+      "roomNumber" : 28,
+      "events" : [ ],
+      "roomType" : "COMPUTER",
+      "seatsNumber" : 10
+    } ]
+  }, {
+    "floorNumber" : 3,
+    "rooms" : [ {
+      "roomNumber" : 37,
+      "events" : [ {
+        "name" : "event 33",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 99,
+        "hasEnded" : true
+      } ],
+      "roomType" : "SEMINAR",
+      "seatsNumber" : 100
+    }, {
+      "roomNumber" : 38,
+      "events" : [ ],
+      "roomType" : "SEMINAR",
+      "seatsNumber" : 100
+    } ]
+  } ]
+} ]

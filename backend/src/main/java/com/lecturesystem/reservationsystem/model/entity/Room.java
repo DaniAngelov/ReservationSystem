@@ -26,6 +26,15 @@ public class Room implements Serializable {
     @Column(name = "seats_number")
     private int seatsNumber;
 
+    @Column(name = "developer_seats_number")
+    private int developerSeatsNumber;
+
+    @Column(name = "qa_seats_number")
+    private int qaSeatsNumber;
+
+    @Column(name = "devops_seats_number")
+    private int devopsSeatsNumber;
+
     @ManyToOne
     @JoinColumn(name = "floor_id")
     private Floor floor;

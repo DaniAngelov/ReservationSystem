@@ -10,6 +10,7 @@ const UserRegistrationComponent = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [userRole, setUserRole] = useState('');
   const [isUsernameValid, setIsUsernameValid] = useState(true);
   const [isPasswordValid, setIsPasswordValid] = useState(true);
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -62,7 +63,11 @@ const UserRegistrationComponent = () => {
     }
 
     if (Object.keys(validationErrors).length === 0) {
-      const user = { username, password, email };
+      const user = {
+        "username":username, 
+        "password":password,
+        "email": email,
+        "role": userRole };
       console.log(user);
       navigator('/successful-register');
       createUser(user).then((response) => {
@@ -87,37 +92,50 @@ const UserRegistrationComponent = () => {
         <form className='needs-validation register-custom-form p-3 bg-light' noValidate>
           <h1 className='text-center text-dark mb-4'>Sign up</h1>
           <p className='text-secondary text-center mb-4'>Welcome! Ready to finally join FMI DeskSpot and start booking events? Fill the form below and let's get started!</p>
-          <div className='form-group'>
-            <label className='form-label text-secondary fw-bold'>Username:</label>
-            <input required type='text' placeholder='Enter Username' name='username' value={username} className={`form-control ${isUsernameValid == true ? '' : 'is-invalid'}`}
+          <div className='form-floating mb-2'>
+            <input required type='text' placeholder='Enter Username' name='username' id="floatingInput21" value={username} className={`form-control ${isUsernameValid == true ? '' : 'is-invalid'}`}
               onChange={(e) => setUsername(e.target.value)}>
             </input>
+            <label for="floatingInput21 text-secondary">Username</label>
             {errors.username && <div class="invalid-feedback">
               {errors.username}
             </div>}
 
           </div>
 
-          <div className='form-group text-start mb-2'>
-            <label className='form-label text-secondary fw-bold'>Password:</label>
-            <input required type='password' placeholder='Enter Password' name='password' value={password} className={`form-control ${isPasswordValid == true ? '' : 'is-invalid'}`}
+          <div className='form-floating text-start mb-2'>
+            <input required type='password' placeholder='Enter Password' name='password' id="floatingInput22" value={password} className={`form-control ${isPasswordValid == true ? '' : 'is-invalid'}`}
               onChange={(e) => setPassword(e.target.value)}
             >
             </input>
+            <label for="floatingInput22 text-secondary">Password</label>
             {errors.password && <div class="invalid-feedback">
               {errors.password}
             </div>}
           </div>
 
-          <div className='form-group text-start mt-3'>
-            <label className='form-label text-secondary fw-bold'>Email:</label>
-            <input required type='email' placeholder='Enter Email Address' name='email' value={email} className={`form-control ${isEmailValid == true ? '' : 'is-invalid'}`}
+          <div className='form-floating text-start'>
+            <input required type='email' placeholder='Enter Email Address'  id="floatingInput23" name='email' value={email} className={`form-control ${isEmailValid == true ? '' : 'is-invalid'}`}
               onChange={(e) => setEmail(e.target.value)}>
             </input>
+            <label for="floatingInput23 text-secondary">Email</label>
             {errors.email && <div class="invalid-feedback">
               {errors.email}
             </div>}
           </div>
+
+          <div class="form-floating text-start mt-2">
+                  <select type="text" class="form-control text-start" id="floatingInput24" placeholder="Choose role" value={userRole}
+                    onChange={(e) => setUserRole(e.target.value)}>
+                    <option>USER</option>
+                    <option>QA</option>
+                    <option>DEVELOPER</option>
+                    <option>DEVOPS</option>
+                  </select>
+                  <label for="floatingInput24 text-light">
+                   Choose role
+                  </label>
+                </div>
           <button className='btn btn-submit-register btn-success' onClick={(e) => {
             saveUser(e);
           }

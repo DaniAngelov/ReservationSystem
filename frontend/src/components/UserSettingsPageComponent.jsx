@@ -365,13 +365,18 @@ const UserSettingsPageComponent = () => {
 
   const OpenUserSettings = () => {
     return (<>
-      <div className='container'>
-        <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
+      <div>
+        <button className='btn btn-user-settings-user-page btn-success text-start font-weight-bold' onClick={() => {
           toggleUserPreferencesForm();
           closeLanguagePreferencesForm();
         }}>
           <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
           <h4 className='header-user-icon'>{user}</h4>
+        </button>
+        <button className='btn btn-user-settings-user-role btn-dark'>
+          {newLanguage == 'ENG' && 'Role: '}
+          {newLanguage == 'BG' && 'Роля: '}
+          {role}
         </button>
       </div></>)
   }
@@ -839,6 +844,7 @@ const UserSettingsPageComponent = () => {
 
   const disableNewEvent = (e, disableReason) => {
     e.preventDefault();
+    chosenEvent.enabled = false;
     const disableEventDTO = {
       "disableReason": disableReason,
       "disableEventDescription": disableEventDescription,
@@ -849,9 +855,9 @@ const UserSettingsPageComponent = () => {
     disableUserEvent(JSON.stringify(disableEventDTO), token).then((response) => {
       console.log("response");
       console.log(response);
-
       { newLanguage == 'ENG' && alert("You have successfully disabled this event!") }
       { newLanguage == 'BG' && alert("Успешно прекратихте това събитие!") }
+      closeSidebar();
       setDisableEvent(false);
       setDisableEventForm(false);
     }).catch((error) => {
@@ -987,7 +993,7 @@ const UserSettingsPageComponent = () => {
                   {newLanguage == 'BG' && 'Запазени събития'}
                 </button>
               </li>
-              {role != 'USER' && <li>
+              {(role == 'ADMIN' || role == 'LECTOR') && <li>
                 <button className='btn btn-item-your-created-events btn-success text-light' onClick={() => {
                   closeDashboard();
                   closeAuthenticationForm();
@@ -1009,7 +1015,7 @@ const UserSettingsPageComponent = () => {
                   {newLanguage == 'BG' && 'Твоите създадени събития'}
                 </button>
               </li>}
-              {role != 'USER' && <li><button className='btn btn-item-add-link btn-success text-light' onClick={() => {
+              {(role == 'ADMIN' || role == 'LECTOR') && <li><button className='btn btn-item-add-link btn-success text-light' onClick={() => {
                 closeDashboard();
                 closeCreatedEventsDashboard();
                 closeAuthenticationForm();
@@ -1274,6 +1280,7 @@ const UserSettingsPageComponent = () => {
     console.log(JSON.stringify(feedbackDTO));
     addFeedbackForm(JSON.stringify(feedbackDTO), token).then((response) => {
       console.log("response");
+      finishedEvents.length = finishedEvents.length - 1;
       console.log(response);
       alert("Thank you for your feedback!");
       setFeedbackForm(false);

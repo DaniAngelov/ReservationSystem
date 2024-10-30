@@ -73,6 +73,12 @@ public class User implements Serializable, UserDetails {
     @Column
     private String languagePreferred;
 
+    @Column
+    private LocalDateTime temporaryUserExpirationDate;
+
+    @Column
+    private String teamName;
+
     @Override
     public String getUsername() {
         return this.username;

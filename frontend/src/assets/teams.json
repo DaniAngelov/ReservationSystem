@@ -1,10 +1,51 @@
 {
-  "name": "Rocket",
-  "seats": 5,
-  "eventName": "event 66",
-  "floorNumber": 4,
+  "name": "Rocket-444",
+  "seats": 3,
+  "qaSeats": 1,
+  "developerSeats": 1,
+  "devopsSeats":1,
+  "eventName": "event 3",
+  "floorNumber": 3,
   "facultyName": "Faculty of Mathematics and Informatics",
-  "roomNumber": 44,
+  "roomNumber": 33,
   "occupiesComputer": true,
-  "occupiesCharger": true
+  "occupiesCharger": true,
+  "users":[
+    {
+      "username": "user1",
+      "password": "user1",
+      "email": "user1@abv.bg",
+      "role": "USER"
+    },
+    {
+      "username": "user2",
+      "password": "user2",
+      "email": "user2@abv.bg",
+      "role": "USER"
+    },
+    {
+      "username": "user3",
+      "password": "user3",
+      "email": "user3@abv.bg",
+      "role": "USER"
+    },
+    {
+      "username": "dev1",
+      "password": "dev1",
+      "email": "dev1@abv.bg",
+      "role": "DEVELOPER"
+    },
+    {
+      "username": "qa1",
+      "password": "qa1",
+      "email": "qa1@abv.bg",
+      "role": "QA"
+    },
+    {
+      "username": "devops1",
+      "password": "devops1",
+      "email": "devops1@abv.bg",
+      "role": "DEVOPS"
+    }
+  ]
 }

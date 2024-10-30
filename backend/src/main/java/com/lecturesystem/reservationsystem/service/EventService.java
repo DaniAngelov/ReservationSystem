@@ -3,6 +3,7 @@ package com.lecturesystem.reservationsystem.service;
 import com.lecturesystem.reservationsystem.exception.CustomEventException;
 import com.lecturesystem.reservationsystem.exception.CustomUserException;
 import com.lecturesystem.reservationsystem.model.dto.AddFeedbackFormDTO;
+import com.lecturesystem.reservationsystem.model.dto.TeamMemberDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.Event;
@@ -35,5 +36,7 @@ public interface EventService {
     Event getSpecificEventByName(String eventName) throws CustomEventException;
 
     List<Event> searchEventByName(SearchEventByNameDTO addEventByNameDTO) throws CustomEventException;
+
+    List<TeamMemberDTO> getTeamMembersInfo() throws CustomUserException;
 
 }

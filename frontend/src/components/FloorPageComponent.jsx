@@ -17,7 +17,7 @@ import axios from 'axios';
 import { Button } from "react-bootstrap";
 import { HiDesktopComputer } from "react-icons/hi"
 import { LuCable } from "react-icons/lu";
-import { getUserByUsername, getUsers, reserveTeam, reserveTeamJSON } from '../services/UserService';
+import { deleteInactiveUsers, getUserByUsername, getUsers, reserveTeam, reserveTeamJSON } from '../services/UserService';
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -51,6 +51,11 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const [teamName, setTeamName] = useState('');
   const [teamNumber, setTeamNumber] = useState(0);
+  const [teamQaNumber, setTeamQaNumber] = useState(0);
+  const [teamDeveloperNumber, setTeamDeveloperNumber] = useState(0);
+  const [teamDevopsNumber, setTeamDevopsNumber] = useState(0);
+  const [computerNumber, setComputerNumber] = useState(0);
+  const [chargerNumber, setChargerNumber] = useState(0);
   const [teamEvent, setTeamEvent] = useState('');
   const [teamOccupiesCharger, setTeamOccupiesCharger] = useState(false);
   const [teamOccupiesComputer, setTeamOccupiesComputer] = useState(false);
@@ -71,7 +76,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [computerColor, setComputerColor] = useState('white');
   const [chargerColor, setChargerColor] = useState('white');
 
-  const [uploadSystemFile, setUploadSystemFile] = useState(false);
+  const [manualFormImport, setManualFormImport] = useState(false);
 
   const [eventSearchField, setEventSearchField] = useState('');
 
@@ -81,14 +86,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const toggleOccupiesCharger = () => {
     return setTeamOccupiesCharger(!teamOccupiesCharger);
-  }
-
-  const toggleUploadSystemFile = () => {
-    return setUploadSystemFile(!uploadSystemFile);
-  }
-
-  const closeUploadSystemFile = () => {
-    return setTeamOccupiesCharger(false);
   }
 
   const setButtonColor = (room) => {
@@ -103,8 +100,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   useEffect(() => {
     getUserByUsername(user, token).then((response) => {
-      console.log("response for current user")
-      console.log(response.data);
       setNewLanguage(response.data.languagePreferred);
     }).catch((error) => {
       console.log("error");
@@ -113,10 +108,18 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   }, []);
 
   useEffect(() => {
+    deleteInactiveUsers(token).then((response) => {
+      console.log("response")
+      console.log(response.data)
+    }).catch((error) => {
+      console.log("error")
+      console.log(error)
+    })
+  }, []);
+
+  useEffect(() => {
     getEvents(token)
       .then((response) => {
-        console.log("RESPONSE:");
-        console.log(response.data);
         const newEvents = [];
         response.data.map(event => {
           newEvents.push(event);
@@ -132,7 +135,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     getFloors(token).then((response) => {
       const newFloors = [];
       const newMap = [];
-      console.log(response.data);
       response.data.map(faculty => {
         faculty.floors.map(
           floor => {
@@ -141,8 +143,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               newMap.push({ facultyName: faculty.name, floorNumber: floor.floorNumber, room: room, roomColor: setButtonColor(room) });
             })
           })
-      });
-      console.log()
+      })
       setFaculties(response.data);
       setFloorNumbers(newFloors);
       setNewRooms(newMap);
@@ -158,7 +159,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const OpenUserSettings = () => {
     return (<><div className='container'>
-      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={toggleUserPreferencesForm}>
+      <button className='btn btn-user-settings-floors btn-success text-start font-weight-bold' onClick={toggleUserPreferencesForm}>
         <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid' />
         <h4 className='header-user-icon'>{user}</h4>
       </button>
@@ -172,6 +173,15 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const closeImportDataFromJson = () => {
     return setImportDataFromJson(false);
   }
+
+  const toggleManualFormImport = () => {
+    return setManualFormImport(true);
+  }
+
+  const closeManualFormImport = () => {
+    return setManualFormImport(false);
+  }
+
 
   const toggleImportDataForTeam = () => {
     return setImportDataForTeam(true);
@@ -459,13 +469,13 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               <a class="btn dropdown-floors btn-secondary dropdown-toggle bt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-theme="dark">
                 {newLanguage == 'ENG' && 'Faculty - Floor'}
                 {newLanguage == 'BG' && 'Факултет - Етаж'}
-                {console.log("newLanguage")}
-                {console.log(newLanguage)}
               </a>
               <ul class="dropdown-menu dropdown-floors-item dropdown-menu-dark text-center">
 
                 {floorNumbers.map((floor, idx) => {
                   return <li key={idx}><a className="dropdown-item" onClick={() => {
+                    closeRoomOptionsForm();
+                    closeRoomOptionsFormPart2();
                     setChosenFaculty(floor.facultyName);
                     setChosenFloor(floor.floorNumber);
                     { generateRoomsEnabled == false && toggleGenerateRoomsEnabled() }
@@ -551,9 +561,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   }
 
   const checkIfEventStillContinues = () => {
-
-    console.log("THIS EVENTS")
-    console.log(events)
     events.map(event => {
       let eventEndDate = event.duration.endDate.replace('T', ' ');
       const nowTime = new Date(Date.now());
@@ -562,7 +569,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         const request = {
           "name": event.name
         }
-        console.log(JSON.stringify(request))
         endEvent(JSON.stringify(request), token).then((response) => {
         }).catch((error) => {
           console.log("error");
@@ -669,9 +675,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     e.preventDefault();
 
     exportData(token).then((response) => {
-      console.log("Response data:")
-      console.log(response.headers.get("Content-Disposition").split('"')[1])
-
       const element = document.createElement("a");
       const textFile = new Blob([JSON.stringify(response.data)], { type: 'text/plain' }); //pass data from localStorage API to blob
       element.href = URL.createObjectURL(textFile);
@@ -719,16 +722,18 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       const teamDTO = {
         "name": teamName,
         "seats": teamNumber,
+        "qaSeats": teamQaNumber,
+        "developerSeats": teamDeveloperNumber,
+        "devopsSeats": teamDevopsNumber,
         "eventName": teamEvent,
         "facultyName": foundEvent.facultyName,
         "floorNumber": foundEvent.floorNumber,
         "roomNumber": foundEvent.roomNumber,
         "occupiesComputer": teamOccupiesComputer,
+        "occupiesComputerNumber": computerNumber,
         "occupiesCharger": teamOccupiesCharger,
+        "occupiesChargerNumber": chargerNumber
       }
-
-      console.log("TEAM DTO");
-      console.log(JSON.stringify(teamDTO));
       reserveTeam(JSON.stringify(teamDTO), token).then((response) => {
         console.log("response")
         console.log(response.data)
@@ -787,6 +792,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     return (<div className='import-team-div bg-dark p-5'>
       <button className="btn-close-import-team-form btn btn-danger" onClick={(e) => {
         closeImportDataForm(e)
+        closeUploadFileAlert();
+        closeUploadFileTeamsAlert();
       }}>x</button>
       <h1 className='form-label text-light text-center mb-5 mr-5'>
         {newLanguage == 'ENG' && 'Import data'}
@@ -797,15 +804,25 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         <Button className='btn-import-data-json btn-dark text-light p-2' onClick={() => {
           toggleImportDataFromJson();
           closeImportDataForTeam();
+          closeManualFormImport();
         }}>{newLanguage == 'ENG' && 'System'}
           {newLanguage == 'BG' && 'Система'}</Button>
 
         <Button className='btn-import-data-team btn-dark text-light p-2 ml-1' onClick={() => {
           closeImportDataFromJson();
+          closeManualFormImport();
           toggleImportDataForTeam();
         }}>{newLanguage == 'ENG' && 'Teams'}
           {newLanguage == 'BG' && 'Отбори'}</Button>
+        <Button className='btn-import-data-team-manual btn-dark text-light p-2 ml-1' onClick={() => {
+          closeImportDataFromJson();
+          closeImportDataForTeam();
+          toggleManualFormImport();
+        }}>{newLanguage == 'ENG' && 'Teams (Form)'}
+          {newLanguage == 'BG' && 'Отбори (Форма)'}</Button>
       </div>
+
+
 
       {importDataForTeam == true &&
 
@@ -822,89 +839,134 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
             {newLanguage == 'ENG' && 'Import JSON Teams File:'}
             {newLanguage == 'BG' && 'Зареждане на JSON файл с отбори:'}
           </p>
-
-          <div><h5 className='manual-json-file-header p-2 mb-3 text-secondary'>
-            {newLanguage == 'ENG' && 'Team Creation Form (Manual)'}
-            {newLanguage == 'BG' && 'Форма за създаване на отбор'}
-          </h5>
-            <form className='create-team-form'>
-              <div className='row'>
-                <div className='col'>
-                  <div class="form-floating text-start mb-2 mt-3">
-                    <input type="text" class="form-control text-start" id="floatingInput" value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)} />
-                    <label for="floatingInput text-light">
-                      {newLanguage == 'ENG' && "Team name"}
-                      {newLanguage == 'BG' && "Име на отбор"}
-                    </label>
-                  </div>
-                  <div class="form-floating text-start mb-2 mt-3">
-                    <input type="number" class="form-control text-start" id="floatingInput" value={teamNumber}
-                      onChange={(e) => setTeamNumber(e.target.value)} />
-                    <label for="floatingInput text-light">
-                      {newLanguage == 'ENG' && "Seats for reservation"}
-                      {newLanguage == 'BG' && "Места за резервиране"}
-                    </label>
-                  </div>
-                  <div class="form-floating text-start mb-5 mt-3">
-                    <input class="form-control mr-sm-2 text-start" type="search" placeholder="Search for event" id="floatingInput15" aria-label="Search" value={eventSearchField}
-                      data-bs-toggle="dropdown" aria-expanded="false" onChange={(e) => {
-                        setEventSearchField(e.target.value);
-                        findEvent(e, e.target.value);
-                        setTeamEvent(e.target.value);
-                      }
-                      } />
-                    <label for="floatingInput15 text-light ml-5 text-start">
-                      {newLanguage == 'ENG' && "Event name"}
-                      {newLanguage == 'BG' && "Име на събитие"}
-                    </label>
-                    <ul class="dropdown-menu w-100">
-                      {filteredEvents.map((event, idx) => {
-                        return <li key={idx}><a className="dropdown-item p-2" onClick={(e) => {
-                          {
-                            toggleEventList(e);
-                          }
-                        }} >
-                          {event.name}
-                        </a></li>
-                      })}
-
-                    </ul>
-                  </div>
-                  <div className='check-buttons-create-team row mt-2'>
-                    <div className='col'>
-                      <h5 className='text-light'>
-                        {newLanguage == 'ENG' && "Computer"}
-                        {newLanguage == 'BG' && "Лаптоп"}
-                      </h5>
-                      <Button onClick={() => {
-                        { toggleOccupiesComputer() }
-                        { updateComputerColor() }
-                      }}>
-                        <HiDesktopComputer size={30} color={computerColor} />
-                      </Button>
-                    </div>
-                    <div className='= col'>
-                      <h5 className='text-light mb-2'>
-                        {newLanguage == 'ENG' && "Charger"}
-                        {newLanguage == 'BG' && "Зарядно"}
-                      </h5>
-                      <Button onClick={() => {
-                        { toggleOccupiesCharger() }
-                        { updateChargerColor() }
-                      }}>
-                        <LuCable size={30} color={chargerColor} />
-                      </Button>
-                    </div>
-                  </div>
-                  <button className='btn-add-team btn text-center btn-primary mt-5 w-100' onClick={(event) => addNewTeam(event)}>
-                    {newLanguage == 'ENG' && "Save"}
-                    {newLanguage == 'BG' && "Запази"}
-                  </button>
-                </div>
-              </div>
-            </form></div>
         </div>}
+
+      {manualFormImport && <div><h3 className='manual-json-file-header p-2 mb-3 text-secondary'>
+        {newLanguage == 'ENG' && 'Team Creation Form (Manual)'}
+        {newLanguage == 'BG' && 'Форма за създаване на отбор'}
+      </h3>
+        <form className='create-team-form'>
+          <div class="form-floating text-start mb-2 mt-3">
+            <input type="text" class="form-control text-start" id="floatingInput31" value={teamName}
+              onChange={(e) => setTeamName(e.target.value)} />
+            <label for="floatingInput31 text-light">
+              {newLanguage == 'ENG' && "Team name"}
+              {newLanguage == 'BG' && "Име на отбор"}
+            </label>
+          </div>
+          <div class="form-floating text-start mb-5 mt-3">
+            <input class="form-control mr-sm-2 text-start" type="search" placeholder="Search for event" id="floatingInput15" aria-label="Search" value={eventSearchField}
+              data-bs-toggle="dropdown" aria-expanded="false" onChange={(e) => {
+                setEventSearchField(e.target.value);
+                findEvent(e, e.target.value);
+                setTeamEvent(e.target.value);
+              }
+              } />
+            <label for="floatingInput15 text-light ml-5 text-start">
+              {newLanguage == 'ENG' && "Event name"}
+              {newLanguage == 'BG' && "Име на събитие"}
+            </label>
+            <ul class="dropdown-menu w-100">
+              {filteredEvents.map((event, idx) => {
+                return <li key={idx}><a className="dropdown-item p-2" onClick={(e) => {
+                  {
+                    toggleEventList(e);
+                  }
+                }} >
+                  {event.name}
+                </a></li>
+              })}
+            </ul>
+          </div>
+          <div>
+          </div>
+
+          <div className='create-form-seats-section-div'>
+            <div class="form-floating text-start mb-2 mt-3">
+              <input type="number" class="form-control text-start" id="floatingInput16" value={teamNumber}
+                onChange={(e) => setTeamNumber(e.target.value)} />
+              <label for="floatingInput16 text-light">
+                {newLanguage == 'ENG' && "Seats for reservation (Normal)"}
+                {newLanguage == 'BG' && "Места за резервиране (Нормални)"}
+              </label>
+            </div>
+            <div class="form-floating text-start mb-2 mt-3">
+              <input type="number" class="form-control text-start" id="floatingInput18" value={teamDeveloperNumber}
+                onChange={(e) => setTeamDeveloperNumber(e.target.value)} />
+              <label for="floatingInput18 text-light">
+                {newLanguage == 'ENG' && "Seats for reservation (Developer)"}
+                {newLanguage == 'BG' && "Места за резервиране (Разработчик)"}
+              </label>
+            </div>
+            <div class="form-floating text-start mb-2 mt-3">
+              <input type="number" class="form-control text-start" id="floatingInput19" value={teamQaNumber}
+                onChange={(e) => setTeamQaNumber(e.target.value)} />
+              <label for="floatingInput19 text-light">
+                {newLanguage == 'ENG' && "Seats for reservation (QA)"}
+                {newLanguage == 'BG' && "Места за резервиране (Тестър)"}
+              </label>
+            </div>
+            <div class="form-floating text-start mb-2 mt-3">
+              <input type="number" class="form-control text-start" id="floatingInput20" value={teamDevopsNumber}
+                onChange={(e) => setTeamDevopsNumber(e.target.value)} />
+              <label for="floatingInput20 text-light">
+                {newLanguage == 'ENG' && "Seats for reservation (Devops)"}
+                {newLanguage == 'BG' && "Места за резервиране (Девопс)"}
+              </label>
+            </div>
+          </div>
+
+          <div className='check-buttons-create-team'>
+            <div className='team-occupy-computer'>
+              <h5 className='text-light'>
+                {newLanguage == 'ENG' && "Computer"}
+                {newLanguage == 'BG' && "Лаптоп"}
+              </h5>
+              <Button onClick={() => {
+                { toggleOccupiesComputer() }
+                { updateComputerColor() }
+              }}>
+                <HiDesktopComputer size={30} color={computerColor} />
+              </Button>
+            </div>
+            <div className='team-occupy-charger ml-4'>
+              <h5 className='text-light'>
+                {newLanguage == 'ENG' && "Charger"}
+                {newLanguage == 'BG' && "Зарядно"}
+              </h5>
+              <Button onClick={() => {
+                { toggleOccupiesCharger() }
+                { updateChargerColor() }
+              }}>
+                <LuCable size={30} color={chargerColor} />
+              </Button>
+            </div>
+          </div>
+          <div className='team-equipment-div'>
+            {teamOccupiesComputer && <div class="form-floating computer-number-team-div text-start mb-2 mt-3">
+              <input type="number" class="form-control text-start" id="floatingInput28" value={computerNumber}
+                onChange={(e) => setComputerNumber(e.target.value)} />
+              <label for="floatingInput28 text-light">
+                {newLanguage == 'ENG' && "Computer Number"}
+                {newLanguage == 'BG' && "Брой лаптопи"}
+              </label>
+            </div>}
+            {teamOccupiesCharger && <div class="form-floating charger-number-team-div text-start mb-2 mt-3">
+              <input type="number" class="form-control text-start" id="floatingInput29" value={chargerNumber}
+                onChange={(e) => setChargerNumber(e.target.value)} />
+              <label for="floatingInput29 text-light">
+                {newLanguage == 'ENG' && "Charger Number"}
+                {newLanguage == 'BG' && "Брой зарядни"}
+              </label>
+            </div>}
+          </div>
+          <button className='btn-add-team btn text-center btn-primary mt-5' onClick={(event) => addNewTeam(event)}>
+            {newLanguage == 'ENG' && "Save"}
+            {newLanguage == 'BG' && "Запази"}
+          </button>
+
+        </form>
+      </div>}
 
       {importDataFromJson == true &&
 
@@ -947,6 +1009,21 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       uploadStartData().then((response) => {
         console.log("Response" + response.data)
         console.log(response.data);
+        const newFloors = [];
+        const newMap = [];
+        response.data.map(faculty => {
+          faculty.floors.map(
+            floor => {
+              newFloors.push({ facultyName: faculty.name, floorNumber: floor.floorNumber });
+              floor.rooms.map(room => {
+                newMap.push({ facultyName: faculty.name, floorNumber: floor.floorNumber, room: room, roomColor: setButtonColor(room) });
+              })
+            })
+        })
+        setFaculties(response.data);
+        setFloorNumbers(newFloors);
+        setNewRooms(newMap);
+
         { newLanguage == 'ENG' && alert("Data uploaded!"); }
         { newLanguage == 'BG' && alert("Данните са заредени!"); }
 

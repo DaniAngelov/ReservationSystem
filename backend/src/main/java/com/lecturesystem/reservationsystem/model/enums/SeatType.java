@@ -1,5 +1,5 @@
 package com.lecturesystem.reservationsystem.model.enums;
 
 public enum SeatType {
-    NORMAL, GUEST, LECTOR
+    NORMAL, GUEST, LECTOR, DEVELOPER, QA, DEVOPS
 }

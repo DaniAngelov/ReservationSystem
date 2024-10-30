@@ -16,6 +16,9 @@ public class RoomDTO {
     private List<EventDTO> events;
     private RoomType roomType;
     private int seatsNumber;
+    private int developerSeatsNumber;
+    private int qaSeatsNumber;
+    private int devopsSeatsNumber;
     private String roomImage;
     private Integer floorNumber;
     private String facultyName;

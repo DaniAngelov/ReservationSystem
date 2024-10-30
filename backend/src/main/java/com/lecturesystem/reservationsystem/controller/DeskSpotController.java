@@ -65,13 +65,13 @@ public class DeskSpotController {
 
     @PostMapping("/events")
     @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN')")
-    public void addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException, CustomUserException {
+    public ResponseEntity<AddEventDTO> addEvent(@RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException, CustomUserException {
         Event event = eventService.addEvent(eventDTO);
-        new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
+        return new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
     }
 
     @PutMapping("/events/search")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<List<AddEventDTO>> searchEvent(@RequestBody SearchEventDTO searchEventDTO) throws CustomUserException, SQLException, IOException {
         List<Event> events = eventService.searchEvents(searchEventDTO);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(toList());
@@ -81,7 +81,7 @@ public class DeskSpotController {
     }
 
     @PutMapping("/events/search-by-name")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<List<AddEventDTO>> searchEventByName(@RequestBody SearchEventByNameDTO searchEventByNameDTO) throws CustomEventException, CustomUserException, SQLException, IOException {
         List<Event> events = eventService.searchEventByName(searchEventByNameDTO);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(toList());
@@ -91,14 +91,14 @@ public class DeskSpotController {
     }
 
     @PutMapping("/events/delete-inactive-event")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<?> deleteEvent(@RequestBody DeleteEventDTO deleteEventDTO) throws CustomEventException {
         eventService.deleteEvent(deleteEventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/events/user")
-    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN', 'USER')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<?> deleteEventForUser(@RequestBody UserDeleteEventDTO userDeleteEventDTO) throws CustomEventException, CustomUserException {
         eventService.deleteEventForUser(userDeleteEventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -112,7 +112,7 @@ public class DeskSpotController {
     }
 
     @GetMapping("/events")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<List<AddEventDTO>> getAllEventsSorted(@RequestParam String sortField) throws SQLException, IOException, CustomUserException {
         List<Event> events = eventService.getAllEvents(sortField);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
@@ -130,7 +130,7 @@ public class DeskSpotController {
     }
 
     @GetMapping("/events/user")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForUser(@RequestParam String username) throws CustomUserException, SQLException, IOException {
         List<Event> events = eventService.getAllEventsForUser(username);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
@@ -140,7 +140,7 @@ public class DeskSpotController {
     }
 
     @GetMapping("/events/organizer")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<List<AddEventDTO>> getAllEventsSortedForOrganizer(@RequestParam String organizer) throws CustomUserException {
         List<Event> events = eventService.getAllEventsForOrganizer(organizer);
         List<AddEventDTO> eventDTOS = events.stream().map(event -> modelMapper.map(event, AddEventDTO.class)).collect(Collectors.toList());
@@ -149,7 +149,7 @@ public class DeskSpotController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('USER', 'LECTOR','ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<List<FacultyDTO>> getAllFloorsWithDetailsSorted() throws SQLException, IOException {
         List<Faculty> faculties = facultyAndFloorService.getAllFloors();
         List<FacultyDTO> facultyDTOS = faculties.stream().map(faculty -> modelMapper.map(faculty, FacultyDTO.class)).collect(Collectors.toList());
@@ -158,14 +158,14 @@ public class DeskSpotController {
     }
 
     @PutMapping("/events/feedback")
-    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN', 'USER')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<?> addFeedback(@RequestBody AddFeedbackFormDTO addFeedbackFormDTO) throws CustomEventException, CustomUserException {
         eventService.addFeedback(addFeedbackFormDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/events/event-end")
-    @PreAuthorize("hasAnyAuthority('LECTOR', 'ADMIN', 'USER')")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<?> endAnEvent(@RequestBody EndEventDTO endEventDTO) throws CustomEventException {
         eventService.endEvent(endEventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -198,8 +198,14 @@ public class DeskSpotController {
         return new ResponseEntity<>(wrapperDTO, HttpStatus.CREATED);
     }
 
+    @GetMapping("/team-member-data")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<List<TeamMemberDTO>> getTeamMembersData() throws CustomUserException {
+        return new ResponseEntity<>(eventService.getTeamMembersInfo(), HttpStatus.OK);
+    }
+
     @PostMapping("/upload-start-data")
-    public void uploadStartData() throws IOException, CustomUserException, CustomEventException, SQLException {
+    public ResponseEntity<List<FacultyDTO>> uploadStartData() throws IOException, CustomUserException, CustomEventException, SQLException {
 
         Path path = Paths.get("backend/src/main/resources/data.json");
         String name = "data.json";
@@ -214,6 +220,8 @@ public class DeskSpotController {
             readDataFromFile(new MockMultipartFile(name,
                     originalFileName, contentType, content));
         }
+
+        return getAllFloorsWithDetailsSorted();
     }
 
     @GetMapping(value = "/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -222,7 +230,7 @@ public class DeskSpotController {
         objectMapper.registerModule(new JavaTimeModule());
         List<ExportFacultyDTO> exportFacultyDTO = facultyAndFloorService.getWrapperDTO();
         ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-        File newFile = new File("C:\\Users\\jorda\\OneDrive\\Desktop\\test24.json");
+        File newFile = new File("backend/src/main/resources/testExportData.json");
         writer.writeValue(newFile, exportFacultyDTO);
         ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
                 .filename(newFile.getName())

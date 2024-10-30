@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Button, Carousel } from "react-bootstrap";
 import { HiDesktopComputer } from "react-icons/hi"
 import { LuCable } from "react-icons/lu";
-import { PiOfficeChairFill } from "react-icons/pi";
+import { PiOfficeChair, PiOfficeChairFill } from "react-icons/pi";
 import { MdEventAvailable } from "react-icons/md";
 import { jwtDecode } from 'jwt-decode'
 import { IoMdSearch } from "react-icons/io";
@@ -21,6 +21,8 @@ import { RiLogoutBoxLine } from "react-icons/ri";
 import { IoSettingsSharp } from "react-icons/io5";
 import { FaHome } from 'react-icons/fa';
 import { VscThreeBars } from "react-icons/vsc";
+import { GiOfficeChair } from "react-icons/gi";
+import { MdChair } from "react-icons/md";
 
 
 const RoomsPageComponent = (parentRoom) => {
@@ -90,8 +92,9 @@ const RoomsPageComponent = (parentRoom) => {
 
   const [newLanguage, setNewLanguage] = useState('');
 
-  const navigator = useNavigate();
+  const [openSeatLegend, setOpenSeatLegend] = useState(true);
 
+  const navigator = useNavigate();
 
   const toggleQrQuestionsInputEnable = () => {
     return setQrQuestionsInputEnable(!qrQuestionsInputEnable);
@@ -111,6 +114,14 @@ const RoomsPageComponent = (parentRoom) => {
 
   const closeSeatTakenEventForm = () => {
     return setSeatTakenEventForm(false);
+  }
+
+  const ToggleSeatLegend = () => {
+    return setOpenSeatLegend(true);
+  }
+
+  const closeSeatLegend = () => {
+    return setOpenSeatLegend(false);
   }
 
   const ToggleReleaseSeats = () => {
@@ -647,6 +658,7 @@ const RoomsPageComponent = (parentRoom) => {
             <div className="sd-body text-center row">
               <button className='reserve-spot-event-sidebar-logo btn btn-dark' onClick={() => {
                 closeSidebar();
+                ToggleSeatLegend();
               }}>
                 <VscThreeBars size={20} className=' text-light' />
               </button>
@@ -705,6 +717,7 @@ const RoomsPageComponent = (parentRoom) => {
       closeDisableEventAlert();
       closeResourceLinkAlert();
       closeSeatTakenEventForm();
+      ToggleSeatLegend();
       toggleUpdateSeats();
     }
 
@@ -741,7 +754,9 @@ const RoomsPageComponent = (parentRoom) => {
           <small>{newLanguage == 'ENG' && "Room"}
             {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
           <br />
-          {event.linkToPage == null ? <small>
+          {console.log("LINK TO PAGES")}
+          {console.log()}
+          {(event.linkToPage == null || event.linkToPage.length == 0) ? <small>
             {newLanguage == 'ENG' && "Organizer"}
             {newLanguage == 'BG' && "Организатор"}
             : {event.organizer}</small> :
@@ -786,6 +801,7 @@ const RoomsPageComponent = (parentRoom) => {
                                   text-light p-2 w-75 text-center mt-1" onClick={() => {
                     closeFilterForm();
                     closeSidebar();
+                    closeSeatLegend();
                     closeUpdateSeats();
                     closeReleaseSeats();
                     closeUserPreferencesForm();
@@ -814,6 +830,8 @@ const RoomsPageComponent = (parentRoom) => {
                 </button>
                 <Carousel size={150} width={150} height={200} className='carousel-body p-5 mt-5' defaultActiveIndex={activeIndex}>
                   {filteredEvents.map((event, idx) => {
+                    console.log("EVENT BE:")
+                    console.log(event)
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
                       return showEvent(event, idx);
                     }
@@ -838,8 +856,16 @@ const RoomsPageComponent = (parentRoom) => {
       setChosenEvent(eventName);
       console.log("THIS SEAT:") + seat;
       if (!seat.seatTaken) {
-        ToggleSidebar();
-        closeSeatTakenEventForm();
+        if (seat.seatType == role || seat.seatType == 'NORMAL' || role == 'ADMIN') {
+          ToggleSidebar();
+          closeReleaseSeats();
+          closeSeatLegend();
+          closeSeatTakenEventForm();
+        } else {
+          closeSidebar();
+          { newLanguage == 'ENG' && alert('This seat is for role ' + seat.seatType + '! Your role is: ' + role + '.Please pick another one!') }
+          { newLanguage == 'BG' && alert('Това място е за роля ' + seat.seatType + '! Твоята роля е: ' + role + '.Моля изберете друго място!') }
+        }
       } else {
         if (seat.userThatOccupiedSeat == user) {
           closeSeatTakenEventForm();
@@ -848,6 +874,7 @@ const RoomsPageComponent = (parentRoom) => {
           closeResourceLinkAlert();
           ToggleReleaseSeats();
           closeSidebar();
+          ToggleSeatLegend();
         } else {
           setChosenTakenSeat(seat);
           closeReleaseSeats();
@@ -856,6 +883,7 @@ const RoomsPageComponent = (parentRoom) => {
           closeUserPreferencesForm();
           ToggleSeatTakenEventForm();
           closeSidebar();
+          ToggleSeatLegend();
         }
       }
     }
@@ -868,39 +896,87 @@ const RoomsPageComponent = (parentRoom) => {
       }
     }
 
+    const returnSeatColor = (seatType) => {
+      if (seatType == 'NORMAL') {
+        return 'btn-primary';
+      } else if (seatType == 'QA') {
+        return 'btn-danger';
+      } else if (seatType == 'DEVELOPER') {
+        return 'btn-info';
+      } else if (seatType == 'DEVOPS') {
+        return 'btn-dark';
+      }
+    }
+
     return (
       <>
-        {console.log("GUESTS OF EVENT:")}
-        {console.log(event.guests)}
+
+        {openSeatLegend && <div className='seats-legend'>
+          <ul className='example-seats bg-dark text-light p-2'>
+            {newLanguage == 'ENG' && 'Types of seats:'}
+            {newLanguage == 'BG' && 'Типове места:'}
+            <li
+              className={`btn-success m-3 p-3 text-light text-center`} >
+              <MdChair size={20} className='mr-2' />
+              {newLanguage == 'ENG' && 'Lector/Guest'}
+              {newLanguage == 'BG' && 'Лектор/Гост'}
+            </li>
+            <li
+              className={`btn-primary m-3 p-3 text-light text-center`} >
+              <PiOfficeChairFill size={20} className='mr-2' />
+              {newLanguage == 'ENG' && 'Normal'}
+              {newLanguage == 'BG' && 'Нормално'}
+            </li>
+            <li
+              className={`btn-danger m-3 p-3 text-light text-center`} >
+              <GiOfficeChair size={20} className='mr-2' />
+              {newLanguage == 'ENG' && 'QA'}
+              {newLanguage == 'BG' && 'Тестър'}
+            </li>
+            <li
+              className={`btn-info m-3 p-3 text-light text-center`} >
+              <GiOfficeChair size={20} className='mr-2' />
+              {newLanguage == 'ENG' && 'Developer'}
+              {newLanguage == 'BG' && 'Разработчик'}
+            </li>
+            <li
+              className={`btn-dark m-3 p-3 text-light text-center`} >
+              <GiOfficeChair size={20} className='mr-2' />
+              {newLanguage == 'ENG' && 'Devops'}
+              {newLanguage == 'BG' && 'Девопс'}
+            </li>
+          </ul>
+        </div>}
         <div className='lectors-div-guests row justify-content-md-center'>
           {event.seats.map((seat, idx) =>
             (seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <div className='col-md-auto'>
               {(seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <button
-                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
+                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-success'} 
                   p-3 m-2 btn-lg`}
                 key={idx} onClick={() => {
                   {
                     updateSeatStatus(event, seat);
                   }
                 }}>
-                <PiOfficeChairFill size={30} /><br />{seat.seatNumber}
+                <MdChair size={30} /><br />{seat.seatNumber}
               </button>}
             </div>
           )}
         </div>
         <div className='seats-div-custom row justify-content-md-center'>
           {event.seats.map((seat, idx) =>
-            (seat.seatType == 'NORMAL') && <div className='col-md-auto'>
+            (seat.seatType == 'NORMAL' || seat.seatType == 'QA' || seat.seatType == 'DEVELOPER' || seat.seatType == 'DEVOPS') && <div className='col-md-auto'>
               {event.seats.length - 2 != counter && incrementCounter()}
-              {seat.seatType == 'NORMAL' && <button
-                className={`btn-2  ${seat.seatTaken == true ? 'btn-secondary' : 'btn-primary'} 
+              {(seat.seatType == 'NORMAL' || seat.seatType == 'QA' || seat.seatType == 'DEVELOPER' || seat.seatType == 'DEVOPS') && <button
+                className={`btn-2 text-light  ${seat.seatTaken == true ? 'btn-secondary' : returnSeatColor(seat.seatType)} 
                   p-3 m-2`}
                 key={idx} onClick={() => {
                   {
                     updateSeatStatus(event, seat);
                   }
                 }}>
-                <PiOfficeChairFill size={30} /> <br />{seat.seatNumber}
+                {seat.seatType == 'NORMAL' && <PiOfficeChairFill size={30} />}
+                {(seat.seatType == 'QA' || seat.seatType == 'DEVELOPER' || seat.seatType == 'DEVOPS') && <GiOfficeChair size={30} />} <br />{seat.seatNumber}
               </button>}
 
             </div>
@@ -953,7 +1029,7 @@ const RoomsPageComponent = (parentRoom) => {
 
   const OpenUserSettings = () => {
     return (<><div className='container'>
-      <button className='btn btn-user-settings-2 btn-success text-start font-weight-bold' onClick={() => {
+      <button className='btn btn-user-settings-rooms btn-success text-start font-weight-bold' onClick={() => {
         closeReleaseSeats();
         closeSeatTakenEventForm();
         closeResourceLinkAlert();

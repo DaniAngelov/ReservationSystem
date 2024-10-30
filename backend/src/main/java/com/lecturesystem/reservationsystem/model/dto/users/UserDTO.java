@@ -19,4 +19,5 @@ public class UserDTO {
     private List<Event> events;
     private Integer points;
     private String role;
+    private String teamName;
 }

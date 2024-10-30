@@ -30,11 +30,20 @@ public class Seat implements Serializable {
     @Column(name = "user_that_occupied_seat")
     private String userThatOccupiedSeat;
 
+    @Column(name = "user_role")
+    private String userRole;
+
     @Column(name = "occupied_computer")
     private boolean occupiesComputer;
 
     @Column(name = "occupied_charger")
     private boolean occupiesCharger;
+
+    @Column(name = "occupied_computer_number")
+    private Integer occupiesComputerNumber;
+
+    @Column(name = "occupied_charger_number")
+    private Integer occupiesChargerNumber;
 
     @Column
     @Enumerated(EnumType.STRING)

@@ -74,6 +74,15 @@ public class Event {
     private Integer availableSeats;
 
     @Column
+    private Integer availableQaSeats;
+
+    @Column
+    private Integer availableDeveloperSeats;
+
+    @Column
+    private Integer availableDevopsSeats;
+
+    @Column
     @Lob
     private Blob qrCodeQuestions;
 

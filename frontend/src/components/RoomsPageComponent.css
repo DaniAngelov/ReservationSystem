@@ -184,13 +184,14 @@ body {
   margin-bottom: 8px;
 }
 
-.btn-user-settings-2 {
+.btn-user-settings-rooms {
   position: absolute;
   left: 3%;
   bottom: 2%;
   width: 30vh;
   text-align: start;
   z-index: 1;
+  overflow-y: auto;
 }
 
 .header-user-icon {
@@ -508,4 +509,13 @@ body {
   width: 55%;
   top: 25%;
   height: 60%;
+}
+
+.seats-legend{
+  position: absolute;
+  right: 3%;
+  top: 15%;
+  z-index: 1;
+  border-radius: 10px;
+  width: 15%;
 }
