@@ -464,8 +464,6 @@ const UserLoginComponent = () => {
       {oneTimePassFinalForm && callOnePassForm()}
       {mfaEventForm && callMfaEventForm()}
       {forgottenPass && forgottenPassForm()}
-      {console.log("Is admin registered")}
-      {console.log(isAdminRegistered())}
       {isAdminRegistered() == false && registerNewAdmin()}
     </>
   )

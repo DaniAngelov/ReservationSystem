@@ -17,7 +17,8 @@ import axios from 'axios';
 import { Button } from "react-bootstrap";
 import { HiDesktopComputer } from "react-icons/hi"
 import { LuCable } from "react-icons/lu";
-import { deleteInactiveUsers, getUserByUsername, getUsers, reserveTeam, reserveTeamJSON } from '../services/UserService';
+import { deleteInactiveUsers, getUserByUsername, reserveTeam, reserveTeamJSON } from '../services/UserService';
+import { HiUserPlus } from "react-icons/hi2";
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
@@ -50,10 +51,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [uploadFileTeamsAlert, setUploadFileTeamsAlert] = useState(false);
 
   const [teamName, setTeamName] = useState('');
-  const [teamNumber, setTeamNumber] = useState(0);
-  const [teamQaNumber, setTeamQaNumber] = useState(0);
-  const [teamDeveloperNumber, setTeamDeveloperNumber] = useState(0);
-  const [teamDevopsNumber, setTeamDevopsNumber] = useState(0);
   const [computerNumber, setComputerNumber] = useState(0);
   const [chargerNumber, setChargerNumber] = useState(0);
   const [teamEvent, setTeamEvent] = useState('');
@@ -80,11 +77,24 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const [eventSearchField, setEventSearchField] = useState('');
 
+  const [teamCounter, setTeamCounter] = useState(1);
+
+  const [teamUserResourcesUsername, setTeamUserResourcesUsername] = useState(Array(0).fill(''));
+  const [teamUserResourcesPassword, setTeamUserResourcesPassword] = useState(Array(0).fill(''));
+  const [teamUserResourcesEmail, setTeamUserResourcesEmail] = useState(Array(0).fill(''));
+  const [teamUserResourcesRole, setTeamUserResourcesRole] = useState(Array(0).fill(''));
+
   const toggleOccupiesComputer = () => {
+    if (teamOccupiesComputer == true) {
+      setComputerNumber(0);
+    }
     return setTeamOccupiesComputer(!teamOccupiesComputer);
   }
 
   const toggleOccupiesCharger = () => {
+    if (teamOccupiesCharger == true) {
+      setChargerNumber(0);
+    }
     return setTeamOccupiesCharger(!teamOccupiesCharger);
   }
 
@@ -714,26 +724,55 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const addNewTeam = (event) => {
     event.preventDefault();
 
+    console.log("teamEvent");
+    console.log(teamEvent);
     getSpecificEvent(teamEvent, token).then((response) => {
-      console.log("response");
-      console.log(response.data);
       const foundEvent = response.data;
 
+      let userCounter = 0;
+      let devCounter = 0;
+      let devopsCounter = 0;
+      let qaCounter = 0;
+
+      let users = [];
+      for (let i = 0; i < teamCounter; i++) {
+        const userInfo = {
+          "username": teamUserResourcesUsername[i],
+          "password": teamUserResourcesPassword[i],
+          "email": teamUserResourcesEmail[i],
+          "role": teamUserResourcesRole[i]
+        }
+        if (teamUserResourcesRole[i] == 'USER') {
+          userCounter = userCounter + 1;
+        } else if (teamUserResourcesRole[i] == 'DEVELOPER') {
+          devCounter = devCounter + 1;
+        } else if (teamUserResourcesRole[i] == 'DEVOPS') {
+          devopsCounter = devopsCounter + 1;
+        } else if (teamUserResourcesRole[i] == 'QA') {
+          qaCounter = qaCounter + 1;
+        }
+        users.push(userInfo);
+      }
+      console.log("USERS");
+      console.log(JSON.stringify(users));
       const teamDTO = {
         "name": teamName,
-        "seats": teamNumber,
-        "qaSeats": teamQaNumber,
-        "developerSeats": teamDeveloperNumber,
-        "devopsSeats": teamDevopsNumber,
+        "seats": userCounter,
+        "qaSeats": qaCounter,
+        "developerSeats": devCounter,
+        "devopsSeats": devopsCounter,
         "eventName": teamEvent,
         "facultyName": foundEvent.facultyName,
         "floorNumber": foundEvent.floorNumber,
         "roomNumber": foundEvent.roomNumber,
         "occupiesComputer": teamOccupiesComputer,
-        "occupiesComputerNumber": computerNumber,
+        "occupiesComputerNumber": parseInt(computerNumber),
         "occupiesCharger": teamOccupiesCharger,
-        "occupiesChargerNumber": chargerNumber
+        "occupiesChargerNumber": parseInt(chargerNumber),
+        "users": users
       }
+      console.log("TEAM DTO")
+      console.log(teamDTO)
       reserveTeam(JSON.stringify(teamDTO), token).then((response) => {
         console.log("response")
         console.log(response.data)
@@ -744,15 +783,15 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
         { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
       })
-    }).catch((error) => {
-      console.log(error);
-      { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
-      { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
-      console.log("error");
-      console.log(error);
-    })
-
-
+    }
+    )
+      .catch((error) => {
+        console.log(error);
+        { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
+        { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
+        console.log("error");
+        console.log(error);
+      })
   }
 
 
@@ -788,12 +827,91 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     })
   }
 
+  const inputChangedHandler = (e, index, field) => {
+    let teamResources = [];
+    if (field == 'username') {
+      teamResources = teamUserResourcesUsername;
+    } else if (field == 'password') {
+      teamResources = teamUserResourcesPassword;
+    } else if (field == 'email') {
+      teamResources = teamUserResourcesEmail;
+    } else if (field == 'role') {
+      teamResources = teamUserResourcesRole;
+    }
+
+    const inputsUpdated = teamResources.map((input, i) => {
+      if (i == index) {
+        return e.target.value;
+      } else {
+        return input;
+      }
+    })
+    if (field == 'username') {
+      return setTeamUserResourcesUsername(inputsUpdated);
+    } else if (field == 'password') {
+      return setTeamUserResourcesPassword(inputsUpdated);
+    } else if (field == 'email') {
+      return setTeamUserResourcesEmail(inputsUpdated);
+    } else if (field == 'role') {
+      return setTeamUserResourcesRole(inputsUpdated);
+    }
+
+  }
+
+  const callUserMemberForm = () => {
+    let elements = [];
+    for (let c = 0; c < teamCounter; c++) {
+      elements.push(
+        <div>
+          <h5 className='text-light'><HiUserPlus size={30} /> {newLanguage == 'ENG' && 'Member'}
+            {newLanguage == 'BG' && 'Участник'} {c + 1}</h5>
+          <div>
+            <input type='text' placeholder={`${newLanguage == 'ENG' ? 'Еnter username' : 'Въведи потребителско име'}`} name='username' value={teamUserResourcesUsername[c]} className='w-100 form-control text-center mb-3'
+              onChange={(e) => {
+                inputChangedHandler(e, c, 'username')
+              }} />
+          </div>
+          <div>
+            <input type='text' placeholder={`${newLanguage == 'ENG' ? 'Еnter password' : 'Въведи парола'}`} name='password' value={teamUserResourcesPassword[c]} className='w-100 form-control text-center mb-3'
+              onChange={(e) => {
+                inputChangedHandler(e, c, 'password')
+              }} />
+          </div>
+          <div>
+            <input type='text' placeholder={`${newLanguage == 'ENG' ? 'Еnter email' : 'Въведи имейл'}`} name='email' value={teamUserResourcesEmail[c]} className='w-100 form-control text-center mb-3'
+              onChange={(e) => {
+                inputChangedHandler(e, c, 'email')
+              }} />
+          </div>
+          <div class="form-floating text-start mt-2 mb-3">
+            <select type="text" class="form-control text-start" id="floatingInput24" placeholder={`${newLanguage == 'ENG' ? 'Choose Role' : 'Избери роля'}`} value={teamUserResourcesRole[c]}
+              onChange={(e) => inputChangedHandler(e, c, 'role')}>
+              <option>USER</option>
+              <option>QA</option>
+              <option>DEVELOPER</option>
+              <option>DEVOPS</option>
+            </select>
+            <label for="floatingInput24 text-light">
+              {newLanguage == 'ENG' && 'Choose role'}
+              {newLanguage == 'BG' && 'Избери роля'}
+            </label>
+          </div>
+        </div>)
+    }
+    return elements;
+  }
+
   const callImportDataForm = () => {
     return (<div className='import-team-div bg-dark p-5'>
       <button className="btn-close-import-team-form btn btn-danger" onClick={(e) => {
         closeImportDataForm(e)
         closeUploadFileAlert();
         closeUploadFileTeamsAlert();
+        setTeamUserResourcesUsername(Array(0).fill(''))
+        setTeamUserResourcesPassword(Array(0).fill(''))
+        setTeamUserResourcesEmail(Array(0).fill(''))
+        setTeamUserResourcesRole(Array(0).fill(''))
+        setTeamCounter(0);
       }}>x</button>
       <h1 className='form-label text-light text-center mb-5 mr-5'>
         {newLanguage == 'ENG' && 'Import data'}
@@ -821,8 +939,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         }}>{newLanguage == 'ENG' && 'Teams (Form)'}
           {newLanguage == 'BG' && 'Отбори (Форма)'}</Button>
       </div>
-
-
 
       {importDataForTeam == true &&
 
@@ -878,44 +994,22 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               })}
             </ul>
           </div>
-          <div>
-          </div>
-
-          <div className='create-form-seats-section-div'>
-            <div class="form-floating text-start mb-2 mt-3">
-              <input type="number" class="form-control text-start" id="floatingInput16" value={teamNumber}
-                onChange={(e) => setTeamNumber(e.target.value)} />
-              <label for="floatingInput16 text-light">
-                {newLanguage == 'ENG' && "Seats for reservation (Normal)"}
-                {newLanguage == 'BG' && "Места за резервиране (Нормални)"}
-              </label>
-            </div>
-            <div class="form-floating text-start mb-2 mt-3">
-              <input type="number" class="form-control text-start" id="floatingInput18" value={teamDeveloperNumber}
-                onChange={(e) => setTeamDeveloperNumber(e.target.value)} />
-              <label for="floatingInput18 text-light">
-                {newLanguage == 'ENG' && "Seats for reservation (Developer)"}
-                {newLanguage == 'BG' && "Места за резервиране (Разработчик)"}
-              </label>
-            </div>
-            <div class="form-floating text-start mb-2 mt-3">
-              <input type="number" class="form-control text-start" id="floatingInput19" value={teamQaNumber}
-                onChange={(e) => setTeamQaNumber(e.target.value)} />
-              <label for="floatingInput19 text-light">
-                {newLanguage == 'ENG' && "Seats for reservation (QA)"}
-                {newLanguage == 'BG' && "Места за резервиране (Тестър)"}
-              </label>
-            </div>
-            <div class="form-floating text-start mb-2 mt-3">
-              <input type="number" class="form-control text-start" id="floatingInput20" value={teamDevopsNumber}
-                onChange={(e) => setTeamDevopsNumber(e.target.value)} />
-              <label for="floatingInput20 text-light">
-                {newLanguage == 'ENG' && "Seats for reservation (Devops)"}
-                {newLanguage == 'BG' && "Места за резервиране (Девопс)"}
-              </label>
+          <button className='w-100 p-2 btn-add-team-user btn btn-primary text-light' onClick={(e) => {
+            e.preventDefault();
+            setTeamCounter(teamCounter + 1);
+            setTeamUserResourcesUsername(Array(teamCounter + 1).fill(''))
+            setTeamUserResourcesPassword(Array(teamCounter + 1).fill(''))
+            setTeamUserResourcesEmail(Array(teamCounter + 1).fill(''))
+            setTeamUserResourcesRole(Array(teamCounter + 1).fill('USER'))
+          }}>
+            {newLanguage == 'ENG' && 'Add user'}
+            {newLanguage == 'BG' && 'Добави потребител'}
+          </button>
+          <div className='team-users-form-div'>
+            <div className='form-group user-data-team-member text-start mb-2'>
+              {callUserMemberForm()}
             </div>
           </div>
-
           <div className='check-buttons-create-team'>
             <div className='team-occupy-computer'>
               <h5 className='text-light'>

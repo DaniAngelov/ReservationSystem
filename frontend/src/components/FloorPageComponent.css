@@ -439,3 +439,23 @@ body {
   top: 38%;
   left: 220%;
 }
+
+.team-users-form-div{
+  position: absolute;
+  bottom: -70%;
+  width: 90%;
+  left: 115%;
+  height: 135%;
+  overflow-y: auto;
+}
+
+.user-data-team-member{
+  position: absolute;
+  width: 100%;
+}
+
+.btn-add-team-user{
+  position: absolute;
+  top: 10%;
+  left: 115%;
+}
