@@ -480,6 +480,8 @@ const RoomsPageComponent = (parentRoom) => {
       newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCDate() >= newNowTime.getUTCDate()) && (new Date(Date.parse(event.duration.endDate)).getUTCDate() <= newNowTime.getUTCDate() + 7))
     } else if (dateOption == 'This month') {
       newFilteredEvents = newFilteredEvents.filter((event) => (new Date(Date.parse(event.duration.startDate)).getUTCMonth() == nowTime.getUTCMonth()) && (new Date(Date.parse(event.duration.endDate)).getUTCMonth() == nowTime.getUTCMonth()))
+    } else if (dateOption == 'All events for this room') {
+      newFilteredEvents = events.filter((event) => event.roomNumber == roomId && event.floorNumber == floorId);
     }
     console.log('filtered events after:');
     console.log(newFilteredEvents);
