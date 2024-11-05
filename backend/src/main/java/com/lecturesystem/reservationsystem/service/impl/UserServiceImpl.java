@@ -72,6 +72,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
         user.setLanguagePreferred("ENG");
+        user.setTheme("dark");
         switch (userDto.getRole()) {
             case "ADMIN" -> user.setRole(Role.ADMIN);
             case "QA" -> user.setRole(Role.QA);
@@ -490,13 +491,13 @@ public class UserServiceImpl implements UserService {
                 for (Seat seat : seats) {
                     Event seatEvent = seat.getEvent();
                     if (seat.getUserThatOccupiedSeat().equals(user.getUsername())) {
-                        if(user.getRole().equals(Role.USER)){
+                        if (user.getRole().equals(Role.USER)) {
                             seatEvent.setAvailableSeats(seatEvent.getAvailableSeats() + 1);
-                        }else if(user.getRole().equals(Role.DEVELOPER)){
+                        } else if (user.getRole().equals(Role.DEVELOPER)) {
                             seatEvent.setAvailableDeveloperSeats(seatEvent.getAvailableDeveloperSeats() + 1);
-                        }else if(user.getRole().equals(Role.QA)){
+                        } else if (user.getRole().equals(Role.QA)) {
                             seatEvent.setAvailableQaSeats(seatEvent.getAvailableQaSeats() + 1);
-                        }else if(user.getRole().equals(Role.DEVOPS)){
+                        } else if (user.getRole().equals(Role.DEVOPS)) {
                             seatEvent.setAvailableDevopsSeats(seatEvent.getAvailableDevopsSeats() + 1);
                         }
                         seat.setUserRole(null);
@@ -512,6 +513,16 @@ public class UserServiceImpl implements UserService {
                 userRepository.delete(user);
             }
         }
+    }
+
+    @Override
+    public User changeTheme(ChangeUserThemeDTO changeUserThemeDTO) throws CustomUserException {
+        User user = userRepository.getUserByUsername(changeUserThemeDTO.getUsername());
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        user.setTheme(changeUserThemeDTO.getTheme());
+        return userRepository.save(user);
     }
 
     @Override

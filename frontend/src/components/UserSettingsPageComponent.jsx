@@ -7,7 +7,7 @@ import twoStarEmoji from '../assets/2-star-emoji.png';
 import threeStarEmoji from '../assets/3-star-emoji.png';
 import fourStarEmoji from '../assets/4-star-emoji.png';
 import fiveStarEmoji from '../assets/5-star-emoji.png';
-import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage, getUserByUsername, updateNewLanguage } from '../services/UserService';
+import { generateTwoFA, verifyTwoFA, enableTwoFA, enableOneTimePass, addLinkToPage, getUserByUsername, updateNewLanguage, updateNewTheme } from '../services/UserService';
 import { BsShieldLockFill } from "react-icons/bs";
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +30,7 @@ import axios from 'axios';
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { GrLanguage } from "react-icons/gr";
 import { VscThreeBars } from "react-icons/vsc";
+import { VscColorMode } from "react-icons/vsc";
 
 const UserSettingsPageComponent = () => {
 
@@ -66,6 +67,7 @@ const UserSettingsPageComponent = () => {
 
   const [userPreferenceForm, setUserPreferenceForm] = useState(false);
   const [languagePreferenceForm, setLanguagePreferenceForm] = useState(false);
+  const [themeForm, setThemeForm] = useState(false);
   const [disableEventAlert, setDisableEventAlert] = useState(false);
   const [resourceLinkAlert, setResourceLinkAlert] = useState(false);
 
@@ -104,6 +106,7 @@ const UserSettingsPageComponent = () => {
   const [resourceCounter, setResourceCounter] = useState(1);
 
   const [newLanguage, setNewLanguage] = useState('');
+  const [newTheme, setNewTheme] = useState('');
 
   const [digit1, setDigit1] = useState('');
   const [digit2, setDigit2] = useState('');
@@ -129,6 +132,7 @@ const UserSettingsPageComponent = () => {
       console.log("response")
       console.log(response.data);
       setLanguageCurrentUser(response.data);
+      setNewTheme(response.data.theme);
       setNewLanguage(response.data.languagePreferred);
       setCurrentUser(response.data);
     }).catch((error) => {
@@ -307,6 +311,14 @@ const UserSettingsPageComponent = () => {
     return setLanguagePreferenceForm(false);
   }
 
+  const toggleColorThemeForm = () => {
+    return setThemeForm(!themeForm);
+  }
+
+  const closeColorThemeForm = () => {
+    return setThemeForm(false);
+  }
+
   const logOut = () => {
     localStorage.clear();
     navigator('/login');
@@ -344,6 +356,41 @@ const UserSettingsPageComponent = () => {
     })
   }
 
+  const updateTheme = (theme) => {
+    setNewTheme(theme);
+    const updateThemeDTO = {
+      "username": user,
+      "theme": theme
+    }
+
+    updateNewTheme(updateThemeDTO, token).then((response) => {
+      console.log("response language")
+      console.log(response.data);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
+  const callThemeForm = () => {
+    return <div>
+      <button className='btn-user-theme-light btn btn-outline-light my-2 my-sm-0' onClick={() => {
+        localStorage.setItem('theme', 'light');
+        closeColorThemeForm();
+        updateTheme('light');
+      }}>
+        Light
+      </button>
+      <button className='btn-user-theme-dark btn btn-outline-dark my-2 my-sm-0' onClick={() => {
+        localStorage.setItem('theme', 'dark');
+        closeColorThemeForm();
+        updateTheme('dark');
+      }}>
+        Dark
+      </button>
+    </div>
+  }
+
   const callLanguagePreferenceForm = () => {
     return (<div>
       <button className='btn-user-language-english btn btn-outline-primary my-2 my-sm-0' onClick={() => {
@@ -373,7 +420,7 @@ const UserSettingsPageComponent = () => {
           <img src={userIcon} width={60} height={60} alt='Responsive image' className='img-fluid mr-5' />
           <h4 className='header-user-icon'>{user}</h4>
         </button>
-        <button className='btn btn-user-settings-user-role btn-dark'>
+        <button className={`btn btn-user-settings-user-role ${newTheme == 'light' ? 'text-dark btn-light' : 'text-light btn-dark'}`} >
           {newLanguage == 'ENG' && 'Role: '}
           {newLanguage == 'BG' && 'Роля: '}
           {role}
@@ -831,6 +878,7 @@ const UserSettingsPageComponent = () => {
         closeRewardMenu();
         closeDisableEventAlert();
         closeResourceLinkAlert();
+        closeColorThemeForm();
         closeSidebar();
         toggleAuthenticationForm();
         closeAuthenticationForm();
@@ -944,19 +992,20 @@ const UserSettingsPageComponent = () => {
     return (
       <>
         <div className="container-fluid">
-          <div className="sidebar-left">
+          <div className={`sidebar-left ${newTheme == 'light' ? 'bg-light' : 'bg-dark'} `}>
             <div className="sd-header">
               <img src={logo} width={135} height={135} alt='Responsive image' className='img-fluid logoImage-3' />
             </div>
             <ul className='text-center m-2'>
               <li>
-                <button className='btn btn-item-authentication-types btn-secondary text-light' onClick={() => {
+                <button className={`btn btn-item-authentication-types ${newTheme == 'light' ? 'text-light btn-secondary' : 'text-light btn-secondary'}`} onClick={() => {
                   closeDashboard();
                   closeCreatedEventsDashboard();
                   closeLanguagePreferencesForm();
                   closeFaEventForm();
                   closeUserPreferencesForm();
                   closeFeedbackForm();
+                  closeColorThemeForm();
                   closeFinishedEventsForm();
                   closeAddResourcesLinkForm();
                   closeDisableEventAlert();
@@ -972,13 +1021,14 @@ const UserSettingsPageComponent = () => {
                 </button>
               </li>
               <li>
-                <button className='btn btn-item-dashboard btn-success text-light' onClick={() => {
+                <button className={`btn btn-item-dashboard  ${newTheme == 'light' ? 'text-light btn-success' : 'text-light btn-success'}`} onClick={() => {
                   closeCreatedEventsDashboard();
                   closeAuthenticationForm();
                   closeFaEventForm();
                   closeLanguagePreferencesForm();
                   closeUserPreferencesForm();
                   closeFeedbackForm();
+                  closeColorThemeForm();
                   closeDisableEvent();
                   closeDeleteEvent();
                   closeFinishedEventsForm();
@@ -994,7 +1044,7 @@ const UserSettingsPageComponent = () => {
                 </button>
               </li>
               {(role == 'ADMIN' || role == 'LECTOR') && <li>
-                <button className='btn btn-item-your-created-events btn-success text-light' onClick={() => {
+                <button className={`btn btn-item-your-created-events btn-success ${newTheme == 'light' ? 'text-light btn-success' : 'text-light btn-secondary'}`} onClick={() => {
                   closeDashboard();
                   closeAuthenticationForm();
                   closeAddResourcesLinkForm();
@@ -1004,6 +1054,7 @@ const UserSettingsPageComponent = () => {
                   closeUserPreferencesForm();
                   closeDeleteEvent();
                   closeFeedbackForm();
+                  closeColorThemeForm();
                   closeFinishedEventsForm();
                   closeDisableEventAlert();
                   closeRewardMenu();
@@ -1015,7 +1066,7 @@ const UserSettingsPageComponent = () => {
                   {newLanguage == 'BG' && 'Твоите създадени събития'}
                 </button>
               </li>}
-              {(role == 'ADMIN' || role == 'LECTOR') && <li><button className='btn btn-item-add-link btn-success text-light' onClick={() => {
+              {(role == 'ADMIN' || role == 'LECTOR') && <li><button className={`btn btn-item-add-link ${newTheme == 'light' ? 'text-light btn-success' : 'text-light btn-success'}`} onClick={() => {
                 closeDashboard();
                 closeCreatedEventsDashboard();
                 closeAuthenticationForm();
@@ -1024,6 +1075,7 @@ const UserSettingsPageComponent = () => {
                 closeLanguagePreferencesForm();
                 closeUserPreferencesForm();
                 closeRewardMenu();
+                closeColorThemeForm();
                 closeResourceLinkAlert();
                 closeDisableEvent();
                 closeDeleteEvent();
@@ -1036,7 +1088,7 @@ const UserSettingsPageComponent = () => {
                 {newLanguage == 'BG' && 'Добави линк към ресурси'}
               </button></li>}
               {finishedEvents.length > 0 && <li>
-                <button className='btn btn-feedback-form btn-primary text-light' onClick={() => {
+                <button className={`btn btn-feedback-form ${newTheme == 'light' ? 'text-light btn-info' : 'text-light btn-info'}`} onClick={() => {
                   closeCreatedEventsDashboard();
                   closeAuthenticationForm();
                   closeFaEventForm();
@@ -1045,6 +1097,7 @@ const UserSettingsPageComponent = () => {
                   closeLanguagePreferencesForm();
                   closeUserPreferencesForm();
                   closeDisableEventAlert();
+                  closeColorThemeForm();
                   closeRewardMenu();
                   closeResourceLinkAlert();
                   closeDisableEvent();
@@ -1058,7 +1111,7 @@ const UserSettingsPageComponent = () => {
                 </button>
               </li>}
               {rewardsMenu == false && <li>
-                <button className='btn btn-item-rewards btn-info text-light' onClick={() => {
+                <button className={`btn btn-item-rewards ${newTheme == 'light' ? 'text-light btn-info' : 'text-light btn-info'}`} onClick={() => {
                   closeCreatedEventsDashboard();
                   closeAuthenticationForm();
                   closeFaEventForm();
@@ -1069,6 +1122,7 @@ const UserSettingsPageComponent = () => {
                   closeSidebar()
                   closeDisableEvent();
                   closeDeleteEvent();
+                  closeColorThemeForm();
                   closeFeedbackForm();
                   closeFinishedEventsForm();
                   toggleRewardMenu();
@@ -1078,13 +1132,25 @@ const UserSettingsPageComponent = () => {
                 </button>
               </li>}
               <li>
-                <button className='btn btn-item-language-settings btn-primary text-light' onClick={() => {
+                <button className={`btn btn-item-language-settings ${newTheme == 'light' ? 'text-light btn-primary' : 'text-light btn-primary'}`} onClick={() => {
                   toggleLanguagePreferencesForm()
                   closeUserPreferencesForm();
+                  closeColorThemeForm();
                 }}>
                   <GrLanguage size={35} className='mr-2 mb-1' />
                   {newLanguage == 'ENG' && 'Language'}
                   {newLanguage == 'BG' && 'Език'}
+                </button>
+              </li>
+              <li>
+                <button className={`btn btn-item-theme-settings ${newTheme == 'light' ? 'text-dark btn-light' : 'text-light btn-dark'}`} onClick={() => {
+                  toggleColorThemeForm();
+                  closeLanguagePreferencesForm()
+                  closeUserPreferencesForm();
+                }}>
+                  <VscColorMode size={35} className='mr-2 mb-1' />
+                  {newLanguage == 'ENG' && 'Theme'}
+                  {newLanguage == 'BG' && 'Тема'}
                 </button>
               </li>
             </ul>
@@ -1257,11 +1323,11 @@ const UserSettingsPageComponent = () => {
   const callInputForm = (ratingType, newRatingType) => {
 
     return (<div>
-      <Button className={`btn-light ${newRatingType == 1 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 1) }}><img src={oneStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
-      <Button className={`btn-light ${newRatingType == 2 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 2) }}><img src={twoStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
-      <Button className={`btn-light ${newRatingType == 3 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 3) }}><img src={threeStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
-      <Button className={`btn-light ${newRatingType == 4 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 4) }}><img src={fourStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
-      <Button className={`btn-light ${newRatingType == 5 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 5) }}><img src={fiveStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`${newTheme == 'light' ? 'btn-light' : 'btn-dark'} ${newRatingType == 1 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 1) }}><img src={oneStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`${newTheme == 'light' ? 'btn-light' : 'btn-dark'} ${newRatingType == 2 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 2) }}><img src={twoStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`${newTheme == 'light' ? 'btn-light' : 'btn-dark'} ${newRatingType == 3 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 3) }}><img src={threeStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`${newTheme == 'light' ? 'btn-light' : 'btn-dark'} ${newRatingType == 4 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 4) }}><img src={fourStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
+      <Button className={`${newTheme == 'light' ? 'btn-light' : 'btn-dark'} ${newRatingType == 5 ? 'active' : ''}`} onClick={() => { callSetRatingType(ratingType, 5) }}><img src={fiveStarEmoji} width={30} height={30} alt='Responsive image' /></Button>
     </div>)
   }
 
@@ -1316,7 +1382,7 @@ const UserSettingsPageComponent = () => {
   const callFeedbackForm = () => {
     return (
       <>
-        <div className='card-body-feedback text-center text-black bg-light p-5'>
+        <div className={`card-body-feedback text-center p-5 ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
           <form>
             <button className="btn-close-feedback-form btn btn-danger" onClick={(e) => setFeedbackForm(false)}>x</button>
 
@@ -1337,14 +1403,14 @@ const UserSettingsPageComponent = () => {
               {chosenFinishedEvent.qrCodeQuestions != '' &&
                 <img src={qrCodeQuestions} className='qr-code-client-feedback-questions' />}
             </div>
-            <h3 className='form-label text-dark font-weight-bold mb-2'>
-              {newLanguage == 'ENG' && 'Lecture Rating'}
-              {newLanguage == 'BG' && 'Оценка на лекция'}
+            <h3 className='form-label font-weight-bold mb-2'>
+              {newLanguage == 'ENG' && 'Event Rating'}
+              {newLanguage == 'BG' && 'Оценка на събитие'}
             </h3>
             {callInputForm("lecture", lectureRating)}
-            <h3 className='form-label text-dark font-weight-bold mb-2 mt-3'>
-              {newLanguage == 'ENG' && 'Lector Rating'}
-              {newLanguage == 'BG' && 'Оценка на лектор'}
+            <h3 className='form-label font-weight-bold mb-2 mt-3'>
+              {newLanguage == 'ENG' && 'Leader Rating'}
+              {newLanguage == 'BG' && 'Оценка за водещ'}
             </h3>
             {callInputForm("lector", lectorRating)}
             <div class="form-floating text-start mb-3 mt-4">
@@ -1365,7 +1431,7 @@ const UserSettingsPageComponent = () => {
                 {newLanguage == 'BG' && 'Въведи име (опционално)'}
               </label>
             </div>
-            {console.log(chosenEvent)};
+            {console.log(chosenEvent)}
             <button className='btn-add-feedback btn text-center btn-primary mt-4 w-50' onClick={(event) => submitFeedback(event, chosenFinishedEvent.name)}>
               {newLanguage == 'ENG' && 'Submit!'}
               {newLanguage == 'BG' && 'Запиши!'}
@@ -1378,9 +1444,9 @@ const UserSettingsPageComponent = () => {
 
   const callFinishedEventsForm = () => {
     return (
-      <div className='finished-events-div bg-light p-4'>
+      <div className={`finished-events-div p-4 ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
         <button className="btn-close-finished-events-form btn btn-danger" onClick={() => closeFinishedEventsForm()}>x</button>
-        <h1 className='text-center text-dark mt-2'>
+        <h1 className='text-center mt-2'>
           {newLanguage == 'ENG' && 'Finished events'}
           {newLanguage == 'BG' && 'Приключили събития'}
         </h1>
@@ -1441,9 +1507,9 @@ const UserSettingsPageComponent = () => {
   }
 
   const callRewardsMenu = () => {
-    return (<div className='reward-menu-div bg-light p-4'>
+    return (<div className={`reward-menu-div p-4 ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
       <button className="btn-close-rewards-menu btn btn-danger" onClick={() => setRewardsMenu(false)}>x</button>
-      <h1 className='text-center text-dark mt-2'><GiPresent size={80} className='mb-4 ml-3' />
+      <h1 className='text-center mt-2'><GiPresent size={80} className='mb-4 ml-3' />
         {newLanguage == 'ENG' && 'Win Prizes'}
         {newLanguage == 'BG' && 'Спечелете награди'}
       </h1>
@@ -1457,7 +1523,7 @@ const UserSettingsPageComponent = () => {
           {newLanguage == 'BG' && 'Настоящи точки: '}
           {currentUser.points}</strong></p>
       <ul>
-        <li><button className='btn btn-light btn-reward-item-1 text-light' onClick={() => {
+        <li><button className={`btn btn-reward-item-1 text-light ${newTheme == 'light' ? 'btn-light' : 'btn-dark'}`} onClick={() => {
           setRewardPath(keyHolderReward);
           toggleGenerateBiggerImage();
         }
@@ -1477,7 +1543,7 @@ const UserSettingsPageComponent = () => {
             {newLanguage == 'BG' && 'Вземи награда!'}
           </button>
         </li>
-        <li><button className={'btn  btn-light btn-reward-item-2 text-light'} onClick={() => {
+        <li><button className={`btn btn-reward-item-2 text-light ${newTheme == 'light' ? 'btn-light' : 'btn-dark'}`} onClick={() => {
           setRewardPath(hatReward);
           toggleGenerateBiggerImage();
         }
@@ -1499,7 +1565,7 @@ const UserSettingsPageComponent = () => {
         </li>
         <div>
           <li>
-            <button className='btn btn-light btn-reward-item-3 text-light' onClick={() => {
+            <button className={`btn btn-reward-item-3 text-light ${newTheme == 'light' ? 'btn-light' : 'btn-dark'}`} onClick={() => {
               setRewardPath(tshirtReward);
               toggleGenerateBiggerImage();
             }
@@ -1545,6 +1611,7 @@ const UserSettingsPageComponent = () => {
       {languagePreferenceForm && callLanguagePreferenceForm()}
       {disableEventAlert && showAlertWhenClickedDisabledReason()}
       {resourceLinkAlert && showAlertWhenClickedResourcesLink()}
+      {themeForm && callThemeForm()}
     </>
   )
 }

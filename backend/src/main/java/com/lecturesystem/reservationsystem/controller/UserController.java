@@ -204,9 +204,15 @@ public class UserController {
     }
 
     @PutMapping("/language")
-    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
     public ResponseEntity<UserPointsDTO> changeLanguage(@RequestBody ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
         User user = userService.changeLanguage(changeUserLanguageDTO);
+        UserPointsDTO userDTO = modelMapper.map(user, UserPointsDTO.class);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
+
+    @PutMapping("/color-theme")
+    public ResponseEntity<UserPointsDTO> changeTheme(@RequestBody ChangeUserThemeDTO changeUserThemeDTO) throws CustomUserException {
+        User user = userService.changeTheme(changeUserThemeDTO);
         UserPointsDTO userDTO = modelMapper.map(user, UserPointsDTO.class);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }

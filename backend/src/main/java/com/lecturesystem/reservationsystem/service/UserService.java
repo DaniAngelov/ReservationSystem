@@ -53,4 +53,6 @@ public interface UserService {
     User changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException;
 
     void deleteInactiveUsers();
+
+    User changeTheme(ChangeUserThemeDTO changeUserThemeDTO) throws CustomUserException;
 }

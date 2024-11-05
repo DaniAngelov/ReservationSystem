@@ -10,6 +10,7 @@ import lombok.Setter;
 public class UserPointsDTO {
     private String username;
     private String languagePreferred;
+    private String theme;
     private String password;
     private String email;
     private Integer points;

@@ -224,6 +224,43 @@ body {
   text-decoration: none;
 }
 
+.btn-user-theme-light:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-user-theme-light {
+  position: absolute;
+  left: 21.25%;
+  top: 18%;
+  width: 9%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+.btn-user-theme-dark:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-user-theme-dark {
+  position: absolute;
+  left: 21.25%;
+  top: 10%;
+  width: 9%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+  text-decoration: none;
+}
+
+
 
 .btn-user-logout-setting-2:hover {
   transition: all .2s ease-in-out;
@@ -295,6 +332,23 @@ body {
 }
 
 .btn-feedback-form:hover {
+  transition: all .2s ease-in-out;
+  box-shadow: 0 0 5px white inset;
+}
+
+.btn-item-theme-settings {
+  position: absolute;
+  left: 103%;
+  width: 44%;
+  top: 1%;
+  height: 7%;
+  color: #475f7b;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-item-theme-settings:hover {
   transition: all .2s ease-in-out;
   box-shadow: 0 0 5px white inset;
 }
@@ -694,7 +748,7 @@ li {
   position: absolute;
   border-radius: 12px;
   left: 25%;
-  top: 6%;
+  top: 9%;
   width: 65%;
   height: 85%;
 }
@@ -831,7 +885,7 @@ li {
   top: 1%;
 }
 
-.btn-user-settings-user-role{
+.btn-user-settings-user-role {
   position: absolute;
   bottom: 13.5%;
   left: 5%;

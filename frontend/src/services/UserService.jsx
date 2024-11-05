@@ -47,6 +47,8 @@ export const searchNewGuest = (request, token) => axios.put(REST_API_BASE_URL + 
 
 export const updateNewLanguage = (request, token) => axios.put(REST_API_BASE_URL + '/language', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
+export const updateNewTheme = (request, token) => axios.put(REST_API_BASE_URL + '/color-theme', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+
 export const getAdmin = () => axios.get(REST_API_BASE_URL + '/get-admin');
 
 export const deleteInactiveUsers = (token) => axios.get(REST_API_BASE_URL + '/delete-inactive-users', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });

@@ -74,6 +74,9 @@ public class User implements Serializable, UserDetails {
     private String languagePreferred;
 
     @Column
+    private String theme;
+
+    @Column
     private LocalDateTime temporaryUserExpirationDate;
 
     @Column

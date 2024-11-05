@@ -47,6 +47,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const [newLanguage, setNewLanguage] = useState('');
 
+  const [newTheme, setNewTheme] = useState('');
+
   const [uploadFileAlert, setUploadFileAlert] = useState(false);
   const [uploadFileTeamsAlert, setUploadFileTeamsAlert] = useState(false);
 
@@ -111,6 +113,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   useEffect(() => {
     getUserByUsername(user, token).then((response) => {
       setNewLanguage(response.data.languagePreferred);
+      setNewTheme(response.data.theme)
     }).catch((error) => {
       console.log("error");
       console.log(error);
@@ -433,7 +436,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               {floorAndRoom.room.roomNumber}</button>)}
           </div>
 
-          <ul className='example-rooms bg-dark text-light p-2'>
+          <ul className={`example-rooms  p-2 ${newTheme == 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}`}>
             {newLanguage == 'ENG' && 'Types of rooms:'}
             {newLanguage == 'BG' && 'Типове стаи:'}
             <li
@@ -470,7 +473,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     return (
       <>
         <div className="container-fluid">
-          <div className="sidebar-left">
+          <div className={`sidebar-left ${newTheme == 'light' ? 'bg-light' : 'bg-dark'}`}>
             <div className="sd-header">
               <img src={logo} width={135} height={135} alt='Responsive image' className='img-fluid logoImage' />
             </div>

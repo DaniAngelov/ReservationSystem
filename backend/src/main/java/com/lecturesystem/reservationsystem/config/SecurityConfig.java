@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/floors/events/events-exist").permitAll()
                         .requestMatchers("/api/floors/upload-start-data").permitAll()
                         .requestMatchers("/api/users/get-admin").permitAll()
+                        .requestMatchers("/api/users/language").permitAll()
+                        .requestMatchers("/api/users/color-theme").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement -> sessionManagement

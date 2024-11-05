@@ -91,6 +91,7 @@ const RoomsPageComponent = (parentRoom) => {
   const [resourceLinkAlert, setResourceLinkAlert] = useState(false);
 
   const [newLanguage, setNewLanguage] = useState('');
+  const [newTheme, setNewTheme] = useState('');
 
   const [openSeatLegend, setOpenSeatLegend] = useState(true);
 
@@ -157,6 +158,7 @@ const RoomsPageComponent = (parentRoom) => {
   useEffect(() => {
     getUserByUsername(user, token).then((response) => {
       setNewLanguage(response.data.languagePreferred);
+      setNewTheme(response.data.theme)
     }).catch((error) => {
       console.log("error");
       console.log(error);
@@ -550,9 +552,24 @@ const RoomsPageComponent = (parentRoom) => {
     }
   }
 
+  const updateColorTheme = () => {
+    if(newTheme == 'light'){
+      return 'black';
+    }
+    return 'white';
+  }
+
+  const updateColorThemeText = () => {
+    if(newTheme == 'light'){
+      return 'white';
+    }
+    return 'black';
+  }
+
   const SidebarRightComponent = () => {
 
-    const [backgroundColor, setBackgroundColor] = useState('#212529');
+    const [backgroundColor, setBackgroundColor] = useState(updateColorTheme());
+    const [textColor, setTextColor] = useState(updateColorThemeText());
     const [text, setText] = useState(getValueForReserveSpotLanguage());
 
     const [occupiesComputer, setOccupiesComputer] = useState(false);
@@ -606,7 +623,9 @@ const RoomsPageComponent = (parentRoom) => {
       reserveSpot(JSON.stringify(userReserveSpotDTO), token).then((response) => {
         console.log(response.data);
         console.log("status: " + response.status)
-        setBackgroundColor('white');
+        
+        {newTheme == 'light' ? setTextColor('white') : setTextColor('white')}
+        {newTheme == 'light' ? setBackgroundColor('black') : setBackgroundColor('black')}
 
 
         { newLanguage == 'ENG' && setText('Spot reserved!') }
@@ -656,13 +675,13 @@ const RoomsPageComponent = (parentRoom) => {
     return (
       <>
         <div>
-          <div className={`sidebar-right ${isOpen == true ? 'active' : ''}`}>
+          <div className={`sidebar-right ${isOpen == true ? 'active' : ''} ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
             <div className="sd-body text-center row">
-              <button className='reserve-spot-event-sidebar-logo btn btn-dark' onClick={() => {
+              <button className={`reserve-spot-event-sidebar-logo btn ${newTheme == 'light' ? 'text-dark btn-light' : 'text-light btn-dark'}`} onClick={() => {
                 closeSidebar();
                 ToggleSeatLegend();
               }}>
-                <VscThreeBars size={20} className=' text-light' />
+                <VscThreeBars size={20} className={`{${newTheme == 'light' ? 'text-dark btn-light' : 'text-light btn-dark'}`} />
               </button>
               <div>
                 <Button className='w-75 mt-2 mb-2'>
@@ -696,7 +715,7 @@ const RoomsPageComponent = (parentRoom) => {
               {chosenEvent.qrCodeQuestions != '' && chosenEvent.qrCodeQuestions != null &&
                 <img src={chosenEvent.qrCodeQuestions} className='qr-code-client-image' />}
 
-              <li><button className="btn btn-custom-reserve-spot btn-outline-light my-2 my-sm-0 sd-link" style={{ backgroundColor: backgroundColor, content: text }} onClick={takeSpot} >{text}</button></li>
+              <li><button className={`btn btn-custom-reserve-spot my-2 my-sm-0 sd-link ${newTheme == 'light' ? 'btn-outline-dark' : ' btn-outline-light'}` } style={{ backgroundColor: backgroundColor, content: text, color: textColor }} onClick={takeSpot} >{text}</button></li>
 
             </div>
           </div>
@@ -791,7 +810,7 @@ const RoomsPageComponent = (parentRoom) => {
     return (
       <>
         <div className="container-fluid">
-          <div className="sidebar-left">
+          <div className={`sidebar-left ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
             <div className="sd-header">
               <img src={logo} width={100} height={100} alt='Responsive image' className='img-fluid logoImage-2' />
             </div>
@@ -914,7 +933,7 @@ const RoomsPageComponent = (parentRoom) => {
       <>
 
         {openSeatLegend && <div className='seats-legend'>
-          <ul className='example-seats bg-dark text-light p-2'>
+          <ul className={`example-seats p-2 ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
             {newLanguage == 'ENG' && 'Types of seats:'}
             {newLanguage == 'BG' && 'Типове места:'}
             <li
@@ -1086,7 +1105,7 @@ const RoomsPageComponent = (parentRoom) => {
   const callSearchBar = () => {
     return (
       <>
-        <nav class="custom-navbar navbar justify-content-between">
+        <nav class={`custom-navbar navbar justify-content-between ${newTheme == 'light' ? 'text-dark bg-light' : 'text-light bg-dark'}`}>
           <form class="custom-form-search-bar form-inline">
             <IoMdSearch size={35} className='text-secondary search-bar-icon' />
             <input class="form-control mr-sm-2" type="search" placeholder={newLanguage == 'ENG' ? "Search for event" : "Търси събитие"} aria-label="Search" value={searchField}
