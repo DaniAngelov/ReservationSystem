@@ -1187,9 +1187,9 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   }
 
   const callChangePasswordButton = () => {
-    return <Button className='change-password-button btn-primaryz' onClick={
+    return <Button className='change-password-button btn-primary' onClick={
       () => {
-
+        navigator('/change-password')
       }
     }>
       {newLanguage == 'ENG' && 'Change password'}

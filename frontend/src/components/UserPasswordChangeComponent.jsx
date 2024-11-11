@@ -42,7 +42,7 @@ const UserPasswordChangeComponent = () => {
       </div>
       <div className='card-body-forgotten-password text-center text-light bg-secondary p-5'>
         <form>
-          <h1 className='mb-5'>Change your password!</h1>
+          <h1 className='mb-5'>Change your password</h1>
           <div className='form-group text-start'>
             <label className='form-label text-light'>New password:</label>
             <input type='password' placeholder='New password' name='password' value={newPassword} className='form-control'
@@ -56,11 +56,11 @@ const UserPasswordChangeComponent = () => {
               onChange={(e) => setConfirmNewPassword(e.target.value)}
             />
           </div>
-          <button className='btn  btn-success mt-4' onClick={(e) => updatePassword(e, newPassword, confirmNewPassword)}>Change Password!</button>
+          <button className='btn-change-password btn btn-success mt-2 p-3' onClick={(e) => updatePassword(e, newPassword, confirmNewPassword)}>Change Password!</button>
         </form>
 
 
-        <button className='par-navigator-2 btn btn-light text-secondary mb-1 ml-3' onClick={() => { navigateToLogin() }}>Back to sign in</button>
+        <button className='par-navigator-2 btn btn-light text-secondary p-2 mb-1 ml-3' onClick={() => { navigateToLogin() }}>Back to sign in</button>
 
       </div>
     </div>

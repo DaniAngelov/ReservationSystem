@@ -293,9 +293,9 @@ body {
 .change-password-button {
   position: absolute;
   width: 16%;
-  bottom: 15%;
+  bottom: 2%;
   height: 8.5%;
-  left: 10%;
+  left: 22%;
   z-index: 1;
 }
 
