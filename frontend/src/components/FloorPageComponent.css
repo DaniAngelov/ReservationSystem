@@ -281,12 +281,21 @@ body {
   z-index: 1;
 }
 
-.upload-file-system-button{
+.upload-file-system-button {
   position: absolute;
   width: 16%;
   bottom: 15%;
   height: 8.5%;
   left: 2%;
+  z-index: 1;
+}
+
+.change-password-button {
+  position: absolute;
+  width: 16%;
+  bottom: 15%;
+  height: 8.5%;
+  left: 10%;
   z-index: 1;
 }
 
@@ -328,7 +337,7 @@ body {
   z-index: 1;
 }
 
-.json-file-header-system{
+.json-file-header-system {
   position: absolute;
   right: 5%;
   top: 26%;
@@ -374,6 +383,14 @@ body {
   top: 42vh !important;
 }
 
+.upload-file-teams-alert-manual {
+  position: absolute;
+  width: 24%;
+  height: 17vh;
+  left: 25%;
+  top: 62vh !important;
+}
+
 .import-data-buttons-div {
   position: absolute;
   border-radius: 12pt;
@@ -395,7 +412,7 @@ body {
   width: 30%;
 }
 
-.create-form-seats-section-div{
+.create-form-seats-section-div {
   position: absolute;
   left: 110%;
   width: 100%;
@@ -415,32 +432,32 @@ body {
   top: -5%;
 }
 
-.team-occupy-computer{
+.team-occupy-computer {
   position: absolute;
   top: -10%;
   right: 10%;
 }
 
-.team-occupy-charger{
+.team-occupy-charger {
   position: absolute;
   top: -10%;
 }
 
-.computer-number-team-div{
+.computer-number-team-div {
   width: 35vh !important;
 }
 
-.charger-number-team-div{
+.charger-number-team-div {
   width: 35vh !important;
 }
 
-.team-equipment-div{
+.team-equipment-div {
   position: absolute;
   top: 38%;
   left: 220%;
 }
 
-.team-users-form-div{
+.team-users-form-div {
   position: absolute;
   bottom: -70%;
   width: 90%;
@@ -449,12 +466,12 @@ body {
   overflow-y: auto;
 }
 
-.user-data-team-member{
+.user-data-team-member {
   position: absolute;
   width: 100%;
 }
 
-.btn-add-team-user{
+.btn-add-team-user {
   position: absolute;
   top: 10%;
   left: 115%;

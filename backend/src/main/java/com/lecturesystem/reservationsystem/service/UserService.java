@@ -50,6 +50,8 @@ public interface UserService {
 
     List<User> searchUser(SearchGuestDTO searchGuestDTO);
 
+    Boolean checkPassword(String username) throws CustomUserException;
+
     User changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException;
 
     void deleteInactiveUsers();

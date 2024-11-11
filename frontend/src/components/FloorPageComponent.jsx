@@ -17,7 +17,7 @@ import axios from 'axios';
 import { Button } from "react-bootstrap";
 import { HiDesktopComputer } from "react-icons/hi"
 import { LuCable } from "react-icons/lu";
-import { deleteInactiveUsers, getUserByUsername, reserveTeam, reserveTeamJSON } from '../services/UserService';
+import { checkPassword, deleteInactiveUsers, getUserByUsername, reserveTeam, reserveTeamJSON } from '../services/UserService';
 import { HiUserPlus } from "react-icons/hi2";
 
 const FloorPageComponent = ({ setRoom, setFaculty }) => {
@@ -48,9 +48,11 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const [newLanguage, setNewLanguage] = useState('');
 
   const [newTheme, setNewTheme] = useState('');
+  const [defaultPassword, setDefaultPassword] = useState(false);
 
   const [uploadFileAlert, setUploadFileAlert] = useState(false);
   const [uploadFileTeamsAlert, setUploadFileTeamsAlert] = useState(false);
+  const [uploadFileTeamsManualAlert, setUploadFileTeamsManualAlert] = useState(false);
 
   const [teamName, setTeamName] = useState('');
   const [computerNumber, setComputerNumber] = useState(0);
@@ -118,6 +120,19 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       console.log("error");
       console.log(error);
     })
+
+  }, []);
+
+  useEffect(() => {
+    checkPassword(user, token).then((response) => {
+      console.log("DEFAULT PASS RESPONSE")
+      console.log(response.data);
+      setDefaultPassword(response.data)
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+
   }, []);
 
   useEffect(() => {
@@ -211,6 +226,15 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const closeUploadFileTeamsAlert = () => {
     return setUploadFileTeamsAlert(false);
+  }
+
+  const toggleUploadFileTeamsManualAlert = (text) => {
+    setUploadDataText(text);
+    return setUploadFileTeamsManualAlert(true);
+  }
+
+  const closeUploadFileTeamsManualAlert = () => {
+    return setUploadFileTeamsManualAlert(false);
   }
 
 
@@ -727,8 +751,6 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
   const addNewTeam = (event) => {
     event.preventDefault();
 
-    console.log("teamEvent");
-    console.log(teamEvent);
     getSpecificEvent(teamEvent, token).then((response) => {
       const foundEvent = response.data;
 
@@ -779,19 +801,19 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       reserveTeam(JSON.stringify(teamDTO), token).then((response) => {
         console.log("response")
         console.log(response.data)
-        { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Successfully saved places!`) }
-        { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Успешно запазване на места!`) }
+        { newLanguage == 'ENG' && toggleUploadFileTeamsManualAlert(`Successfully saved places!`) }
+        { newLanguage == 'BG' && toggleUploadFileTeamsManualAlert(`Успешно запазване на места!`) }
       }).catch((error) => {
         console.log(error);
-        { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
-        { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
+        { newLanguage == 'ENG' && toggleUploadFileTeamsManualAlert(`Failed save of places! Error: ${error.response.data}`) }
+        { newLanguage == 'BG' && toggleUploadFileTeamsManualAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
       })
     }
     )
       .catch((error) => {
         console.log(error);
-        { newLanguage == 'ENG' && toggleUploadFileTeamsAlert(`Failed save of places! Error: ${error.response.data}`) }
-        { newLanguage == 'BG' && toggleUploadFileTeamsAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
+        { newLanguage == 'ENG' && toggleUploadFileTeamsManualAlert(`Failed save of places! Error: ${error.response.data}`) }
+        { newLanguage == 'BG' && toggleUploadFileTeamsManualAlert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
         console.log("error");
         console.log(error);
       })
@@ -910,6 +932,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         closeImportDataForm(e)
         closeUploadFileAlert();
         closeUploadFileTeamsAlert();
+        closeUploadFileTeamsManualAlert();
         setTeamUserResourcesUsername(Array(0).fill(''))
         setTeamUserResourcesPassword(Array(0).fill(''))
         setTeamUserResourcesEmail(Array(0).fill(''))
@@ -926,6 +949,9 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           toggleImportDataFromJson();
           closeImportDataForTeam();
           closeManualFormImport();
+          closeUploadFileAlert();
+          closeUploadFileTeamsAlert();
+          closeUploadFileTeamsManualAlert();
         }}>{newLanguage == 'ENG' && 'System'}
           {newLanguage == 'BG' && 'Система'}</Button>
 
@@ -933,12 +959,18 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
           closeImportDataFromJson();
           closeManualFormImport();
           toggleImportDataForTeam();
+          closeUploadFileAlert();
+          closeUploadFileTeamsAlert();
+          closeUploadFileTeamsManualAlert();
         }}>{newLanguage == 'ENG' && 'Teams'}
           {newLanguage == 'BG' && 'Отбори'}</Button>
         <Button className='btn-import-data-team-manual btn-dark text-light p-2 ml-1' onClick={() => {
           closeImportDataFromJson();
           closeImportDataForTeam();
           toggleManualFormImport();
+          closeUploadFileAlert();
+          closeUploadFileTeamsAlert();
+          closeUploadFileTeamsManualAlert();
         }}>{newLanguage == 'ENG' && 'Teams (Form)'}
           {newLanguage == 'BG' && 'Отбори (Форма)'}</Button>
       </div>
@@ -1101,6 +1133,14 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </div>)
   }
 
+  const showTeamsManualAlertWhenUploadFile = () => {
+    return (<div class="upload-file-teams-alert-manual alert alert-primary" role="alert">
+      <button className="btn-close-upload-event-teams-alert btn btn-danger" onClick={(e) => closeUploadFileTeamsManualAlert(e)}>x</button>
+      <br />
+      {uploadDataText}
+    </div>)
+  }
+
   const importSystemData = () => {
     if (faculties.length == 0) {
       uploadStartData().then((response) => {
@@ -1146,6 +1186,17 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     </Button>
   }
 
+  const callChangePasswordButton = () => {
+    return <Button className='change-password-button btn-primaryz' onClick={
+      () => {
+
+      }
+    }>
+      {newLanguage == 'ENG' && 'Change password'}
+      {newLanguage == 'BG' && 'Смяна на парола'}
+    </Button>
+  }
+
   return (
     <>
       {SidebarLeftComponent()}
@@ -1163,7 +1214,9 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       {role == 'ADMIN' && importDataForm && callImportDataForm()}
       {uploadFileAlert && showAlertWhenUploadFile()}
       {uploadFileTeamsAlert && showTeamsAlertWhenUploadFile()}
+      {uploadFileTeamsManualAlert && showTeamsManualAlertWhenUploadFile()}
       {callUploadSystemFileButton()}
+      {defaultPassword && callChangePasswordButton()}
     </>
   )
 }

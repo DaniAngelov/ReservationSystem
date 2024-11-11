@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/get-admin").permitAll()
                         .requestMatchers("/api/users/language").permitAll()
                         .requestMatchers("/api/users/color-theme").permitAll()
+                        .requestMatchers("/api/floors/events/add-mystery-event").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement -> sessionManagement

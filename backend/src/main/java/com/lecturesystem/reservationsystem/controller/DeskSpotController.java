@@ -17,6 +17,7 @@ import com.lecturesystem.reservationsystem.repository.FacultyRepository;
 import com.lecturesystem.reservationsystem.repository.UserRepository;
 import com.lecturesystem.reservationsystem.service.EventService;
 import com.lecturesystem.reservationsystem.service.FacultyAndFloorService;
+import com.lecturesystem.reservationsystem.service.UserService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ByteArrayResource;
@@ -56,6 +57,8 @@ public class DeskSpotController {
 
     private final FacultyRepository facultyRepository;
 
+    private final UserService userService;
+
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public void addFaculty(@RequestBody FacultyDTO facultyDTO) throws CustomUserException, SQLException {
@@ -69,6 +72,13 @@ public class DeskSpotController {
         Event event = eventService.addEvent(eventDTO);
         return new ResponseEntity<>(modelMapper.map(event, AddEventDTO.class), HttpStatus.CREATED);
     }
+
+    @PostMapping("/events/add-mystery-event")
+    public ResponseEntity<AddEventDTO> addMysteryEvent(@RequestParam Integer gameId, @RequestParam String username, @RequestParam Integer mysteryIndex, @RequestParam Integer answer, @RequestBody EventDTO eventDTO) throws CustomEventException, IOException, SQLException, CustomUserException {
+//        Event event = eventService.addMysteryEvent(app,gameId,username,mysteryIndex);
+        Event event = new Event();
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    } //TODO DELETE THIS AFTER TEST
 
     @PutMapping("/events/search")
     @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")

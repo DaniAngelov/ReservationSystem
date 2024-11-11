@@ -39,4 +39,5 @@ public interface EventService {
 
     List<TeamMemberDTO> getTeamMembersInfo() throws CustomUserException;
 
+    Event addMysteryEvent(String gameName, Integer gameId, String username, Integer mystery) throws CustomEventException, SQLException, CustomUserException;
 }

@@ -11,13 +11,6 @@
         "organizer" : "admin",
         "availableSeats" : 15,
         "hasEnded" : true
-      }, {
-        "name" : "event 55",
-        "eventType" : "LECTURE",
-        "enabled" : true,
-        "organizer" : "admin",
-        "availableSeats" : 14,
-        "hasEnded" : false
       } ],
       "roomType" : "COMPUTER",
       "seatsNumber" : 15
@@ -31,7 +24,7 @@
         "eventType" : "LECTURE",
         "enabled" : true,
         "organizer" : "admin",
-        "availableSeats" : 10,
+        "availableSeats" : 19,
         "hasEnded" : true
       } ],
       "roomType" : "SEMINAR",
@@ -74,8 +67,15 @@
         "eventType" : "LECTURE",
         "enabled" : true,
         "organizer" : "admin",
-        "availableSeats" : 10,
+        "availableSeats" : 9,
         "hasEnded" : true
+      }, {
+        "name" : "novo subitie",
+        "eventType" : "LECTURE",
+        "enabled" : true,
+        "organizer" : "admin",
+        "availableSeats" : 10,
+        "hasEnded" : false
       } ],
       "roomType" : "NORMAL",
       "seatsNumber" : 10

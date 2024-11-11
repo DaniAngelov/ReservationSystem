@@ -69,10 +69,22 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setUsername(userDto.getUsername());
         user.setEvents(new ArrayList<>());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setEmail(userDto.getEmail());
+        if (userDto.getPassword() == null || userDto.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode("12345"));
+        } else {
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        }
+        if (userDto.getEmail() == null || userDto.getEmail().isEmpty()) {
+            String randomString = String.valueOf(System.currentTimeMillis());
+            user.setEmail(randomString.substring(5));
+        } else {
+            user.setEmail(userDto.getEmail());
+        }
         user.setLanguagePreferred("ENG");
         user.setTheme("dark");
+        if (userDto.getRole() == null) {
+            userDto.setRole("USER");
+        }
         switch (userDto.getRole()) {
             case "ADMIN" -> user.setRole(Role.ADMIN);
             case "QA" -> user.setRole(Role.QA);
@@ -80,7 +92,7 @@ public class UserServiceImpl implements UserService {
             case "DEVOPS" -> user.setRole(Role.DEVOPS);
             default -> user.setRole(Role.USER);
         }
-        if (userDto.getTeamName() != null && !userDto.getTeamName().equals("")) {
+        if (userDto.getTeamName() != null && !userDto.getTeamName().isEmpty()) {
             user.setTeamName(userDto.getTeamName());
         }
         user.setPoints(1);
@@ -209,19 +221,19 @@ public class UserServiceImpl implements UserService {
         if (faculty == null) {
             throw new CustomEventException("There is no such faculty!");
         }
-        int seats = teamDTO.getSeats();
+        int seats = teamDTO.getSeats() == null ? 0 : teamDTO.getSeats();
         if (event.getAvailableSeats() < seats) {
             throw new CustomEventException("There are not enough seats available!");
         }
-        int qaSeats = teamDTO.getQaSeats();
+        int qaSeats = teamDTO.getQaSeats() == null ? 0 : teamDTO.getQaSeats();
         if (event.getAvailableQaSeats() < qaSeats) {
             throw new CustomEventException("There are not enough QA seats available!");
         }
-        int developerSeats = teamDTO.getDeveloperSeats();
+        int developerSeats = teamDTO.getDeveloperSeats() == null ? 0 : teamDTO.getDeveloperSeats();
         if (event.getAvailableDeveloperSeats() < developerSeats) {
             throw new CustomEventException("There are not enough DEVELOPER seats available!");
         }
-        int devopsSeats = teamDTO.getDevopsSeats();
+        int devopsSeats = teamDTO.getDevopsSeats() == null ? 0 : teamDTO.getDevopsSeats();
         if (event.getAvailableDevopsSeats() < devopsSeats) {
             throw new CustomEventException("There are not enough DEVOPS seats available!");
         }
@@ -473,6 +485,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean checkPassword(String username) throws CustomUserException {
+        User user = userRepository.getUserByUsername(username);
+        if (user == null) {
+            throw new CustomUserException("There is no such user!");
+        }
+        return passwordEncoder.matches("12345", user.getPassword());
+    }
+
+    @Override
     public User changeLanguage(ChangeUserLanguageDTO changeUserLanguageDTO) throws CustomUserException {
         User user = userRepository.getUserByUsername(changeUserLanguageDTO.getUsername());
         if (user == null) {
@@ -485,7 +506,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteInactiveUsers() {
         List<User> users = userRepository.findAll().stream().filter(user -> user.getTemporaryUserExpirationDate() != null && user.getTemporaryUserExpirationDate().isBefore(LocalDateTime.now())).toList();
-        if (users.size() > 0) {
+        if (!users.isEmpty()) {
             for (User user : users) {
                 List<Seat> seats = seatRepository.findAll();
                 for (Seat seat : seats) {

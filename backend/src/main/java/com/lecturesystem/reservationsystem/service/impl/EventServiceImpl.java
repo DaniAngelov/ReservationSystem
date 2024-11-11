@@ -8,13 +8,16 @@ import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
 import com.lecturesystem.reservationsystem.model.dto.TeamMemberDTO;
 import com.lecturesystem.reservationsystem.model.dto.event.*;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
+import com.lecturesystem.reservationsystem.model.dto.users.UserDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.UserDeleteEventDTO;
 import com.lecturesystem.reservationsystem.model.entity.*;
 import com.lecturesystem.reservationsystem.model.enums.Duration;
+import com.lecturesystem.reservationsystem.model.enums.EventType;
 import com.lecturesystem.reservationsystem.model.enums.Role;
 import com.lecturesystem.reservationsystem.model.enums.SeatType;
 import com.lecturesystem.reservationsystem.repository.*;
 import com.lecturesystem.reservationsystem.service.EventService;
+import com.lecturesystem.reservationsystem.service.UserService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,8 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class EventServiceImpl implements EventService {
+
+    private final UserService userService;
 
     private final EventRepository eventRepository;
 
@@ -169,7 +174,7 @@ public class EventServiceImpl implements EventService {
         }
         if (event.getOrganizer().equals(user.getUsername())) {
             event.setDisableEventReason(disableEventDTO.getDisableReason());
-            if (!disableEventDTO.getDisableEventDescription().equals("")) {
+            if (!disableEventDTO.getDisableEventDescription().isEmpty()) {
                 event.setDisableEventDescription(disableEventDTO.getDisableEventDescription());
             }
             event.setEnabled(false);
@@ -216,7 +221,7 @@ public class EventServiceImpl implements EventService {
                 .lectorRating(addFeedbackFormDTO.getLectorRating())
                 .lectureRating(addFeedbackFormDTO.getLectureRating())
                 .username(addFeedbackFormDTO.getUsername());
-        if (!addFeedbackFormDTO.isAnonymous() && !addFeedbackFormDTO.getUsername().equals("")) {
+        if (!addFeedbackFormDTO.isAnonymous() && !addFeedbackFormDTO.getUsername().isEmpty()) {
             feedbackFormBuilder.name(addFeedbackFormDTO.getName());
         }
         event.getFeedbackForm().add(feedbackFormBuilder.build());
@@ -258,7 +263,7 @@ public class EventServiceImpl implements EventService {
     public List<TeamMemberDTO> getTeamMembersInfo() throws CustomUserException {
         List<TeamMemberDTO> teamMemberDTOS = new ArrayList<>();
         List<User> users = userRepository.findAll();
-        List<User> teamUsers = users.stream().filter(user -> user.getTeamName() != null && !user.getTeamName().equals("")).toList();
+        List<User> teamUsers = users.stream().filter(user -> user.getTeamName() != null && !user.getTeamName().isEmpty()).toList();
         for (User user : teamUsers) {
             List<Event> userEvents = getAllEventsForUser(user.getUsername());
             List<SeatDTO> userSeats = getSeatsForUser(user.getUsername());
@@ -271,6 +276,26 @@ public class EventServiceImpl implements EventService {
             teamMemberDTOS.add(teamMemberDTO);
         }
         return teamMemberDTOS;
+    }
+
+    @Override
+    public Event addMysteryEvent(String gameName, Integer gameId, String username, Integer mystery) throws CustomEventException, SQLException, CustomUserException {
+        UserDTO userDTO = UserDTO.builder().username(username).password("").email("").role("USER").build();
+        userService.registerUser(userDTO);
+        DurationDTO durationDTO = new DurationDTO();
+        durationDTO.setStartDate("2024-11-20T12:59");
+        durationDTO.setEndDate("2024-11-21T13:59");
+        EventDTO eventDTO = EventDTO.builder()
+                .name(gameName)
+                .description("desc")
+                .eventType(EventType.SEMINAR)
+                .facultyName("Faculty of Mathematics and Informatics")
+                .roomNumber(11)
+                .floorNumber(1)
+                .user(username)
+                .duration(durationDTO)
+                .build();
+        return addEvent(eventDTO);
     }
 
     private List<SeatDTO> getSeatsForUser(String username) {

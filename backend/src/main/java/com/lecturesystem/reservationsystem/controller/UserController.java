@@ -55,7 +55,7 @@ public class UserController {
         String name = "adminData.json";
         String originalFileName = "adminData.json";
         String contentType = "application/json";
-        byte[] content = null;
+        byte[] content;
         try {
             content = Files.readAllBytes(path);
         } catch (final IOException e) {
@@ -201,6 +201,13 @@ public class UserController {
         List<User> users = userService.searchUser(searchUserDTO);
         List<UserPointsDTO> userDTOS = users.stream().map(user -> modelMapper.map(user, UserPointsDTO.class)).collect(toList());
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/check-password")
+    @PreAuthorize("hasAnyAuthority('USER','LECTOR', 'ADMIN', 'DEVELOPER', 'QA', 'DEVOPS')")
+    public ResponseEntity<Boolean> checkPassword(@RequestParam String username) throws CustomUserException {
+        boolean result = userService.checkPassword(username);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PutMapping("/language")

@@ -6,14 +6,14 @@ import com.lecturesystem.reservationsystem.model.dto.SeatDTO;
 import com.lecturesystem.reservationsystem.model.dto.users.GuestDTO;
 import com.lecturesystem.reservationsystem.model.enums.DisableEventReason;
 import com.lecturesystem.reservationsystem.model.enums.EventType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@Builder
 @NoArgsConstructor
 public class EventDTO {
     private String name;

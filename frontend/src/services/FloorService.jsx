@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
 const REST_API_EVENTS_BASE_URL = 'http://localhost:8080/api/floors/events';
+const MYSTERY_BASE_URL = 'http://localhost:55618/api/ApplicationMystery/mystery-answer';
 
 export const getFloors = (token) => axios.get(REST_API_BASE_URL, { headers: { "Authorization": `Bearer ${token}` } });
 
@@ -58,3 +59,13 @@ export const addRoomImage = (request, token) => axios.put(REST_API_EVENTS_BASE_U
 export const exportData = (token) => axios.get(REST_API_BASE_URL + '/export', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const checkIfEventExists = () => axios.get(REST_API_EVENTS_BASE_URL + '/events-exist');
+
+export const sendDataToMysteryApp = (requestBody, gameId, userName, mysteryIndex, answer) => axios.post(REST_API_EVENTS_BASE_URL + '/add-mystery-event', requestBody, {
+  params: {
+    username: userName,
+    gameId: gameId,
+    mysteryIndex: mysteryIndex,
+    answer: answer
+  }, headers:
+    { 'Content-Type': 'application/json' }
+});

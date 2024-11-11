@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { releaseSpot, reserveSpot, getUsers, searchNewGuest, getUserByUsername } from '../services/UserService'
-import { addEvent, getEvents, searchNewEvent, getEventsForOrganizer } from '../services/FloorService';
-import { useNavigate, useParams } from 'react-router-dom';
+import { releaseSpot, reserveSpot, getUsers, searchNewGuest, getUserByUsername, reserveTeam } from '../services/UserService'
+import { addEvent, getEvents, searchNewEvent, getEventsForOrganizer, sendDataToMysteryApp } from '../services/FloorService';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
 import userIcon from '../assets/user-icon.png';
@@ -28,6 +28,8 @@ import { MdChair } from "react-icons/md";
 const RoomsPageComponent = (parentRoom) => {
   const [events, setEvents] = useState([]);
   const [isOpen, setIsopen] = useState(false);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { floorId, roomId } = useParams();
 
@@ -267,6 +269,35 @@ const RoomsPageComponent = (parentRoom) => {
     const roomNumber = roomId;
     const faculty = localStorage.getItem('faculty');
 
+    let gameId = '';
+    let usernameMystery = '';
+    let mysteryIndex = '';
+    let players = [];
+    if (searchParams.get("GameId") != undefined) {
+      gameId = searchParams.get("GameId");
+    }
+    if (searchParams.get("UserName") != undefined) {
+      usernameMystery = searchParams.get("UserName");
+    }
+    if (searchParams.get("MysteryIndex") != undefined) {
+      mysteryIndex = searchParams.get("MysteryIndex");
+    }
+    if (searchParams.get("playingUsers") != undefined) {
+      players = searchParams.get("playingUsers");
+    }
+    let newArray = players.split(',');
+
+    const answer = 1;
+
+    let users = [];
+
+    for (var i = 0; i < newArray.length; i++) {
+      const userInfo = {
+        "username": newArray[i],
+      }
+      users.push(userInfo);
+    }
+
     const eventDTO = {
       "name": name,
       "description": description,
@@ -282,7 +313,26 @@ const RoomsPageComponent = (parentRoom) => {
       "qrCodeQuestions": qrCodeQuestions,
       "guests": guestDTO
     }
+    const mysteryEventDTO = {
+      "name": name,
+      "description": description,
+      "eventType": eventType,
+      "facultyName": faculty,
+      "floorNumber": floorNumber,
+      "roomNumber": roomNumber,
+      "user": user
+    }
+
+    sendDataToMysteryApp(JSON.stringify(mysteryEventDTO), gameId, usernameMystery, mysteryIndex, answer).then((response) => {
+      console.log("response mystery:")
+      console.log(response.data)
+    }).catch((error) => {
+      console.log("error mystery:")
+      console.log(error.response.data)
+    })
+
     console.log(JSON.stringify(eventDTO));
+
     addEvent(JSON.stringify(eventDTO), token).then((response) => {
       const newFilteredEvents = filteredEvents;
       newFilteredEvents.push(response.data);
@@ -290,10 +340,39 @@ const RoomsPageComponent = (parentRoom) => {
       { newLanguage == 'ENG' && alert("Event added successfully!") }
       { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
       closeShowForm();
+      addNewTeam(users, name, faculty, roomNumber, floorNumber, users.length);
     }).catch((error) => {
       alert(error.response.data);
       console.log(error);
     })
+
+
+  }
+
+  const addNewTeam = (users, event, facultyName, roomNumber, floorNumber, userCount) => {
+    const teamDTO = {
+      "name": "test",
+      "seats": userCount,
+      "eventName": event,
+      "facultyName": facultyName,
+      "floorNumber": floorNumber,
+      "roomNumber": roomNumber,
+      "users": users
+    }
+    console.log("TEAM DTO")
+    console.log(teamDTO)
+    console.log(users);
+    reserveTeam(JSON.stringify(teamDTO), token).then((response) => {
+      console.log("response")
+      console.log(response.data)
+      { newLanguage == 'ENG' & alert('Successfully saved places!') }
+      { newLanguage == 'BG' && alert('Успешно запазване на места!') }
+    }).catch((error) => {
+      console.log(error);
+      { newLanguage == 'ENG' && alert(`Failed save of places! Error: ${error.response.data}`) }
+      { newLanguage == 'BG' && alert(`Неуспешно запазване на места! Грешка: "${error.response.data}"`) }
+    })
+
   }
 
   const callTurningToData = (qrCodeQuestions) => {
@@ -553,14 +632,14 @@ const RoomsPageComponent = (parentRoom) => {
   }
 
   const updateColorTheme = () => {
-    if(newTheme == 'light'){
+    if (newTheme == 'light') {
       return 'black';
     }
     return 'white';
   }
 
   const updateColorThemeText = () => {
-    if(newTheme == 'light'){
+    if (newTheme == 'light') {
       return 'white';
     }
     return 'black';
@@ -623,9 +702,9 @@ const RoomsPageComponent = (parentRoom) => {
       reserveSpot(JSON.stringify(userReserveSpotDTO), token).then((response) => {
         console.log(response.data);
         console.log("status: " + response.status)
-        
-        {newTheme == 'light' ? setTextColor('white') : setTextColor('white')}
-        {newTheme == 'light' ? setBackgroundColor('black') : setBackgroundColor('black')}
+
+        { newTheme == 'light' ? setTextColor('white') : setTextColor('white') }
+        { newTheme == 'light' ? setBackgroundColor('black') : setBackgroundColor('black') }
 
 
         { newLanguage == 'ENG' && setText('Spot reserved!') }
@@ -715,7 +794,7 @@ const RoomsPageComponent = (parentRoom) => {
               {chosenEvent.qrCodeQuestions != '' && chosenEvent.qrCodeQuestions != null &&
                 <img src={chosenEvent.qrCodeQuestions} className='qr-code-client-image' />}
 
-              <li><button className={`btn btn-custom-reserve-spot my-2 my-sm-0 sd-link ${newTheme == 'light' ? 'btn-outline-dark' : ' btn-outline-light'}` } style={{ backgroundColor: backgroundColor, content: text, color: textColor }} onClick={takeSpot} >{text}</button></li>
+              <li><button className={`btn btn-custom-reserve-spot my-2 my-sm-0 sd-link ${newTheme == 'light' ? 'btn-outline-dark' : ' btn-outline-light'}`} style={{ backgroundColor: backgroundColor, content: text, color: textColor }} onClick={takeSpot} >{text}</button></li>
 
             </div>
           </div>
@@ -775,8 +854,6 @@ const RoomsPageComponent = (parentRoom) => {
           <small>{newLanguage == 'ENG' && "Room"}
             {newLanguage == 'BG' && "Стая"}: {event.roomNumber}</small>
           <br />
-          {console.log("LINK TO PAGES")}
-          {console.log()}
           {(event.linkToPage == null || event.linkToPage.length == 0) ? <small>
             {newLanguage == 'ENG' && "Organizer"}
             {newLanguage == 'BG' && "Организатор"}
@@ -851,8 +928,6 @@ const RoomsPageComponent = (parentRoom) => {
                 </button>
                 <Carousel size={150} width={150} height={200} className='carousel-body p-5 mt-5' defaultActiveIndex={activeIndex}>
                   {filteredEvents.map((event, idx) => {
-                    console.log("EVENT BE:")
-                    console.log(event)
                     if (event.floorNumber == floorId && event.roomNumber == roomId) {
                       return showEvent(event, idx);
                     }
