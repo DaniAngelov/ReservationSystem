@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { releaseSpot, reserveSpot, getUsers, searchNewGuest, getUserByUsername, reserveTeam } from '../services/UserService'
-import { addEvent, getEvents, searchNewEvent, getEventsForOrganizer, sendDataToMysteryApp } from '../services/FloorService';
+import { releaseSpot, reserveSpot, getUsers, searchNewGuest, getUserByUsername, reserveTeam, updateNewLanguage, updateNewTheme } from '../services/UserService'
+import { addEvent, getEvents, searchNewEvent, getEventsForOrganizer, sendDataToMysteryApp, getSpecificEvent } from '../services/FloorService';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import './RoomsPageComponent.css'
 import logo from '../assets/fmi-deskspot-high-resolution-logo-white-transparent.png';
@@ -87,6 +87,7 @@ const RoomsPageComponent = (parentRoom) => {
   const [chosenTakenSeat, setChosenTakenSeat] = useState('');
 
   const [users, setUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
   const [disableEventAlert, setDisableEventAlert] = useState(false);
 
@@ -179,6 +180,18 @@ const RoomsPageComponent = (parentRoom) => {
         setUsers(newUsers);
       }).catch(error => {
         console.error(error.response.message);
+      }),
+      getUsers(token)
+      .then((response) => {
+        const newUsers = [];
+        response.data.map(newUser => {
+          if (user != newUser.username) {
+            newUsers.push(newUser);
+          }
+        });
+        setAllUsers(newUsers);
+      }).catch(error => {
+        console.error(error.response.message);
       })
   }, []);
 
@@ -263,39 +276,101 @@ const RoomsPageComponent = (parentRoom) => {
     a.readAsDataURL(blob);
   }
 
+  const updateLanguage = (language) => {
+    const updateLanguageDTO = {
+      "username": user,
+      "languagePreferred": language
+    }
+    updateNewLanguage(updateLanguageDTO, token).then((response) => {
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
+  const updateTheme = (theme) => {
+    const updateThemeDTO = {
+      "username": user,
+      "theme": theme
+    }
+
+    updateNewTheme(updateThemeDTO, token).then((response) => {
+      console.log("response language")
+      console.log(response.data);
+    }).catch((error) => {
+      console.log("error");
+      console.log(error);
+    })
+  }
+
   const addNewEvent = (e, name, description, eventType, startDate, endDate) => {
     e.preventDefault();
     const floorNumber = floorId;
     const roomNumber = roomId;
     const faculty = localStorage.getItem('faculty');
+    let mysteryUsers = [];
 
-    let gameId = '';
-    let usernameMystery = '';
-    let mysteryIndex = '';
-    let players = [];
-    if (searchParams.get("GameId") != undefined) {
-      gameId = searchParams.get("GameId");
-    }
-    if (searchParams.get("UserName") != undefined) {
-      usernameMystery = searchParams.get("UserName");
-    }
-    if (searchParams.get("MysteryIndex") != undefined) {
-      mysteryIndex = searchParams.get("MysteryIndex");
-    }
-    if (searchParams.get("playingUsers") != undefined) {
-      players = searchParams.get("playingUsers");
-    }
-    let newArray = players.split(',');
-
-    const answer = 1;
-
-    let users = [];
-
-    for (var i = 0; i < newArray.length; i++) {
-      const userInfo = {
-        "username": newArray[i],
+    if (searchParams.get("GameId") != null || searchParams.get("UserName") != null ||
+      searchParams.get("MysteryIndex") != null || searchParams.get("playingUsers") != null) {
+      let gameId = '';
+      let usernameMystery = '';
+      let mysteryIndex = '';
+      let players = '';
+      if (searchParams.get("GameId") != null) {
+        gameId = searchParams.get("GameId");
       }
-      users.push(userInfo);
+      if (searchParams.get("UserName") != null) {
+        usernameMystery = searchParams.get("UserName");
+      }
+      if (searchParams.get("MysteryIndex") != null) {
+        mysteryIndex = searchParams.get("MysteryIndex");
+      }
+      if (searchParams.get("playingUsers") != null) {
+        players = searchParams.get("playingUsers");
+      }
+      let newArray = players.split(',');
+
+      const answer = 1;
+
+      for (var i = 0; i < newArray.length; i++) {
+        const userInfo = {
+          "username": newArray[i],
+        }
+        mysteryUsers.push(userInfo);
+      }
+
+      console.log("event.seats");
+      getSpecificEvent(name, token).then((response => {
+        console.log("FOund event:")
+        console.log(response.data);
+      }))
+      .catch((error => {
+        console.log(error.response.data);
+      }))
+
+      const mysteryEventDTO = {
+        "name": name,
+        "description": description,
+        "eventType": eventType,
+        "facultyName": faculty,
+        "floorNumber": floorNumber,
+        "roomNumber": roomNumber,
+        "user": user,
+        "qrCodeQuestions": qrCodeQuestions,
+        "users": allUsers,
+        "events": filteredEvents
+      }
+
+      console.log("USERS")
+      console.log(users)
+
+      sendDataToMysteryApp(JSON.stringify(mysteryEventDTO), gameId, usernameMystery, mysteryIndex, answer).then((response) => {
+        console.log("response mystery:")
+        console.log(response.data)
+      }).catch((error) => {
+        console.log("error mystery:")
+        console.log(error.response.data)
+      })
     }
 
     const eventDTO = {
@@ -313,40 +388,26 @@ const RoomsPageComponent = (parentRoom) => {
       "qrCodeQuestions": qrCodeQuestions,
       "guests": guestDTO
     }
-    const mysteryEventDTO = {
-      "name": name,
-      "description": description,
-      "eventType": eventType,
-      "facultyName": faculty,
-      "floorNumber": floorNumber,
-      "roomNumber": roomNumber,
-      "user": user
-    }
 
-    sendDataToMysteryApp(JSON.stringify(mysteryEventDTO), gameId, usernameMystery, mysteryIndex, answer).then((response) => {
-      console.log("response mystery:")
-      console.log(response.data)
-    }).catch((error) => {
-      console.log("error mystery:")
-      console.log(error.response.data)
-    })
 
     console.log(JSON.stringify(eventDTO));
 
-    addEvent(JSON.stringify(eventDTO), token).then((response) => {
-      const newFilteredEvents = filteredEvents;
-      newFilteredEvents.push(response.data);
-      setFilteredEvents(newFilteredEvents);
-      { newLanguage == 'ENG' && alert("Event added successfully!") }
-      { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
-      closeShowForm();
-      addNewTeam(users, name, faculty, roomNumber, floorNumber, users.length);
-    }).catch((error) => {
-      alert(error.response.data);
-      console.log(error);
-    })
-
-
+    // addEvent(JSON.stringify(eventDTO), token).then((response) => {
+    //   const newFilteredEvents = filteredEvents;
+    //   newFilteredEvents.push(response.data);
+    //   setFilteredEvents(newFilteredEvents);
+    //   { newLanguage == 'ENG' && alert("Event added successfully!") }
+    //   { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
+    //   closeShowForm();
+    //   if (searchParams.get("GameId") != null || searchParams.get("UserName") != null ||
+    //     searchParams.get("MysteryIndex") != null || searchParams.get("playingUsers") != null) {
+    //     addNewTeam(mysteryUsers, name, faculty, roomNumber, floorNumber, mysteryUsers.length);
+    //   }
+    //   showEventIfEnabled(response.data)
+    // }).catch((error) => {
+    //   alert(error.response.data);
+    //   console.log(error);
+    // })
   }
 
   const addNewTeam = (users, event, facultyName, roomNumber, floorNumber, userCount) => {
@@ -805,22 +866,24 @@ const RoomsPageComponent = (parentRoom) => {
     )
   }
 
+  const showEventIfEnabled = (event) => {
+    setEvent(event);
+    closeSidebar();
+    closeShowForm();
+    closeFilterForm()
+    closeReleaseSeats();
+    closeUserPreferencesForm();
+    closeDisableEventAlert();
+    closeResourceLinkAlert();
+    closeSeatTakenEventForm();
+    ToggleSeatLegend();
+    toggleUpdateSeats();
+  }
+
+
   const SidebarLeftComponent = () => {
 
-    const showEventIfEnabled = (event) => {
-      setEvent(event);
-      closeSidebar();
-      closeShowForm();
-      closeFilterForm()
-      closeReleaseSeats();
-      closeUserPreferencesForm();
-      closeDisableEventAlert();
-      closeResourceLinkAlert();
-      closeSeatTakenEventForm();
-      ToggleSeatLegend();
-      toggleUpdateSeats();
-    }
-
+ 
     const showEvent = (event, idx) => {
 
       let newStartDate = event.duration.startDate.replace('T', ' ');
@@ -1043,6 +1106,7 @@ const RoomsPageComponent = (parentRoom) => {
             </li>
           </ul>
         </div>}
+        <button className='btn-event-name btn btn-primary text-light p-3'>Current Event: <br />{event.name}</button>
         <div className='lectors-div-guests row justify-content-md-center'>
           {event.seats.map((seat, idx) =>
             (seat.seatType == 'LECTOR' || seat.seatType == 'GUEST') && <div className='col-md-auto'>
@@ -1291,6 +1355,22 @@ const RoomsPageComponent = (parentRoom) => {
     </div>)
   }
 
+  const callLanguageQueryParam = () => {
+    let language = 'ENG';
+    if (searchParams.get("language") != null) {
+      language = searchParams.get("language");
+      updateLanguage(language);
+    }
+  }
+
+  const callThemeQueryParam = () => {
+    let theme = 'dark';
+    if (searchParams.get("theme") != null) {
+      theme = searchParams.get("theme");
+      updateTheme(theme);
+    }
+  }
+
   return (
     <>
       {parentRoom.faculty != '' && localStorage.setItem("faculty", parentRoom.faculty)};
@@ -1302,6 +1382,8 @@ const RoomsPageComponent = (parentRoom) => {
       {filterForm && callFilterForm()}
       {releaseSeat && releaseSeats()}
       <OpenUserSettings />
+      {callThemeQueryParam()}
+      {callLanguageQueryParam()}
       {callSearchBar()}
       {callSearchBarForOrganizer()}
       {seatTakenEventForm && callSeatTakenEventForChosenUser()}

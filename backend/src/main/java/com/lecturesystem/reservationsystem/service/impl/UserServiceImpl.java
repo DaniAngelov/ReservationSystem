@@ -571,12 +571,15 @@ public class UserServiceImpl implements UserService {
     private List<UserDTO> registerUsers(List<UserDTO> userDTOS, String teamName) throws CustomUserException {
         List<UserDTO> newUserDtos = new ArrayList<>();
         for (UserDTO userDTO : userDTOS) {
-            User userByUsername = userRepository.getUserByUsername(userDTO.getUsername());
-            if (userByUsername == null) {
-                userDTO.setTeamName(teamName);
-                registerUser(userDTO);
-                newUserDtos.add(userDTO);
+            if (userDTO.getRole() == null) {
+                userDTO.setRole("USER");
             }
+            User userByUsername = userRepository.getUserByUsername(userDTO.getUsername());
+            userDTO.setTeamName(teamName);
+            if (userByUsername == null) {
+                registerUser(userDTO);
+            }
+            newUserDtos.add(userDTO);
         }
         return newUserDtos;
     }

@@ -516,3 +516,9 @@ body {
   border-radius: 10px;
   width: 15%;
 }
+
+.btn-event-name{
+  position: absolute;
+  left: 25%;
+  top: 7%;
+}

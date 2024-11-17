@@ -60,7 +60,7 @@ export const exportData = (token) => axios.get(REST_API_BASE_URL + '/export', { 
 
 export const checkIfEventExists = () => axios.get(REST_API_EVENTS_BASE_URL + '/events-exist');
 
-export const sendDataToMysteryApp = (requestBody, gameId, userName, mysteryIndex, answer) => axios.post(REST_API_EVENTS_BASE_URL + '/add-mystery-event', requestBody, {
+export const sendDataToMysteryApp = (requestBody, gameId, userName, mysteryIndex, answer) => axios.post(MYSTERY_BASE_URL, requestBody, {
   params: {
     username: userName,
     gameId: gameId,
