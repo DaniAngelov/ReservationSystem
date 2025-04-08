@@ -1,0 +1,31 @@
+1. Добавяне на docker-compose за създаване на 2-та апа
+2. Добавяне на Dockerfile за всеки от прииложенията
+3. Добавяме конфигурация за nginx във frontend.
+4. Смяна на BASE URL в frontend апа:
+
+UserService.jsx:
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const REST_API_BASE_URL = API_URL + '/api/users';
+
+FloorService.jsx:
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const REST_API_BASE_URL = API_URL + '/api/floors';
+const REST_API_EVENTS_BASE_URL = API_URL + '/api/floors/events';
+
+5. В backend апа сменяме application.properties:
+
+server.port=${SPRING_PORT}
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+
+spring.mail.host=${SMTP_HOST}
+spring.mail.port=${SMTP_PORT}
+spring.mail.username=${SMTP_USER}
+spring.mail.password=${SMTP_PASSWORD}
+
+# добавяме това защото не успява да се свърже с MariaDB.
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+
+6. Добавяме environment variables в docker-compose.yml за backend апа.
+7. Правим база данни в MySQL и потребител за нея.

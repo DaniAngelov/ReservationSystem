@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -216,17 +217,18 @@ public class DeskSpotController {
 
     @PostMapping("/upload-start-data")
     public ResponseEntity<List<FacultyDTO>> uploadStartData() throws IOException, CustomUserException, CustomEventException, SQLException {
-
-        Path path = Paths.get("backend/src/main/resources/data.json");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data.json");
         String name = "data.json";
         String originalFileName = "data.json";
         String contentType = "application/json";
         byte[] content = null;
         try {
-            content = Files.readAllBytes(path);
+            content = inputStream.readAllBytes();
         } catch (final IOException e) {
+            System.err.println("error reading file: " + name);
+            System.err.println(e);
         }
-        if (facultyRepository.findAll().size() == 0) {
+        if (facultyRepository.findAll().isEmpty()) {
             readDataFromFile(new MockMultipartFile(name,
                     originalFileName, contentType, content));
         }
@@ -240,7 +242,7 @@ public class DeskSpotController {
         objectMapper.registerModule(new JavaTimeModule());
         List<ExportFacultyDTO> exportFacultyDTO = facultyAndFloorService.getWrapperDTO();
         ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-        File newFile = new File("backend/src/main/resources/testExportData.json");
+        File newFile = new File(System.getProperty("java.io.tmpdir") + "testExportData.json");
         writer.writeValue(newFile, exportFacultyDTO);
         ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
                 .filename(newFile.getName())

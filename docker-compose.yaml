@@ -1,0 +1,40 @@
+version: "3.9"
+name: reservationsystem
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: reservation_system
+      MYSQL_ROOT_PASSWORD: root
+  frontend:
+    container_name: reservationsystem-frontend
+    build:
+      context: ./frontend/
+      args:
+        VITE_API_URL: "http://localhost:5381"
+      dockerfile: Dockerfile
+    ports:
+      - 5380:80
+    #depends_on:
+    #  - reservationsystem-backend
+    restart: unless-stopped
+  backend:
+    container_name: reservationsystem-backend
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    ports:
+      - 5381:8080
+    environment:
+      - SPRING_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/reservation_system?createDatabaseIfNotExist=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=fmideskspot@gmail.com
+      - SMTP_PASSWORD=jesosiypvswqrvdv
+    restart: unless-stopped

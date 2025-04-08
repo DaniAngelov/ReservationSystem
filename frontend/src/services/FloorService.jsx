@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const REST_API_BASE_URL = 'http://localhost:8080/api/floors';
-const REST_API_EVENTS_BASE_URL = 'http://localhost:8080/api/floors/events';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const REST_API_BASE_URL = API_URL + '/api/floors';
+const REST_API_EVENTS_BASE_URL = API_URL + '/api/floors/events';
 const MYSTERY_BASE_URL = 'http://localhost:55618/api/ApplicationMystery/mystery-answer';
 
 export const getFloors = (token) => axios.get(REST_API_BASE_URL, { headers: { "Authorization": `Bearer ${token}` } });
@@ -42,7 +43,7 @@ export const searchNewEventByName = (request, token) => axios.put(REST_API_EVENT
 
 export const uploadFile = (formData, token) => axios.post(REST_API_BASE_URL + '/upload', formData, { headers: { 'Content-Type': 'multipart/form-data', "Authorization": `Bearer ${token}` } });
 
-export const uploadStartData = (token) => axios.post(REST_API_BASE_URL + '/upload-start-data', { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
+export const uploadStartData = (token) => axios.post(REST_API_BASE_URL + '/upload-start-data', {}, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
 export const disableUserEvent = (request, token) => axios.put(REST_API_EVENTS_BASE_URL + '/disable', request, { headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}` } });
 
@@ -60,7 +61,7 @@ export const exportData = (token) => axios.get(REST_API_BASE_URL + '/export', { 
 
 export const checkIfEventExists = () => axios.get(REST_API_EVENTS_BASE_URL + '/events-exist');
 
-export const sendDataToMysteryApp = (requestBody, gameId, userName, mysteryIndex, answer) => axios.post(MYSTERY_BASE_URL, requestBody, {
+export const sendDataToMysteryApp = (requestBody, gameId, userName, mysteryIndex, answer) => axios.post(REST_API_EVENTS_BASE_URL + '/add-mystery-event', requestBody, {
   params: {
     username: userName,
     gameId: gameId,

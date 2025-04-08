@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -51,13 +49,13 @@ public class UserController {
 
     @PostMapping("/register-admin")
     public ResponseEntity<?> registerAdminJSON() throws CustomUserException, IOException {
-        Path path = Paths.get("backend/src/main/resources/adminData.json");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("adminData.json");
         String name = "adminData.json";
         String originalFileName = "adminData.json";
         String contentType = "application/json";
         byte[] content;
         try {
-            content = Files.readAllBytes(path);
+            content = inputStream.readAllBytes();
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
