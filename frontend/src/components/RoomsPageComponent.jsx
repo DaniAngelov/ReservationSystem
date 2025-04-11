@@ -392,22 +392,22 @@ const RoomsPageComponent = (parentRoom) => {
 
     console.log(JSON.stringify(eventDTO));
 
-    // addEvent(JSON.stringify(eventDTO), token).then((response) => {
-    //   const newFilteredEvents = filteredEvents;
-    //   newFilteredEvents.push(response.data);
-    //   setFilteredEvents(newFilteredEvents);
-    //   { newLanguage == 'ENG' && alert("Event added successfully!") }
-    //   { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
-    //   closeShowForm();
-    //   if (searchParams.get("GameId") != null || searchParams.get("UserName") != null ||
-    //     searchParams.get("MysteryIndex") != null || searchParams.get("playingUsers") != null) {
-    //     addNewTeam(mysteryUsers, name, faculty, roomNumber, floorNumber, mysteryUsers.length);
-    //   }
-    //   showEventIfEnabled(response.data)
-    // }).catch((error) => {
-    //   alert(error.response.data);
-    //   console.log(error);
-    // })
+    addEvent(JSON.stringify(eventDTO), token).then((response) => {
+      const newFilteredEvents = filteredEvents;
+      newFilteredEvents.push(response.data);
+      setFilteredEvents(newFilteredEvents);
+      { newLanguage == 'ENG' && alert("Event added successfully!") }
+      { newLanguage == 'BG' && alert("Събитието успешно добавено!") }
+      closeShowForm();
+      if (searchParams.get("GameId") != null || searchParams.get("UserName") != null ||
+        searchParams.get("MysteryIndex") != null || searchParams.get("playingUsers") != null) {
+        addNewTeam(mysteryUsers, name, faculty, roomNumber, floorNumber, mysteryUsers.length);
+      }
+      showEventIfEnabled(response.data)
+    }).catch((error) => {
+      alert(error.response.data);
+      console.log(error);
+    })
   }
 
   const addNewTeam = (users, event, facultyName, roomNumber, floorNumber, userCount) => {

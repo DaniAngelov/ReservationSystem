@@ -33,7 +33,7 @@ const UserRegistrationComponent = () => {
     if (!email.trim()) {
       validationErrors.email = 'Email is required!'
       setIsEmailValid(false);
-    } else if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email)) {
+    } else if (!/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/.test(email)) {
       validationErrors.email = 'Email is not valid! Follow this structure: example@gmail.com'
       setIsEmailValid(false);
     }
@@ -43,10 +43,10 @@ const UserRegistrationComponent = () => {
       validationErrors.password = 'Password is required!'
       setIsPasswordValid(false);
     } else if (password.length < 6) {
-      validationErrors.password = 'Password should be at least 6 characters!'
+      validationErrors.password = 'Password should be at least 8 characters!'
       setIsPasswordValid(false);
-    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/.test(password)) {
-      validationErrors.password = 'Password is not valid! It should contain at least 1 normal, 1 capital, 1 special symbol and 1 number.'
+    } else if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}/.test(password)) {
+      validationErrors.password = 'Password is not valid! It should contain at least 1 letter, 1 number and 1 special symbol.'
       setIsPasswordValid(false);
     }
 

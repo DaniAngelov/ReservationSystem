@@ -79,6 +79,8 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const [manualFormImport, setManualFormImport] = useState(false);
 
+  const [dropdownMenuEnabled, setDropdownMenuEnabled] = useState(false);
+
   const [eventSearchField, setEventSearchField] = useState('');
 
   const [teamCounter, setTeamCounter] = useState(1);
@@ -200,6 +202,14 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const closeImportDataFromJson = () => {
     return setImportDataFromJson(false);
+  }
+
+  const toggleDropdownMenuEnabled = () => {
+    return setDropdownMenuEnabled(true);
+  }
+
+  const closeDropdownMenuEnabled = () => {
+    return setDropdownMenuEnabled(false);
   }
 
   const toggleManualFormImport = () => {
@@ -449,6 +459,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               className={`room-item-button btn-${floorAndRoom.roomColor} m-5 p-3 text-light text-center`} key={idx} onClick={() => {
                 if (role == 'ADMIN') {
                   closeRoomOptionsForm();
+                  closeDropdownMenuEnabled();
                   toggleRoomOptionsFormPart2();
                   closeRoomImageInputEnable();
                   setChosenRoom(floorAndRoom.room);
@@ -493,7 +504,36 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     )
   }
 
+  const callDropDown = () => {
+    return (<>
+      <ul className="custom-dropdown-menu text-center text-light">
+        {floorNumbers.map((floor, idx) => {
+          return <li key={idx}><a className="custom-dropdown-item btn btn-dark" onClick={() => {
+            closeRoomOptionsForm();
+            closeRoomOptionsFormPart2();
+            setChosenFaculty(floor.facultyName);
+            setChosenFloor(floor.floorNumber);
+            { generateRoomsEnabled == false && toggleGenerateRoomsEnabled() }
+            showRooms(floor.floorNumber, floor.facultyName);
+            closeImportDataForm();
+            closeUserPreferencesForm();
+            closeUploadFileAlert();
+          }
+          }>
+            {floor.facultyName} -
+            {newLanguage == 'ENG' && ' Floor '}
+            {newLanguage == 'BG' && ' Етаж '}
+            {floor.floorNumber}</a></li>
+        })
+        }
+      </ul>
+    </>
+    )
+
+  }
+
   const SidebarLeftComponent = () => {
+
     return (
       <>
         <div className="container-fluid">
@@ -502,34 +542,12 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
               <img src={logo} width={135} height={135} alt='Responsive image' className='img-fluid logoImage' />
             </div>
 
-            <div className="dropdown">
-              <a class="btn dropdown-floors btn-secondary dropdown-toggle bt-5" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-theme="dark">
-                {newLanguage == 'ENG' && 'Faculty - Floor'}
-                {newLanguage == 'BG' && 'Факултет - Етаж'}
-              </a>
-              <ul class="dropdown-menu dropdown-floors-item dropdown-menu-dark text-center">
-
-                {floorNumbers.map((floor, idx) => {
-                  return <li key={idx}><a className="dropdown-item" onClick={() => {
-                    closeRoomOptionsForm();
-                    closeRoomOptionsFormPart2();
-                    setChosenFaculty(floor.facultyName);
-                    setChosenFloor(floor.floorNumber);
-                    { generateRoomsEnabled == false && toggleGenerateRoomsEnabled() }
-                    showRooms(floor.floorNumber, floor.facultyName);
-                    closeImportDataForm();
-                    closeUserPreferencesForm();
-                    closeUploadFileAlert();
-                  }
-                  }>
-                    {floor.facultyName} -
-                    {newLanguage == 'ENG' && ' Floor '}
-                    {newLanguage == 'BG' && ' Етаж '}
-                    {floor.floorNumber}</a></li>
-                })
-                }
-              </ul>
-            </div>
+            <button className="btn dropdown-floors btn-secondary" onClick={() => {
+              toggleDropdownMenuEnabled();
+            }}>
+              {newLanguage == 'ENG' && 'Faculty - Floor'}
+              {newLanguage == 'BG' && 'Факултет - Етаж'}
+            </button>
           </div>
         </div>
 
@@ -739,6 +757,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
     return <div>
       <Button className='import-file-btn btn-info text-light p-2' onClick={() => {
         toggleImportDataForm();
+        closeDropdownMenuEnabled();
         closeUserPreferencesForm();
         closeUploadFileAlert();
         closeGenerateRoomsEnabled();
@@ -933,6 +952,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         closeUploadFileAlert();
         closeUploadFileTeamsAlert();
         closeUploadFileTeamsManualAlert();
+        closeDropdownMenuEnabled();
         setTeamUserResourcesUsername(Array(0).fill(''))
         setTeamUserResourcesPassword(Array(0).fill(''))
         setTeamUserResourcesEmail(Array(0).fill(''))
@@ -948,6 +968,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         <Button className='btn-import-data-json btn-dark text-light p-2' onClick={() => {
           toggleImportDataFromJson();
           closeImportDataForTeam();
+          closeDropdownMenuEnabled();
           closeManualFormImport();
           closeUploadFileAlert();
           closeUploadFileTeamsAlert();
@@ -958,6 +979,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         <Button className='btn-import-data-team btn-dark text-light p-2 ml-1' onClick={() => {
           closeImportDataFromJson();
           closeManualFormImport();
+          closeDropdownMenuEnabled();
           toggleImportDataForTeam();
           closeUploadFileAlert();
           closeUploadFileTeamsAlert();
@@ -967,6 +989,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
         <Button className='btn-import-data-team-manual btn-dark text-light p-2 ml-1' onClick={() => {
           closeImportDataFromJson();
           closeImportDataForTeam();
+          closeDropdownMenuEnabled();
           toggleManualFormImport();
           closeUploadFileAlert();
           closeUploadFileTeamsAlert();
@@ -1143,7 +1166,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
 
   const importSystemData = () => {
     if (faculties.length == 0) {
-      uploadStartData().then((response) => {
+      uploadStartData(token).then((response) => {
         console.log("Response" + response.data)
         console.log(response.data);
         const newFloors = [];
@@ -1216,6 +1239,7 @@ const FloorPageComponent = ({ setRoom, setFaculty }) => {
       {uploadFileTeamsAlert && showTeamsAlertWhenUploadFile()}
       {uploadFileTeamsManualAlert && showTeamsManualAlertWhenUploadFile()}
       {callUploadSystemFileButton()}
+      {dropdownMenuEnabled && callDropDown()}
       {defaultPassword && callChangePasswordButton()}
     </>
   )

@@ -4,7 +4,6 @@ import com.lecturesystem.reservationsystem.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -40,15 +39,5 @@ public class ApplicationConfig {
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
-    }
-
-    public JavaMailSenderImpl javaMailSender() {
-        JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
-
-        javaMailSender.setProtocol("SMTP");
-        javaMailSender.setHost("127.0.0.1");
-        javaMailSender.setPort(587);
-
-        return javaMailSender;
     }
 }
